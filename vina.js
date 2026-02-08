@@ -236,7 +236,130 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-// Zavírání (křížek + backdrop) – robustní varianta
+    /* ===== VYHLEDÁVÁNÍ V KARTÁCH ===== */
+    const searchInput = document.getElementById("wineSearch");
+    const clearBtn = document.getElementById("wineSearchClear");
+    const statusEl = document.getElementById("wineSearchStatus");
+    const noResultsEl = document.getElementById("wineNoResults");
+
+    // Kategorie / filtry
+    const filterButtons = Array.from(document.querySelectorAll(".wine-filter-btn[data-filter]"));
+    let activeCategoryFilter = "all";
+
+    const cards = Array.from(document.querySelectorAll(".wine-card[data-wine]"));
+
+    const normalizeText = (value) => {
+        return String(value ?? "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+    };
+
+    const detectCategoryFromMeta = (metaText) => {
+        const m = normalizeText(metaText);
+        // opíráme se o text, který máš v HTML ("suché bílé", "růžové", "suché červené")
+        if (m.includes("bile")) return "white";
+        if (m.includes("ruzove") || m.includes("rose")) return "rose";
+        if (m.includes("cervene")) return "red";
+        return "other";
+    };
+
+    const cardIndex = cards.map((card) => {
+        const name = card.querySelector(".wine-name")?.textContent ?? "";
+        const story = card.querySelector(".wine-story")?.textContent ?? "";
+        const notes = card.querySelector(".wine-notes")?.textContent ?? "";
+        const meta = card.querySelector(".wine-meta")?.textContent ?? "";
+
+        // zapamatujeme si původní tabindex (kvůli filtrování)
+        if (!card.hasAttribute("data-orig-tabindex")) {
+            card.setAttribute("data-orig-tabindex", card.getAttribute("tabindex") ?? "");
+        }
+
+        return {
+            el: card,
+            haystack: normalizeText(`${name} ${story} ${notes} ${meta}`),
+            category: detectCategoryFromMeta(meta)
+        };
+    });
+
+    const setCardVisible = (cardEl, visible) => {
+        if (visible) {
+            cardEl.classList.remove("is-filtered-out");
+            cardEl.setAttribute("aria-hidden", "false");
+
+            const orig = cardEl.getAttribute("data-orig-tabindex");
+            if (orig === "") cardEl.removeAttribute("tabindex");
+            else cardEl.setAttribute("tabindex", orig);
+        } else {
+            cardEl.classList.add("is-filtered-out");
+            cardEl.setAttribute("aria-hidden", "true");
+            cardEl.setAttribute("tabindex", "-1");
+        }
+    };
+
+    const updateUi = (shownCount, totalCount, queryRaw) => {
+        if (statusEl) {
+            const q = String(queryRaw ?? "").trim();
+            statusEl.textContent = q
+                ? `Zobrazeno ${shownCount} z ${totalCount} vín pro „${q}“.`
+                : `Zobrazeno ${shownCount} z ${totalCount} vín.`;
+        }
+
+        if (noResultsEl) {
+            noResultsEl.hidden = shownCount !== 0;
+        }
+
+        if (clearBtn) {
+            clearBtn.disabled = !String(queryRaw ?? "").trim();
+        }
+    };
+
+    const applyFilter = () => {
+        const total = cardIndex.length;
+        const queryRaw = searchInput?.value ?? "";
+        const query = normalizeText(queryRaw);
+
+        let shownCount = 0;
+        for (const item of cardIndex) {
+            const matchText = !query || item.haystack.includes(query);
+            const matchCat = activeCategoryFilter === "all" || item.category === activeCategoryFilter;
+            const match = matchText && matchCat;
+
+            setCardVisible(item.el, match);
+            if (match) shownCount++;
+        }
+
+        updateUi(shownCount, total, queryRaw);
+    };
+
+    // tlačítka kategorií
+    if (filterButtons.length) {
+        filterButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                activeCategoryFilter = btn.dataset.filter || "all";
+                filterButtons.forEach(b => b.classList.toggle("is-active", b === btn));
+                applyFilter();
+            });
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", applyFilter);
+    }
+
+    if (clearBtn && searchInput) {
+        clearBtn.addEventListener("click", () => {
+            searchInput.value = "";
+            applyFilter();
+            searchInput.focus();
+        });
+    }
+
+    // init stav při načtení
+    applyFilter();
+
+    // Zavírání (křížek + backdrop) – robustní varianta
     const closeButtons = modal.querySelectorAll("[data-close='true']");
 
     closeButtons.forEach(btn => {
@@ -246,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-// pojistka: klik kdekoliv na backdrop / element s data-close
+    // pojistka: klik kdekoliv na backdrop / element s data-close
     modal.addEventListener("click", (e) => {
         if (!(e.target instanceof Element)) return;
         if (e.target.closest("[data-close='true']")) {
@@ -254,13 +377,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-
     // ESC zavře
     window.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && modal.classList.contains("is-open")) {
             closeModal();
         }
     });
+
     document.querySelector(".modal__nav--next")
         ?.addEventListener("click", showNextWine);
 
