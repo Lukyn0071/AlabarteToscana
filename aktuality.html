@@ -1,0 +1,162 @@
+<!-- `aktuality.html` -->
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ALABARTE – Aktuality</title>
+
+  <link rel="stylesheet" href="aktuality.css" />
+  <script src="aktuality.js" defer></script>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-overlay">
+
+    <div class="hero-top">
+      <div class="lang-switcher" aria-label="Přepínač jazyka">
+        <button type="button" class="lang-btn" data-lang="cs">CS</button>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+      </div>
+
+      <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
+        <a href="index.html" data-key="home">Domů</a>
+        <a href="vina.html" data-key="vina">Vína</a>
+        <a href="aktuality.html" data-key="aktuality">Aktuality</a>
+        <a href="#eshop" data-key="eshop">E-shop</a>
+      </nav>
+    </div>
+
+    <header class="aktuality-header">
+      <span class="aktuality-eyebrow" data-key="aktuality_eyebrow">Novinky</span>
+      <h1 class="aktuality-title" data-key="aktuality_title">Aktuality</h1>
+      <p class="aktuality-lead" data-key="aktuality_lead">
+        Co je u nás nového: akce, nová vína a krátké zprávy z vinařství.
+      </p>
+    </header>
+
+    <section class="news" id="aktuality" aria-label="Seznam aktualit">
+
+      <article
+              class="news-item"
+              tabindex="0"
+              role="button"
+              aria-label="Detail aktuality Degustace tento pátek"
+              data-news="degustace"
+              data-title="Degustace tento pátek"
+              data-date="02/2026"
+              data-image="Images/Vína/víno1.png"
+              data-perex="Přijďte ochutnat výběr našich aktuálních vín. Kapacita je omezená, rezervace doporučena."
+              data-body="Těšit se můžete na výběr několika vín napříč styly. Doporučujeme si místo rezervovat předem.\n\nZačínáme v 18:00, počet míst je omezený. Rezervace: info@alabarte.cz."
+      >
+        <div class="news-item__media">
+          <img src="Images/aktuality/al1.png" alt="Degustace tento pátek" loading="lazy" />
+        </div>
+
+        <div class="news-item__content">
+          <h2 class="news-item__title">Degustace tento pátek</h2>
+          <p class="news-item__perex">
+            Přijďte ochutnat výběr našich aktuálních vín. Kapacita je omezená, rezervace doporučena.
+          </p>
+          <div class="news-item__date">02/2026</div>
+        </div>
+      </article>
+
+      <article
+              class="news-item"
+              tabindex="0"
+              role="button"
+              aria-label="Detail aktuality Dorazila nová šarže Pinot Noir"
+              data-news="pinot"
+              data-title="Dorazila nová šarže Pinot Noir"
+              data-date="01/2026"
+              data-image="Images/Vína/Víno2.png"
+              data-perex="Elegantní styl, jemné třísloviny a čisté ovoce. K dispozici v omezeném množství."
+              data-body="Nová šarže je už na baru i ve vinotéce. Doporučujeme servírovat lehce nachlazené.\n\nSkvěle se hodí k pečené drůbeži, houbovým pokrmům a jemnějším sýrům."
+      >
+        <div class="news-item__media">
+          <img src="Images/aktuality/al2.png" alt="Dorazila nová šarže Pinot Noir" loading="lazy" />
+        </div>
+
+        <div class="news-item__content">
+          <h2 class="news-item__title">Dorazila nová šarže Pinot Noir</h2>
+          <p class="news-item__perex">
+            Elegantní styl, jemné třísloviny a čisté ovoce. K dispozici v omezeném množství.
+          </p>
+          <div class="news-item__date">01/2026</div>
+        </div>
+      </article>
+
+      <article
+              class="news-item"
+              tabindex="0"
+              role="button"
+              aria-label="Detail aktuality Limitovaný sekt brut"
+              data-news="sekt"
+              data-title="Limitovaný sekt brut"
+              data-date="12/2025"
+              data-image="Images/Vína/Víno%203.png"
+              data-perex="Tradiční metoda, jemné perlení a suchý závěr. Ideální na oslavy i jako aperitiv."
+              data-body="Jedná se o limitovanou edici s omezeným počtem lahví. Doporučená teplota podávání je 6–8 °C.\n\nHodí se k lehkým předkrmům, mořským plodům nebo jen tak na přípitek."
+      >
+        <div class="news-item__media">
+          <img src="Images/aktuality/al3.png" alt="Limitovaný sekt brut" loading="lazy" />
+        </div>
+
+        <div class="news-item__content">
+          <h2 class="news-item__title">Limitovaný sekt brut</h2>
+          <p class="news-item__perex">
+            Tradiční metoda, jemné perlení a suchý závěr. Ideální na oslavy i jako aperitiv.
+          </p>
+          <div class="news-item__date">12/2025</div>
+        </div>
+      </article>
+
+    </section>
+
+  </div>
+</section>
+
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <div class="site-footer__title" data-key="kontakt_title">Kontakt</div>
+
+    <div class="site-footer__links">
+      <a class="site-footer__link" href="tel:+420777123456" aria-label="Telefon">+420 777 123 456</a>
+      <span class="site-footer__sep">•</span>
+      <a class="site-footer__link" href="mailto:info@alabarte.cz" aria-label="E-mail">info@alabarte.cz</a>
+    </div>
+  </div>
+</footer>
+
+<div class="modal news-modal" id="newsModal" aria-hidden="true">
+  <div class="modal__backdrop" data-close="true"></div>
+
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="newsModalTitle">
+    <button class="modal__close" type="button" aria-label="Zavřít" data-close="true">✕</button>
+
+    <div class="modal__grid">
+      <div class="modal__media">
+        <img id="newsModalImage" src="" alt="" />
+      </div>
+
+      <div class="modal__content">
+        <div class="modal__topline">
+          <h2 class="modal__title" id="newsModalTitle"></h2>
+          <div class="modal__meta" id="newsModalMeta"></div>
+        </div>
+
+        <p class="modal__story" id="newsModalPerex"></p>
+
+        <div class="modal__section">
+          <h3 class="modal__h3">Detail</h3>
+          <div class="news-modal__body" id="newsModalBody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,667 @@
+html {
+    scrollbar-gutter: stable;
+}
+
+/* ===== ZÁKLAD ===== */
+body {
+    overflow-y: auto;
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #111;
+}
+
+/* ===== HERO ===== */
+.hero {
+    min-height: 100vh;
+    background-image: url("Images/Obrázek1.png");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.hero-overlay {
+    min-height: 100vh;
+    background: rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+}
+
+/* ===== HERO TOP (stejné jako index) ===== */
+.hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 0.5rem 2rem;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* ===== LANG SWITCHER ===== */
+.lang-switcher {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.lang-btn {
+    background: #111;
+    color: #fff;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.lang-btn.active {
+    background: #fff;
+    color: #111;
+}
+
+/* ===== NAV (centrovaná absolutně) ===== */
+.hero-nav {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    gap: 2.5rem;
+    padding: 0.5rem 1rem;
+
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+    border-radius: 999px;
+
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    z-index: 1000;
+}
+
+.hero-nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+}
+
+.hero-nav a:hover {
+    opacity: 1;
+}
+
+/* scroll efekt – index.js ti na #heroNav přidává class "scrolled" */
+.hero-nav.scrolled {
+    background: rgba(0, 0, 0, 0.75);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== VÍNA – HLAVIČKA ===== */
+.vina-header {
+    margin-top: 4rem;
+    text-align: center;
+    color: #111;
+}
+
+.vina-eyebrow {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin-bottom: 0.6rem;
+}
+
+/* ===== NADPIS: 2 úrovně ===== */
+.vina-title{
+    margin: 0;
+    display: grid;
+    gap: 0.15rem;
+    justify-items: center;
+    line-height: 1;
+    position: relative;
+    padding-bottom: 1.4rem;
+}
+
+.vina-title__small{
+    font-size: 1.05rem;
+    letter-spacing: 0.45em;
+    text-transform: uppercase;
+    opacity: 0.65;
+    margin-bottom: 0.4rem;
+    color: rgba(17, 17, 17, 0.9);
+}
+
+.vina-title__big{
+    font-size: clamp(4.2rem, 8vw, 6.2rem);
+    font-weight: 520;
+    letter-spacing: 0.05em;
+    font-family: ui-serif, "Georgia", "Times New Roman", serif;
+    color: rgba(17,17,17,0.95);
+    text-shadow:
+            0 1px 1px rgba(255,255,255,0.4),
+            0 8px 30px rgba(0,0,0,0.06);
+}
+.vina-title::after{
+    content: "";
+    display: block;
+    width: 140px;
+    height: 2px;
+    margin: 1.2rem auto 0;
+
+    background: linear-gradient(
+            to right,
+            transparent,
+            rgba(17,17,17,0.35),
+            transparent
+    );
+    border-radius: 2px;
+}
+
+.vina-logo {
+    filter: grayscale(100%) brightness(0.55);
+    margin-bottom: 3rem;
+    opacity: 0.6;
+}
+
+/* ===== CONTENT ===== */
+.vina-content {
+    max-width: 700px;
+    margin-top: 2rem;
+    text-align: center;
+    color: #111;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* ===== JEMNÝ NÁJEZD (hlavička + text) ===== */
+.vina-header,
+.vina-content {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.vina-header.is-visible,
+.vina-content.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ===== VÍNA: prezentační katalog + jemný nájezd CELÉ SEKCE ===== */
+.wines {
+    width: min(1200px, 92%);
+    margin: 3rem auto 2rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+.wines.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* jedna karta = image + text (prezentace, ne e-shop) */
+.wine-card {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 1.25rem;
+    align-items: center;
+
+    background: rgba(255, 255, 255, 0.50);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 18px;
+    padding: 1.25rem;
+
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.wine-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(0,0,0,0.16);
+}
+
+.wine-card:focus {
+    outline: none;
+}
+
+.wine-card:focus-visible {
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.65), 0 14px 34px rgba(0,0,0,0.16);
+}
+
+.wine-card--reverse {
+    grid-template-columns: 1fr 220px;
+}
+
+.wine-card--reverse .wine-media {
+    order: 2;
+}
+
+.wine-media {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* ✅ důležité: aby se nic neřezalo a zoom byl vidět */
+    overflow: visible;
+}
+
+.wine-media img {
+    height: 320px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+
+    filter: drop-shadow(0 18px 24px rgba(0,0,0,0.25));
+
+    /* ✅ plynulost */
+    transform-origin: center center;
+    will-change: transform;
+}
+
+/* ✅ HOVER EFEKT – stejný vibe jako index */
+.wine-card:hover .wine-media img {
+    animation: slowZoom 6s ease-in-out forwards;
+}
+
+.wine-info {
+    color: #111;
+}
+
+.wine-topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.4rem;
+}
+
+.wine-name {
+    margin: 0;
+    font-size: 1.25rem;
+    letter-spacing: 0.03em;
+    max-width: 18ch;
+    line-height: 1.25;
+}
+
+.wine-meta {
+    font-size: 0.85rem;
+    opacity: 0.75;
+    white-space: nowrap;
+}
+
+.wine-story {
+    margin: 0.35rem 0 0.9rem;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    opacity: 0.92;
+}
+
+.wine-notes {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.92rem;
+}
+
+.wine-notes strong {
+    font-weight: 650;
+}
+
+/* ===== RESPONSIVE (TOP) ===== */
+@media (max-width: 768px) {
+    .hero-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .hero-nav {
+        position: static;
+        transform: none;
+        margin-top: 0.5rem;
+        gap: 1.5rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .lang-btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .vina-header {
+        margin-top: 3rem;
+    }
+}
+
+/* ===== RESPONSIVE (KATALOG) ===== */
+@media (max-width: 980px) {
+    .wines {
+        grid-template-columns: 1fr;
+    }
+
+    .wine-card,
+    .wine-card--reverse {
+        grid-template-columns: 180px 1fr;
+    }
+
+    .wine-card--reverse .wine-media {
+        order: 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .wine-card,
+    .wine-card--reverse {
+        grid-template-columns: 1fr;
+        text-align: left;
+    }
+
+    .wine-media img {
+        max-width: 160px;
+    }
+
+    .wine-topline {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ===== MODAL (POPUP) ===== */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 2000;
+}
+
+.modal.is-open {
+    display: block;
+}
+
+/* Fade-out režim (aktivuje JS přidáním class is-closing) */
+.modal.is-closing .modal__panel {
+    animation: modalOut 0.25s ease forwards;
+}
+
+.modal.is-closing .modal__backdrop {
+    animation: backdropOut 0.25s ease forwards;
+}
+
+.modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+    opacity: 1;
+}
+
+.modal__panel {
+    position: relative;
+    width: min(980px, 92%);
+    margin: 5vh auto;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.78);
+    border: 1px solid rgba(255,255,255,0.45);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.25);
+    backdrop-filter: blur(14px);
+    overflow: hidden;
+
+    transform: translateY(12px);
+    opacity: 0;
+    animation: modalIn 0.25s ease forwards;
+
+    max-height: calc(100vh - 10vh);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ===== MODAL NAVIGATION (NO CIRCLE) ===== */
+.modal__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 48px;
+    height: 64px;
+    border: 0;
+    cursor: pointer;
+
+    background: transparent;
+    color: rgba(17, 17, 17, 0.55);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 42px;
+    font-weight: 300;
+    line-height: 1;
+
+    transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal__nav:hover {
+    color: rgba(17, 17, 17, 0.92);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.06);
+}
+
+.modal__nav--prev {
+    left: -18px;
+}
+
+.modal__nav--next {
+    right: -18px;
+}
+
+/* aby nevznikal horizontální scrollbar */
+.modal__panel {
+    overflow-x: hidden;
+}
+.modal.is-open .modal__nav {
+    opacity: 0.75;
+    pointer-events: auto;
+}
+.modal.is-open .modal__panel:hover .modal__nav {
+    opacity: 0.95;
+}
+
+/* ===== MODAL: ANIMACE PŘEPÍNÁNÍ OBSAHU ===== */
+.modal__grid {
+    transition: opacity 160ms ease, transform 160ms ease;
+    will-change: opacity, transform;
+}
+
+.modal__panel.is-switching-left .modal__grid {
+    opacity: 0;
+    transform: translateX(-18px);
+}
+
+.modal__panel.is-switching-right .modal__grid {
+    opacity: 0;
+    transform: translateX(18px);
+}
+
+/* Na mobilu schovat */
+@media (max-width: 640px) {
+    .modal__nav {
+        display: none;
+    }
+}
+
+/* ===== ANIMACE (modal) ===== */
+@keyframes modalIn {
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes modalOut {
+    to {
+        transform: translateY(12px);
+        opacity: 0;
+    }
+}
+
+@keyframes backdropOut {
+    to {
+        opacity: 0;
+    }
+}
+
+.modal__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    border: 0;
+    background: rgba(17,17,17,0.08);
+    color: #111;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 38px;
+    z-index: 30;
+    pointer-events: auto;
+}
+
+.modal__close:hover {
+    background: rgba(17,17,17,0.12);
+}
+
+.modal__grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    align-items: stretch;
+}
+
+.modal__media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.04);
+    border-radius: 14px;
+    padding: 1rem;
+}
+
+.modal__media img {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 18px 26px rgba(0,0,0,0.28));
+}
+
+.modal__content {
+    color: #111;
+    padding: 0.25rem 0.25rem 0.75rem 0.25rem;
+}
+
+.modal__topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding-right: 0;
+}
+
+.modal__title {
+    margin: 0;
+    font-size: 1.6rem;
+    letter-spacing: 0.06em;
+    min-width: 0;
+    max-width: 32ch;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.modal__meta {
+    font-size: 0.8rem;
+    opacity: 0.75;
+    white-space: nowrap;
+    margin-right: 48px;
+    text-align: right;
+}
+
+.modal__story {
+    margin: 0.75rem 0 1.1rem;
+    line-height: 1.65;
+    font-size: 1rem;
+    opacity: 0.95;
+}
+
+.modal__section {
+    margin-top: 1rem;
+}
+
+.modal__h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.modal__specs {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.95rem;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+/* ===== RESPONSIVE (MODAL) ===== */
+@media (max-width: 860px) {
+    .modal__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal__media img {
+        max-width: 220px;
+    }
+
+    .modal__topline {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .modal__panel {
+        margin: 3vh auto;
+    }
+}
+
+/* ===== ANIMACE (hover lahve) ===== */
+@keyframes slowZoom {
+    from { transform: scale(1); }
+    to   { transform: scale(1.12); } /* ✅ o trochu výraznější, aby to bylo vidět */
+}
