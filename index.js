@@ -62,6 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
             vina: "Vína",
             aktuality: "Aktuality",
             eshop: "E-shop",
+            read: "Přečíst",
+            detail_label: "Detail",
 
             text1_h2: "Vernaccia di San Gimignano",
             text1_p: "Svěží bílé víno s minerálním charakterem, jemnými citrusovými tóny a typickou elegancí toskánské krajiny.",
@@ -89,6 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
             vina: "Wines",
             aktuality: "News",
             eshop: "Shop",
+            read: "Read",
+            detail_label: "Detail",
 
             text1_h2: "Vernaccia di San Gimignano",
             text1_p: "Fresh white wine with a mineral character, gentle citrus notes, and the signature elegance of Tuscany.",
@@ -128,6 +132,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.documentElement.lang = lang;
         localStorage.setItem('lang', lang);
+        // notify other scripts (e.g. aktuality.js) that language changed
+        try {
+            document.dispatchEvent(new CustomEvent('langchange', { detail: { lang } }));
+        } catch (e) {
+            // older browsers fallback
+            const ev = document.createEvent('CustomEvent');
+            ev.initCustomEvent('langchange', true, true, { lang });
+            document.dispatchEvent(ev);
+        }
     }
 
     // init jazyk

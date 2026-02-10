@@ -1,159 +1,380 @@
-// `aktuality.js`
-document.addEventListener("DOMContentLoaded", () => {
-    /* ===== STICKY NAV ===== */
-    const nav = document.getElementById("heroNav");
-    if (nav) {
-        window.addEventListener("scroll", () => {
-            nav.classList.toggle("scrolled", window.scrollY > 40);
-        });
+// aktuality.js
+(function () {
+    "use strict";
+
+    const NEWS = [
+        {
+            id: "degustace-patek",
+            slot: "featured",
+            badge: "DEGUSTACE",
+            title: "Novinky!",
+            title_en: "News!",
+            perex: "Novinky z Fattoria La Torre právě dorazily na náš e-shop!",
+            perex_en: "News from Fattoria La Torre have just arrived on our shop!",
+            date: "12/2025",
+            image: "Images/aktuality/al2.png",
+            bodyHtml:
+                "<p>Ať už hledáte víno, které si otevřete po náročném dni, nebo lahev pro speciální příležitost, určitě si mezi nimi vyberete svého favorita. Více informací o jednotlivých vínech naleznete v jejich popisku na e-shopu. 🍷🍇</p>",
+            bodyHtml_en:
+                "<p>Whether you want a bottle to unwind after a long day or something special for an occasion, you'll find a favorite among these. Find full descriptions on our shop.</p>"
+        },
+        {
+            id: "z-vinarstvi-1",
+            slot: "left",
+            badge: "Z VINAŘSTVÍ",
+            title: "E-shop!",
+            title_en: "Shop is live!",
+            perex: "Naše pečlivě vybraná vína jsou odteď i na e-shopu!",
+            perex_en: "Our carefully selected wines are now available in the shop!",
+            date: "04/2025",
+            image: "Images/aktuality/al1.png",
+            bodyHtml:
+                "<p>S radostí oznamujeme, že toskánská vína z @fattorialatorre najdete nově i na našem e-shopu! Pokud tedy nemáte cestu k nám do Kutné Hory, můžete si je vychutnat i v pohodlí vašeho domova.</p>",
+            bodyHtml_en:
+                "<p>We are happy to announce that wines from Fattoria La Torre are now on our shop. If you can't visit us in Kutná Hora, enjoy them at home.</p>"
+        },
+        {
+            id: "pinot-nova-sarze",
+            slot: "right1",
+            badge: "NOVÁ VÍNA",
+            title: "Bicchierino ~ Panák",
+            title_en: "Bicchierino ~ Shot",
+            perex: "Našli jsme pro Vás tyto úžasné a jemné likéry, které zkrátka musíte ochutnat!",
+            perex_en: "We've found these delightful, delicate liqueurs you must taste!",
+            date: "04/2025",
+            image: "Images/aktuality/al3.png",
+            bodyHtml:
+                "<p>Našli jsme pro Vás tyto úžasné a jemné likéry, které zkrátka musíte ochutnat! Zatím ve formě panáků, ale přijdou i drinky. Švestka, rebarbora nebo voňavý heřmánek!</p>",
+            bodyHtml_en:
+                "<p>We've discovered exquisite delicate liqueurs to taste — currently served as shots, with cocktails coming soon. Flavours include plum, rhubarb and chamomile.</p>"
+        },
+        {
+            id: "rucne-sbirane-hrozny",
+            slot: "right2",
+            badge: "Z VINAŘSTVÍ",
+            title: "Nově i olivový olej!",
+            title_en: "Now also olive oil!",
+            perex: "Nově si u nás můžete pořídit i olivový olej!",
+            perex_en: "You can now buy olive oil from us!",
+            date: "03/2025",
+            image: "Images/aktuality/al4.png",
+            bodyHtml:
+                "<p>Objevte chuť Toskánska s našimi prémiovými olivovými oleji! Seženete u nás nejen klasický extra panenský olivový olej, ale i varianty s různými lahodnými příchutěmi.</p>",
+            bodyHtml_en:
+                "<p>Discover Tuscan flavour with our premium olive oils — from classic extra virgin to flavored varieties. Available in our gallery in Kutná Hora or on our shop.</p>"
+        },
+        {
+            id: "ochutnavka-praha",
+            slot: "bottomLeft",
+            badge: "UDÁLOSTI",
+            title: "Navštíví nás vinaři",
+            title_en: "Winemakers visiting",
+            perex: "Na konci března nás navštíví vinaři z naší partnerské vinice Fattoria La Torre.",
+            perex_en: "At the end of March, winemakers from Fattoria La Torre will visit us.",
+            date: "02/2025",
+            image: "Images/aktuality/al5.png",
+            bodyHtml:
+                "<p>Na konci března nás navštíví vinaři z naší partnerské vinice Fattoria La Torre, aby vám představili vína, která můžete ochutnat v naší galerii ALABARTE.</p>",
+            bodyHtml_en:
+                "<p>At the end of March, winemakers from our partner Fattoria La Torre will present wines you can taste at ALABARTE gallery. Tasting sessions will be held on March 28 and 29 at 19:00. Price 590 CZK per person includes 10 wine samples, coffee and Italian snacks. Reservations required: info@alabarte.cz.</p>"
+        },
+        {
+            id: "rosato-novinka",
+            slot: "bottomRight",
+            badge: "NOVÁ VÍNA",
+            title: "Blížící se Velikonoce!",
+            title_en: "Easter is coming!",
+            perex: "Velikonoce nám na zahradě zanechaly překvapení.",
+            perex_en: "Easter left a surprise in our garden.",
+            date: "03/2025",
+            image: "Images/aktuality/al6.png",
+            bodyHtml:
+                "<p>Blížící se Velikonoce nám na zahradě zanechaly překvapení 🥚🌷 Najdete své velikonoční vajíčko i vy?</p>",
+            bodyHtml_en:
+                "<p>Easter brought surprises to our garden 🥚🌷 Will you find your Easter egg too? It lasts forever and looks magical in any light.</p>"
+        }
+    ];
+
+    // Helper to get current language (fallback to document lang or localStorage)
+    function getLang() {
+        return (document.documentElement && document.documentElement.lang) || localStorage.getItem('lang') || 'cs';
     }
 
-    /* ===== (OPTIONAL) LANGUAGE SYSTEM ===== */
-    const TRANSLATIONS = {
-        cs: {
-            home: "Domů",
-            vina: "Vína",
-            aktuality: "Aktuality",
-            eshop: "E-shop",
-            aktuality_eyebrow: "Novinky",
-            aktuality_title: "Aktuality",
-            aktuality_lead: "Co je u nás nového: akce, nová vína a krátké zprávy z vinařství.",
-            kontakt_title: "Kontakt",
-        },
-        en: {
-            home: "Home",
-            vina: "Wines",
-            aktuality: "News",
-            eshop: "Shop",
-            aktuality_eyebrow: "Updates",
-            aktuality_title: "News",
-            aktuality_lead: "What’s new: events, new wines, and short updates from the winery.",
-            kontakt_title: "Contact",
-        },
-    };
-
-    function setLanguage(lang) {
-        const dict = TRANSLATIONS[lang];
-        if (!dict) return;
-
-        document.querySelectorAll("[data-key]").forEach((el) => {
-            const key = el.getAttribute("data-key");
-            if (key && dict[key]) el.textContent = dict[key];
-        });
-
-        document.querySelectorAll(".lang-btn").forEach((btn) => {
-            btn.classList.toggle("active", btn.dataset.lang === lang);
-        });
-
-        document.documentElement.lang = lang;
-        localStorage.setItem("lang", lang);
+    function localizedField(item, field) {
+        const lang = getLang();
+        if (lang === 'en' && item[`${field}_en`]) return item[`${field}_en`];
+        return item[field] || '';
     }
 
-    const savedLang = localStorage.getItem("lang") || "cs";
-    setLanguage(savedLang);
-
-    document.querySelectorAll(".lang-btn").forEach((btn) => {
-        btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
-    });
-
-    /* ===== NEWS MODAL ===== */
+    // Modal elements and state
     const modal = document.getElementById("newsModal");
-    if (!modal) return;
+    const modalImg = document.getElementById("newsModalImage");
+    const modalTitle = document.getElementById("newsModalTitle");
+    const modalMeta = document.getElementById("newsModalMeta");
+    const modalPerex = document.getElementById("newsModalPerex");
+    const modalBody = document.getElementById("newsModalBody");
 
-    const imageEl = document.getElementById("newsModalImage");
-    const titleEl = document.getElementById("newsModalTitle");
-    const metaEl = document.getElementById("newsModalMeta");
-    const perexEl = document.getElementById("newsModalPerex");
-    const bodyEl = document.getElementById("newsModalBody");
+    let lastFocusEl = null;
 
-    const setParagraphs = (root, text) => {
-        if (!root) return;
-        root.innerHTML = "";
-        const raw = String(text || "");
-        raw.split(/\n\s*\n/).forEach((chunk) => {
-            const t = chunk.trim();
-            if (!t) return;
-            const p = document.createElement("p");
-            p.textContent = t;
-            root.appendChild(p);
-        });
-    };
+    function getItemById(id) {
+        return NEWS.find((n) => n.id === id) || null;
+    }
 
-    // vezme stejné `src` jako má náhled na kartě (včetně relativní cesty)
-    const getPreviewImageSrc = (card) => {
-        const img = card.querySelector(".news-item__media img");
-        if (!img) return "";
-        return img.getAttribute("src") || "";
-    };
+    function openModal(item, focusBackTo) {
+        if (!modal) return;
 
-    const openModal = (card) => {
-        const title = card.dataset.title || "";
-        const date = card.dataset.date || "";
-        const perex = card.dataset.perex || "";
-        const body = card.dataset.body || "";
+        lastFocusEl = focusBackTo || null;
 
-        const previewSrc = getPreviewImageSrc(card);
-        const dataImage = card.dataset.image || "";
-        const image = previewSrc || dataImage;
+        modalImg.src = item.image;
+        modalImg.alt = localizedField(item, 'title').replaceAll("\n", " ");
+        modalTitle.textContent = localizedField(item, 'title').replaceAll("\n", " ");
+        modalMeta.textContent = item.date ? item.date : "";
+        modalPerex.textContent = localizedField(item, 'perex');
+        modalBody.innerHTML = localizedField(item, 'bodyHtml') || localizedField(item, 'bodyHtml_en') || "";
 
-        if (titleEl) titleEl.textContent = title;
-        if (metaEl) metaEl.textContent = date;
-        if (perexEl) perexEl.textContent = perex;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
 
-        if (imageEl) {
-            imageEl.src = image;
-            imageEl.alt = title || "Aktualita";
-            imageEl.style.display = image ? "" : "none";
+        const closeBtn = modal.querySelector("[data-close='true']");
+        if (closeBtn) closeBtn.focus();
+    }
+
+    function closeModal() {
+        if (!modal) return;
+
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+
+        if (lastFocusEl && typeof lastFocusEl.focus === 'function') {
+            lastFocusEl.focus();
         }
+    }
 
-        setParagraphs(bodyEl, body);
+    function onCardActivate(el) {
+        const id = el.getAttribute('data-news-id');
+        if (!id) return;
+        const item = getItemById(id);
+        if (!item) return;
+        openModal(item, el);
+    }
 
-        modal.classList.remove("is-closing");
-        modal.classList.add("is-open");
-        modal.setAttribute("aria-hidden", "false");
-        document.body.classList.add("modal-open");
-    };
+    function bind() {
+        // Global click handler for modal close and delegation fallback
+        document.addEventListener('click', (e) => {
+            const target = e.target;
 
-    const closeModal = () => {
-        if (!modal.classList.contains("is-open")) return;
-
-        modal.classList.add("is-closing");
-        window.setTimeout(() => {
-            modal.classList.remove("is-open", "is-closing");
-            modal.setAttribute("aria-hidden", "true");
-            document.body.classList.remove("modal-open");
-        }, 250);
-    };
-
-    /* Delegace kliků (odolné vůči úpravám DOMu) */
-    document.addEventListener("click", (e) => {
-        const target = e.target;
-        if (!(target instanceof Element)) return;
-
-        if (target.closest("[data-close='true']")) {
-            closeModal();
-            return;
-        }
-
-        const card = target.closest(".news-item[data-news]");
-        if (card) openModal(card);
-    });
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeModal();
-
-        if (e.key === "Enter" || e.key === " ") {
-            const active = document.activeElement;
-            if (active instanceof Element && active.matches(".news-item[data-news]")) {
-                e.preventDefault();
-                openModal(active);
+            if (modal && modal.classList.contains('is-open')) {
+                const closeHit = target && target.closest && target.closest("[data-close='true']");
+                if (closeHit) {
+                    closeModal();
+                    return;
+                }
             }
+
+            // Delegation fallback: if a card was clicked but per-card listeners were not attached
+            const card = target && target.closest ? target.closest('.news-card[data-news-id]') : null;
+            if (card) onCardActivate(card);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (modal && modal.classList.contains('is-open')) closeModal();
+                return;
+            }
+
+            if (e.key === 'Enter' || e.key === ' ') {
+                const el = document.activeElement;
+                if (el && el.classList && el.classList.contains('news-card')) {
+                    e.preventDefault();
+                    onCardActivate(el);
+                }
+            }
+        });
+    }
+
+    function localizedField(item, field) {
+        const lang = getLang();
+        if (lang === 'en' && item[`${field}_en`]) return item[`${field}_en`];
+        return item[field] || '';
+    }
+
+    const slots = {
+        featured: document.getElementById("newsFeatured"),
+        left: document.getElementById("newsLeft"),
+        right1: document.getElementById("newsRight"),
+        right2: document.getElementById("newsRight"),
+        bottomLeft: document.getElementById("newsBottomLeft"),
+        bottomRight: document.getElementById("newsBottomRight")
+    };
+
+    function escapeText(s) {
+        return String(s)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll("\"", "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    function nlToBr(s) {
+        return escapeText(s).replaceAll("\n", "<br>");
+    }
+
+    function cardTemplate(item, variant) {
+        // Build node-based card to avoid template-in-attribute warnings and innerHTML for attributes
+        const article = document.createElement('article');
+        article.className = ['news-card', variant].filter(Boolean).join(' ');
+        article.setAttribute('tabindex', '0');
+        article.setAttribute('role', 'button');
+        article.setAttribute('aria-label', `Detail aktuality ${escapeText(localizedField(item, 'title')).replaceAll('\n', ' ')}`);
+        article.dataset.newsId = escapeText(item.id);
+
+        const bg = document.createElement('div');
+        bg.className = 'news-card__bg';
+        bg.setAttribute('aria-hidden', 'true');
+        bg.style.backgroundImage = `url(${escapeText(item.image)})`;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'news-card__overlay';
+        overlay.setAttribute('aria-hidden', 'true');
+
+        const content = document.createElement('div');
+        content.className = 'news-card__content';
+
+        const h2 = document.createElement('h2');
+        h2.className = 'news-title';
+        h2.innerHTML = nlToBr(localizedField(item, 'title'));
+
+        const p = document.createElement('p');
+        p.className = 'news-perex';
+        p.textContent = localizedField(item, 'perex');
+
+        const cta = document.createElement('span');
+        cta.className = 'news-cta';
+        cta.setAttribute('aria-hidden', 'true');
+        // localized CTA
+        cta.textContent = (getLang() === 'en') ? 'Read' : 'Přečíst';
+
+        content.appendChild(h2);
+        content.appendChild(p);
+        content.appendChild(cta);
+
+        article.appendChild(bg);
+        article.appendChild(overlay);
+        article.appendChild(content);
+
+        // attach event listeners directly to the created element
+        article.addEventListener('click', () => onCardActivate(article));
+        article.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onCardActivate(article);
+            }
+        });
+
+        return article;
+    }
+
+    function render() {
+        const bySlot = new Map(NEWS.map((n) => [n.slot, n]));
+
+        const featured = bySlot.get("featured");
+        if (featured && slots.featured) {
+            slots.featured.innerHTML = '';
+            slots.featured.appendChild(cardTemplate(featured, "news-card--featured"));
         }
+
+        const left = bySlot.get("left");
+        if (left && slots.left) {
+            slots.left.innerHTML = '';
+            slots.left.appendChild(cardTemplate(left, ""));
+        }
+
+        const r1 = bySlot.get("right1");
+        const r2 = bySlot.get("right2");
+        if (slots.right1) {
+            slots.right1.innerHTML = '';
+            if (r1) slots.right1.appendChild(cardTemplate(r1, "news-card--stack"));
+            if (r2) slots.right1.appendChild(cardTemplate(r2, "news-card--stack"));
+        }
+
+        const bl = bySlot.get("bottomLeft");
+        if (bl && slots.bottomLeft) {
+            slots.bottomLeft.innerHTML = '';
+            slots.bottomLeft.appendChild(cardTemplate(bl, ""));
+        }
+
+        const br = bySlot.get("bottomRight");
+        if (br && slots.bottomRight) {
+            slots.bottomRight.innerHTML = '';
+            slots.bottomRight.appendChild(cardTemplate(br, ""));
+        }
+
+        // ensure any fallback listeners are attached (kept for safety)
+        attachCardListeners();
+    }
+
+    function attachCardListeners() {
+        // remove previous listeners by cloning nodes (simple way) or ensure no duplicate handlers
+        const cards = document.querySelectorAll('.news-card[data-news-id]');
+        cards.forEach(card => {
+            // ensure pointer cursor
+            card.style.cursor = 'pointer';
+
+            // remove existing marker to avoid double-binding
+            if (card.__bound) return;
+
+            card.addEventListener('click', (e) => {
+                onCardActivate(card);
+            });
+
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onCardActivate(card);
+                }
+            });
+
+            card.__bound = true;
+        });
+    }
+
+    // Update modal content if open (used when language changes)
+    function refreshModalIfOpen() {
+        if (!modal) return;
+        if (!modal.classList.contains('is-open')) return;
+        // if modal is open, determine which item is shown from modalImg.src or modalTitle
+        // prefer lastFocusEl (the card element) if available
+        let item = null;
+        if (lastFocusEl && lastFocusEl.getAttribute) {
+            const id = lastFocusEl.getAttribute('data-news-id');
+            if (id) item = getItemById(id);
+        }
+        // fallback: try to find by matching image src
+        if (!item && modalImg && modalImg.src) {
+            const src = modalImg.src.replace(window.location.origin + '/', '');
+            item = NEWS.find(n => n.image === src) || null;
+        }
+        if (item) {
+            // update modal contents with localized fields
+            modalImg.src = item.image;
+            modalImg.alt = localizedField(item, 'title').replaceAll("\n", " ");
+            modalTitle.textContent = localizedField(item, 'title').replaceAll("\n", " ");
+            modalMeta.textContent = item.date ? item.date : '';
+            modalPerex.textContent = localizedField(item, 'perex');
+            modalBody.innerHTML = localizedField(item, 'bodyHtml') || localizedField(item, 'bodyHtml_en') || '';
+        }
+    }
+
+    // Re-render when language changes
+    document.addEventListener('langchange', () => {
+        render();
+        refreshModalIfOpen();
     });
 
-    modal.addEventListener("click", (e) => {
-        const t = e.target;
-        if (!(t instanceof Element)) return;
-        if (t.classList.contains("modal__backdrop")) closeModal();
-    });
-});
+    render();
+    bind();
+
+})();
