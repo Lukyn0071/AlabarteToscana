@@ -80,9 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
             winery_eyebrow: "Vinařství",
             winery_title: "Fattoria La Torre",
             winery_p1: "Rodinné vinařství v srdci Toskánska, kde se potkává tradice s moderním přístupem. Důraz je kladen na práci ve vinici, šetrné zpracování a styl vín, který je věrný místu původu.",
-            winery_li1: "Typický projev Toskánska a odrůd jako Sangiovese či Vernaccia",
-            winery_li2: "Důraz na čistotu, eleganci a vyváženost",
-            winery_li3: "Vína vhodná k jídlu i k samostatnému vychutnání",
             winery_p2: "Hrozny se sbírají ve správný okamžik a zpracovávají šetrně, aby v lahvi zůstala čistota, elegance a opravdový „sense of place“. Výsledkem jsou vína, která skvěle fungují u stolu — od svěžích bílých po strukturovaná červená.",
         },
 
@@ -110,9 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
             winery_eyebrow: "Winery",
             winery_title: "Fattoria La Torre",
             winery_p1: "A family winery in the heart of Tuscany where tradition meets a modern approach. The focus is on vineyard work, gentle processing, and a style that stays true to its origin.",
-            winery_li1: "A true Tuscan expression of varieties like Sangiovese and Vernaccia",
-            winery_li2: "Focus on purity, elegance, and balance",
-            winery_li3: "Wines made for food and for pure enjoyment",
             winery_p2: "Grapes are picked at the right moment and handled gently to preserve purity, elegance, and a true sense of place. The result is food-friendly wines—from vibrant whites to structured reds.",
         }
     };
@@ -186,6 +180,28 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             wineryRevealEls.forEach((el) => ioWinery.observe(el));
+        }
+    }
+    /* ================= SCROLL HINT – schovat po prvním scrollu ================= */
+    /* ================= SCROLL HINT – schovat po prvním scrollu ================= */
+    const scrollHint = document.querySelector(".scroll-hint");
+
+    if (scrollHint) {
+        // pokud už uživatel scrolloval (v rámci session), nech to schované i po refreshi
+        if (sessionStorage.getItem("scrollHintHidden") === "1") {
+            scrollHint.classList.add("is-hidden");
+        } else {
+            const hideScrollHint = () => {
+                scrollHint.classList.add("is-hidden");
+                sessionStorage.setItem("scrollHintHidden", "1");
+            };
+
+            // schovej až při skutečném pohybu (někdy se vyvolá scroll event i bez posunu)
+            const onFirstScroll = () => {
+                if (window.scrollY > 5) hideScrollHint();
+            };
+
+            window.addEventListener("scroll", onFirstScroll, { passive: true });
         }
     }
 });

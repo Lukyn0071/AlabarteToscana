@@ -17,7 +17,6 @@
 <section class="hero">
     <!-- ✅ jen tato část má pozadí -->
     <div class="hero-bg">
-
         <div class="hero-overlay">
 
             <!-- ===== TOP BAR ===== -->
@@ -47,14 +46,19 @@
                     </a>
                 </div>
             </header>
-
-            <!-- ✅ WRAPPER pro vše, co se může zmenšovat/scrollovat -->
+            <p class="hero-tagline">
+                Pečlivě vybraná vína z Toskánska, dovážená přímo do České republiky.
+            </p>
+            <!-- ✅ WRAPPER pro vše, co se může zmenšovat -->
             <div class="hero-content">
 
                 <!-- ===== SLIDES ===== -->
                 <div class="hero-slides">
+
                     <!-- IMAGES (klik -> https://www.alabarte.cz/vino/) -->
-                    <a href="https://www.alabarte.cz/vino/" class="slideshow image-stage hero-wine-link" aria-label="Zobrazit vína">
+                    <a href="https://www.alabarte.cz/vino/"
+                       class="slideshow image-stage hero-wine-link"
+                       aria-label="Zobrazit vína">
                         <div class="image-slide active">
                             <img src="Images/Vína/víno1.png" alt="">
                         </div>
@@ -68,52 +72,58 @@
                         </div>
                     </a>
 
-                    <!-- TEXTS -->
+                    <!-- TEXTS (DYNAMICKY – funguje na všech rozlišeních) -->
                     <div class="slideshow text-stage">
 
-                        <!-- STATICKÉ POZADÍ (NEANIMUJE SE) -->
-                        <div class="text-paper" aria-hidden="true"></div>
+                        <div class="text-frame">
+                            <!-- TEXTY (jen tyhle slidy se animují) -->
+                            <div class="text-content">
 
-                        <div class="text-slide active">
-                            <div class="text-bg">
-                                <h2 data-key="text1_h2">Vernaccia di San Gimignano</h2>
-                                <p data-key="text1_p">
-                                    Svěží bílé víno s minerálním charakterem, jemnými citrusovými tóny
-                                    a typickou elegancí toskánské krajiny.
-                                </p>
+                                <div class="text-slide active">
+                                    <div class="text-bg">
+                                        <h2 data-key="text1_h2">Vernaccia di San Gimignano</h2>
+                                        <p data-key="text1_p">
+                                            Svěží bílé víno s minerálním charakterem, jemnými citrusovými tóny
+                                            a typickou elegancí toskánské krajiny.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="text-slide">
+                                    <div class="text-bg">
+                                        <h2 data-key="text2_h2">Druhý text</h2>
+                                        <p data-key="text2_p">Synchronizovaný s druhým obrázkem</p>
+                                    </div>
+                                </div>
+
+                                <div class="text-slide">
+                                    <div class="text-bg">
+                                        <h2 data-key="text3_h2">Třetí text</h2>
+                                        <p data-key="text3_p">Synchronizovaný s třetím obrázkem</p>
+                                    </div>
+                                </div>
+
                             </div>
-                        </div>
 
-                        <div class="text-slide">
-                            <div class="text-bg">
-                                <h2 data-key="text2_h2">Druhý text</h2>
-                                <p data-key="text2_p">Synchronizovaný s druhým obrázkem</p>
-                            </div>
-                        </div>
-
-                        <div class="text-slide">
-                            <div class="text-bg">
-                                <h2 data-key="text3_h2">Třetí text</h2>
-                                <p data-key="text3_p">Synchronizovaný s třetím obrázkem</p>
+                            <!-- CTA (statické – nemění se) -->
+                            <div class="text-cta">
+                                <a href="vina.html" class="cta-btn cta-btn--primary">Naše vína</a>
+                                <a href="https://www.alabarte.cz/vino/" class="cta-btn cta-btn--ghost">E-shop</a>
                             </div>
                         </div>
 
                     </div>
                 </div>
 
-                <!-- ===== CTA BUTTONS (pod slideshow) ===== -->
-                <div class="hero-cta">
-                    <a class="cta-btn cta-btn--primary" href="vina.html">Naše vína</a>
-                    <a class="cta-btn cta-btn--ghost" href="https://www.alabarte.cz/vino/" target="_blank" rel="noopener">
-                        E-shop
-                    </a>
-                </div>
-
             </div>
 
             <!-- ✅ divider mimo hero-content, aby byl vždy dole -->
             <div class="hero-divider"></div>
-
+            <!-- SCROLL HINT -->
+            <div class="scroll-hint" aria-hidden="true">
+                <span class="scroll-hint__text">Více o Alabarte</span>
+                <span class="scroll-hint__arrow">↓</span>
+            </div>
         </div>
     </div>
 </section>
@@ -121,12 +131,13 @@
 <!-- ✅ odtud už BEZ hero pozadí -->
 <div class="page-content">
 
-    <!-- ✅ NOVĚ: jeden velký box pro obě sekce -->
+    <!-- ✅ jeden velký box pro obě sekce -->
     <div class="info-wrapper">
 
         <!-- O ALABARTE -->
         <section class="info-section" id="o-nas">
             <div class="info-inner js-reveal">
+
                 <div class="info-media">
                     <img src="Images/o-nas.png" alt="Alabarte – dovoz toskánských vín">
                 </div>
@@ -143,11 +154,14 @@
                         </p>
                     </div>
                 </div>
+
             </div>
         </section>
+
         <!-- VINAŘSTVÍ -->
         <section class="winery-section" id="vinarstvi">
             <div class="winery-inner js-reveal-winery">
+
                 <div class="winery-text">
                     <div class="winery-card">
                         <span class="winery-eyebrow" data-key="winery_eyebrow">Vinařství</span>
@@ -163,20 +177,16 @@
                             elegance a opravdový „sense of place“. Výsledkem jsou vína, která skvěle fungují u stolu
                             — od svěžích bílých po strukturovaná červená.
                         </p>
-
-                        <ul class="winery-list">
-                            <li data-key="winery_li1">Typický projev Toskánska a odrůd jako Sangiovese či Vernaccia</li>
-                            <li data-key="winery_li2">Důraz na čistotu, eleganci a vyváženost</li>
-                            <li data-key="winery_li3">Vína ideální k jídlu i k samostatnému vychutnání</li>
-                        </ul>
                     </div>
                 </div>
 
                 <div class="winery-media">
                     <img src="Images/fattoria.jpg" alt="Fattoria La Torre – vinařství v Toskánsku">
                 </div>
+
             </div>
         </section>
+
     </div>
 </div>
 
