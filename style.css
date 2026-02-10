@@ -11,8 +11,9 @@ body {
 }
 
 /* ===== HERO – TEXT (slidy vpravo) ===== */
+/* ✅ Fonty řeší typography.css přes .typo-h3 a .typo-body v HTML.
+   Tady necháváme jen layout + dekorace. */
 .text-bg h2 {
-    font-family: "Faculty Glyphic", serif;
     font-weight: 600;
     font-size: 1.3rem;
     letter-spacing: 0.06em;
@@ -30,7 +31,6 @@ body {
 }
 
 .text-bg p {
-    font-family: "Faculty Glyphic", serif;
     font-weight: 400;
     font-size: 0.95rem;
     line-height: 1.6;
@@ -140,10 +140,6 @@ body {
 
     margin-top: clamp(0.6rem, 2vh, 1.4rem);
 }
-/* ===== HERO – JEMNÝ GRAIN (noise) ===== */
-.hero-overlay {
-    position: relative; /* pojistka pro ::before */
-}
 
 /* ===== SLIDESHOW ===== */
 .slideshow {
@@ -175,6 +171,7 @@ body {
     opacity: 0.25;
     z-index: 1;
 }
+
 /* ===== MIKRO-DETAIL: světlo pod lahví ===== */
 .image-slide::after {
     content: "";
@@ -200,10 +197,12 @@ body {
     opacity: 0.55;
     z-index: -1;
 }
+
 .image-slide.active::after {
     opacity: 0.85;
     filter: blur(7px);
 }
+
 .image-slide img {
     max-width: 100%;
     max-height: 100%;
@@ -212,6 +211,7 @@ body {
     object-fit: contain;
     border-radius: 12px;
 }
+
 .image-slide.active img {
     filter:
             drop-shadow(0 18px 28px rgba(0,0,0,0.28))
@@ -286,7 +286,6 @@ body {
     align-items: center;
     justify-content: center;
 }
-
 
 /* prostor pro animované texty */
 .text-content{
@@ -407,7 +406,7 @@ body {
     padding: 0.4rem 0.8rem;
     cursor: pointer;
     border-radius: 6px;
-    font-weight: bold;
+    font-weight: 700;
     font-size: 0.85rem;
     transition: background 0.2s;
 }
@@ -438,9 +437,13 @@ body {
 .hero-nav a {
     color: #fff;
     text-decoration: none;
-    font-size: 0.9rem;
-    letter-spacing: 0.2em;
+
+    /* ✅ typografie přes systém */
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    font-size: 0.85rem;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
+
     opacity: 0.85;
     transition: opacity 0.2s ease;
 }
@@ -468,7 +471,9 @@ body {
 
     background: linear-gradient(to right, transparent, rgba(17, 17, 17, 0.35), transparent);
 }
+
 /* ===== HERO – BRAND TAGLINE ===== */
+/* ✅ Font řeší typography.css přes .typo-body v HTML */
 .hero-tagline {
     margin: 0.6rem 0 0;
     max-width: 42ch;
@@ -486,19 +491,23 @@ body {
             0 6px 18px rgba(0,0,0,0.08);
 
     opacity: 0.9;
-    font-family: "Faculty Glyphic", serif;
+
     margin-top: 0.85rem; /* místo 0.6rem */
 }
+
 /* ===== CONTENT BELOW HERO ===== */
 .page-content {
     width: 100%;
     padding: 3.5rem 0 4.5rem;
     box-sizing: border-box;
 
-    background-color: #fff;
-    background-image: url("Images/dot-grid.webp");
+    background-color: #f7f7f7;
+    background-image: url("Images/arches.png");
     background-repeat: repeat;
-    background-size: 420px 420px;
+
+    /* ✅ 1:1 bez rozmazání (pattern je 100×100 px) */
+    background-size: auto;
+
     background-position: top left;
 
     position: relative;
@@ -509,7 +518,7 @@ body {
     content: "";
     position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0);
     pointer-events: none;
     z-index: 0;
 }
@@ -614,29 +623,18 @@ body {
 .info-inner .info-text  { justify-self: start; }
 
 /* Typografie */
+/* ✅ Fonty + velikosti řeší typography.css přes .typo-* v HTML */
 .info-eyebrow {
     display: inline-block;
-    font-size: 0.75rem;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    opacity: 0.6;
     margin-bottom: 0.75rem;
 }
 
 .info-title {
     margin: 0 0 1rem;
-    font-family: "Faculty Glyphic", serif;
-    letter-spacing: 0.03em;
-    font-weight: 600;
-    font-size: clamp(1.6rem, 2.3vw, 2.1rem);
-    line-height: 1.15;
 }
 
 .info-par {
     margin: 0 0 0.9rem;
-    font-size: 1rem;
-    line-height: 1.7;
-    opacity: 0.95;
 }
 
 .info-list {
@@ -644,8 +642,6 @@ body {
     padding-left: 1.1rem;
     display: grid;
     gap: 0.5rem;
-    line-height: 1.6;
-    opacity: 0.95;
 }
 
 /* ===== REVEAL: O NÁS (scroll-trigger) ===== */
@@ -791,29 +787,18 @@ body {
 }
 
 /* typografie */
+/* ✅ Fonty + velikosti řeší typography.css přes .typo-* v HTML */
 .winery-eyebrow {
     display: inline-block;
-    font-size: 0.75rem;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    opacity: 0.6;
     margin-bottom: 0.75rem;
 }
 
 .winery-title {
     margin: 0 0 1rem;
-    font-family: "Faculty Glyphic", serif;
-    letter-spacing: 0.03em;
-    font-weight: 600;
-    font-size: clamp(1.6rem, 2.3vw, 2.1rem);
-    line-height: 1.15;
 }
 
 .winery-par {
     margin: 0 0 0.9rem;
-    font-size: 1rem;
-    line-height: 1.7;
-    opacity: 0.95;
 }
 
 .winery-list {
@@ -821,8 +806,6 @@ body {
     padding-left: 1.1rem;
     display: grid;
     gap: 0.5rem;
-    line-height: 1.6;
-    opacity: 0.95;
 }
 
 /* ===== REVEAL: VINAŘSTVÍ (odděleně od O NÁS) ===== */
@@ -983,6 +966,7 @@ body {
     from { transform: scale(1); }
     to   { transform: scale(1.08); }
 }
+
 /* ===== SCROLL HINT (naznačení scrollu) ===== */
 .scroll-hint {
     position: absolute;
@@ -1008,11 +992,13 @@ body {
 }
 
 .scroll-hint__text {
+    /* ✅ font řeší typography.css přes .typo-nav, tady jen vzhled */
     font-size: 0.75rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
     opacity: 0.9;
 }
+
 /* stav "schovat" */
 .scroll-hint.is-hidden {
     opacity: 0 !important;
@@ -1021,11 +1007,13 @@ body {
 
     animation: none !important; /* ✅ vypne fade animaci */
 }
+
 arrow {
     font-size: 1.35rem;
     line-height: 1;
     animation: scrollHintBounce 1.35s ease-in-out infinite;
 }
+
 /* vypnout i bounce na šipce, jinak se může hýbat dál */
 .scroll-hint.is-hidden .scroll-hint__arrow {
     animation: none !important;

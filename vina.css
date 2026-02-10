@@ -3,10 +3,12 @@ html {
 }
 
 /* ===== ZÁKLAD ===== */
+/* ✅ Fonty primárně řídí typography.css + .typo-* třídy v HTML.
+   Tady necháváme jen layout/styling, případně UI texty držíme v sans přes proměnné. */
 body {
     overflow-y: auto;
     margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     color: #111;
 
     /* Pozadí přes celou stránku – při scrollu se NEPOSOUVÁ */
@@ -51,7 +53,6 @@ body {
     bottom: 34px;
     height: 80px;
 
-    background-image: url("Images/vine-border.svg");
     background-repeat: repeat-x;
     background-position: center bottom;
     background-size: auto 80px;
@@ -107,13 +108,14 @@ body {
 }
 
 .lang-btn {
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     background: #111;
     color: #fff;
     border: none;
     padding: 0.4rem 0.8rem;
     cursor: pointer;
     border-radius: 6px;
-    font-weight: bold;
+    font-weight: 700;
     font-size: 0.85rem;
     transition: background 0.2s;
 }
@@ -143,10 +145,11 @@ body {
 }
 
 .hero-nav a {
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     color: #fff;
     text-decoration: none;
-    font-size: 0.9rem;
-    letter-spacing: 0.2em;
+    font-size: 0.85rem;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     opacity: 0.85;
     transition: opacity 0.2s ease;
@@ -169,16 +172,14 @@ body {
     color: #111;
 }
 
+/* ✅ font/velikost řeší typography.css přes .typo-eyebrow v HTML */
 .vina-eyebrow {
     display: block;
-    font-size: 0.75rem;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    opacity: 0.55;
     margin-bottom: 0.6rem;
 }
 
 /* ===== NADPIS: 2 úrovně ===== */
+/* ✅ H1 font řeší typography.css přes .typo-h1 na .vina-title */
 .vina-title{
     margin: 0;
     display: grid;
@@ -189,7 +190,9 @@ body {
     padding-bottom: 1.4rem;
 }
 
+/* ✅ malé "Naše" držíme jako UI/sans (luxusní editorial vibe) */
 .vina-title__small{
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     font-size: 1.05rem;
     letter-spacing: 0.45em;
     text-transform: uppercase;
@@ -198,16 +201,17 @@ body {
     color: rgba(17, 17, 17, 0.9);
 }
 
+/* ✅ velké "vína" dědí serif z .typo-h1, tady jen dorovnáváme vzhled */
 .vina-title__big{
-    font-size: clamp(4.2rem, 8vw, 6.2rem);
     font-weight: 520;
     letter-spacing: 0.05em;
-    font-family: ui-serif, "Georgia", "Times New Roman", serif;
     color: rgba(17,17,17,0.95);
     text-shadow:
             0 1px 1px rgba(255,255,255,0.4),
             0 8px 30px rgba(0,0,0,0.06);
 }
+
+/* linka pod titulkem */
 .vina-title::after{
     content: "";
     display: block;
@@ -231,13 +235,12 @@ body {
 }
 
 /* ===== CONTENT ===== */
+/* ✅ font/velikost řeší typography.css přes .typo-body v HTML */
 .vina-content {
     max-width: 700px;
     margin-top: 2rem;
     text-align: center;
     color: #111;
-    font-size: 1.1rem;
-    line-height: 1.6;
 }
 
 /* ===== JEMNÝ NÁJEZD (hlavička + text) ===== */
@@ -355,33 +358,34 @@ body {
     margin-bottom: 0.4rem;
 }
 
+/* ✅ font/velikosti řeší typography.css přes .typo-h3 v HTML */
 .wine-name {
     margin: 0;
-    font-size: 1.25rem;
-    letter-spacing: 0.03em;
     max-width: 18ch;
     line-height: 1.25;
 }
 
+/* ✅ font/velikosti řeší typography.css přes .typo-meta v HTML */
 .wine-meta {
-    font-size: 0.85rem;
     opacity: 0.75;
     white-space: nowrap;
 }
 
+/* ✅ font/velikosti řeší typography.css přes .typo-body v HTML */
 .wine-story {
     margin: 0.35rem 0 0.9rem;
-    font-size: 0.98rem;
-    line-height: 1.6;
     opacity: 0.92;
 }
 
+/* poznámky necháme v sans a čitelné */
 .wine-notes {
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     margin: 0;
     padding-left: 1.1rem;
     display: grid;
     gap: 0.25rem;
     font-size: 0.92rem;
+    line-height: 1.6;
 }
 
 .wine-notes strong {
@@ -530,18 +534,12 @@ body {
     transform: translateY(-50%) scale(1.06);
 }
 
-.modal__nav--prev {
-    left: -18px;
-}
-
-.modal__nav--next {
-    right: -18px;
-}
+.modal__nav--prev { left: -18px; }
+.modal__nav--next { right: -18px; }
 
 /* aby nevznikal horizontální scrollbar */
-.modal__panel {
-    overflow-x: hidden;
-}
+.modal__panel { overflow-x: hidden; }
+
 .modal.is-open .modal__nav {
     opacity: 0.75;
     pointer-events: auto;
@@ -568,33 +566,24 @@ body {
 
 /* Na mobilu schovat */
 @media (max-width: 640px) {
-    .modal__nav {
-        display: none;
-    }
+    .modal__nav { display: none; }
 }
 
 /* ===== ANIMACE (modal) ===== */
 @keyframes modalIn {
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 @keyframes modalOut {
-    to {
-        transform: translateY(12px);
-        opacity: 0;
-    }
+    to { transform: translateY(12px); opacity: 0; }
 }
 
 @keyframes backdropOut {
-    to {
-        opacity: 0;
-    }
+    to { opacity: 0; }
 }
 
 .modal__close {
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     position: absolute;
     top: 14px;
     right: 14px;
@@ -653,9 +642,9 @@ body {
     padding-right: 0;
 }
 
+/* ✅ font/velikosti řeší typography.css přes .typo-h2 v HTML */
 .modal__title {
     margin: 0;
-    font-size: 1.6rem;
     letter-spacing: 0.06em;
     min-width: 0;
     max-width: 32ch;
@@ -664,63 +653,55 @@ body {
     overflow-wrap: anywhere;
 }
 
+/* ✅ font/velikosti řeší typography.css přes .typo-meta v HTML */
 .modal__meta {
-    font-size: 0.8rem;
     opacity: 0.75;
     white-space: nowrap;
     margin-right: 48px;
     text-align: right;
 }
 
+/* ✅ font/velikosti řeší typography.css přes .typo-body v HTML */
 .modal__story {
     margin: 0.75rem 0 1.1rem;
-    line-height: 1.65;
-    font-size: 1rem;
     opacity: 0.95;
 }
 
-.modal__section {
-    margin-top: 1rem;
-}
+.modal__section { margin-top: 1rem; }
 
+/* ✅ H3 už má v HTML .typo-h3, tady jen uppercase vibe pokud chceš */
 .modal__h3 {
     margin: 0 0 0.5rem;
-    font-size: 0.95rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     opacity: 0.8;
 }
 
+/* seznamy držíme v sans pro čitelnost */
 .modal__specs {
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     margin: 0;
     padding-left: 1.1rem;
     display: grid;
     gap: 0.35rem;
     font-size: 0.95rem;
+    line-height: 1.6;
 }
 
-body.modal-open {
-    overflow: hidden;
-}
+body.modal-open { overflow: hidden; }
 
 /* ===== RESPONSIVE (MODAL) ===== */
 @media (max-width: 860px) {
-    .modal__grid {
-        grid-template-columns: 1fr;
-    }
+    .modal__grid { grid-template-columns: 1fr; }
 
-    .modal__media img {
-        max-width: 220px;
-    }
+    .modal__media img { max-width: 220px; }
 
     .modal__topline {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .modal__panel {
-        margin: 3vh auto;
-    }
+    .modal__panel { margin: 3vh auto; }
 }
 
 /* ===== VYHLEDÁVÁNÍ VÍN ===== */
@@ -739,8 +720,8 @@ body.modal-open {
     box-shadow: 0 10px 30px rgba(0,0,0,0.10);
 }
 
+/* ✅ label má v HTML .typo-meta, tady jen spacing */
 .wine-search__label {
-    font-size: 0.9rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     opacity: 0.85;
@@ -754,6 +735,7 @@ body.modal-open {
 }
 
 .wine-search__input {
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     width: 100%;
     padding: 0.7rem 0.9rem;
     border-radius: 12px;
@@ -769,6 +751,7 @@ body.modal-open {
 }
 
 .wine-search__clear {
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     padding: 0.7rem 0.9rem;
     border-radius: 12px;
     border: none;
@@ -783,9 +766,9 @@ body.modal-open {
     cursor: not-allowed;
 }
 
+/* ✅ status má v HTML .typo-meta, tady jen spacing */
 .wine-search__status {
     margin: 0;
-    font-size: 0.95rem;
     opacity: 0.8;
 }
 
@@ -802,9 +785,7 @@ body.modal-open {
     backdrop-filter: blur(6px);
 }
 
-.wine-card.is-filtered-out {
-    display: none;
-}
+.wine-card.is-filtered-out { display: none; }
 
 /* ===== FILTRY / KATEGORIE ===== */
 .wine-filters {
@@ -824,8 +805,8 @@ body.modal-open {
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
+/* ✅ label má v HTML .typo-meta, tady jen spacing */
 .wine-filters__label {
-    font-size: 0.9rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     opacity: 0.85;
@@ -838,6 +819,7 @@ body.modal-open {
 }
 
 .wine-filter-btn {
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     border: 1px solid rgba(17, 17, 17, 0.18);
     background: rgba(255, 255, 255, 0.65);
     color: #111;
@@ -857,9 +839,7 @@ body.modal-open {
     border-color: rgba(17, 17, 17, 0.85);
 }
 
-.wine-filter-btn:focus {
-    outline: none;
-}
+.wine-filter-btn:focus { outline: none; }
 
 .wine-filter-btn:focus-visible {
     box-shadow: 0 0 0 3px rgba(255,255,255,0.55);

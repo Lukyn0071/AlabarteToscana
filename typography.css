@@ -1,0 +1,90 @@
+/* typography.css — sjednocený typografický systém (Domine pro H1, Faculty Glyphic pro H2/H3) */
+
+:root{
+    /* ===== FONTY ===== */
+    --font-display: "Domine", serif;              /* velké titulky (Naše vína, Toskánský deník) */
+    --font-serif: "Faculty Glyphic", serif;      /* menší nadpisy / elegantní texty */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; /* UI / dlouhé texty */
+
+    /* ===== BARVY TEXTU ===== */
+    --text-main: rgba(17,17,17,0.95);
+    --text-muted: rgba(17,17,17,0.65);
+    --text-subtle: rgba(17,17,17,0.45);
+}
+
+/* ===== TYPO SYSTEM ===== */
+
+/* drobný label nadpisu */
+.typo-eyebrow{
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    margin: 0 0 0.75rem;
+}
+
+/* hlavní titulek stránky */
+.typo-h1{
+    font-family: var(--font-display);
+    font-size: clamp(3.2rem, 7vw, 5.6rem);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    line-height: 1.05;
+    color: var(--text-main);
+    margin: 0;
+}
+
+/* nadpis sekcí */
+.typo-h2{
+    font-family: var(--font-serif);
+    font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    line-height: 1.15;
+    color: var(--text-main);
+    margin: 0 0 1rem;
+}
+
+/* menší nadpisy (karty, citáty, modal sekce) */
+.typo-h3{
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 560;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+    color: var(--text-main);
+    margin: 0;
+}
+
+/* odstavce / běžný text */
+.typo-body{
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-main);
+    max-width: 60ch;
+    margin: 0;
+}
+
+/* meta texty (rok, styl, drobnosti) */
+.typo-meta{
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* navigace */
+.typo-nav{
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+
+/* ===== OPTIONAL: rozumný default pro selekci textu ===== */
+::selection{
+    background: rgba(140,130,92,0.28);
+}
