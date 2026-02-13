@@ -34,6 +34,7 @@ a { color: inherit; }
   background-image: url("Images/Obrázek1.png");
   background-size: cover;
   background-position: center;
+  overflow: hidden;
   position: relative;
 }
 

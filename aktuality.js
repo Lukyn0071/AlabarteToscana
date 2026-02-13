@@ -2,6 +2,20 @@
 (function () {
     "use strict";
 
+    function isAdminPath() {
+        return /\/admin\//.test(window.location.pathname.replace(/\\/g, '/'));
+    }
+
+    function resolveAssetPath(path) {
+        const p = String(path || '');
+        if (!p) return p;
+        if (/^(https?:)?\/\//i.test(p) || p.startsWith('/')) return p;
+        if (isAdminPath() && (p.startsWith('Images/') || p.startsWith('Images\\'))) {
+            return '../' + p.replace(/^\.\/+/, '');
+        }
+        return p;
+    }
+
     const NEWS = [
         {
             id: "degustace-patek",
@@ -125,7 +139,7 @@
 
         lastFocusEl = focusBackTo || null;
 
-        modalImg.src = item.image;
+        modalImg.src = resolveAssetPath(item.image);
         modalImg.alt = localizedField(item, 'title').replaceAll("\n", " ");
         modalTitle.textContent = localizedField(item, 'title').replaceAll("\n", " ");
         modalMeta.textContent = item.date ? item.date : "";
@@ -234,7 +248,7 @@
         const bg = document.createElement('div');
         bg.className = 'news-card__bg';
         bg.setAttribute('aria-hidden', 'true');
-        bg.style.backgroundImage = `url(${escapeText(item.image)})`;
+        bg.style.backgroundImage = `url(${escapeText(resolveAssetPath(item.image))})`;
 
         const overlay = document.createElement('div');
         overlay.className = 'news-card__overlay';
@@ -355,11 +369,12 @@
         // fallback: try to find by matching image src
         if (!item && modalImg && modalImg.src) {
             const src = modalImg.src.replace(window.location.origin + '/', '');
-            item = NEWS.find(n => n.image === src) || null;
+            const normalizedSrc = src.replace(/^\.\//, '');
+            item = NEWS.find(n => resolveAssetPath(n.image).replace(/^\.\//, '') === normalizedSrc) || null;
         }
         if (item) {
             // update modal contents with localized fields
-            modalImg.src = item.image;
+            modalImg.src = resolveAssetPath(item.image);
             modalImg.alt = localizedField(item, 'title').replaceAll("\n", " ");
             modalTitle.textContent = localizedField(item, 'title').replaceAll("\n", " ");
             modalMeta.textContent = item.date ? item.date : '';

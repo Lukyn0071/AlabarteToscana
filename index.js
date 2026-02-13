@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const total = images.length;
 
     function updateSlides() {
+        if (total <= 0) return;
+
         images.forEach((img, i) => {
             img.className = 'image-slide';
             if (i === index) img.classList.add('active');
@@ -21,10 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    setInterval(() => {
-        index = (index + 1) % total;
-        updateSlides();
-    }, 3000);
+    if (total > 0) {
+        setInterval(() => {
+            index = (index + 1) % total;
+            updateSlides();
+        }, 3000);
+    }
 
     /* ================= STICKY NAV ================= */
     const nav = document.getElementById('heroNav');

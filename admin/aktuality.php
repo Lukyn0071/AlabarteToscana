@@ -1,0 +1,166 @@
+<?php
+// admin/aktuality.php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/auth/bootstrap.php';
+require_login();
+
+$lang = 'cs';
+if (!empty($_COOKIE['lang']) && in_array((string)$_COOKIE['lang'], ['cs', 'en'], true)) {
+    $lang = (string)$_COOKIE['lang'];
+}
+?>
+<!doctype html>
+<html lang="<?php echo htmlspecialchars($lang, ENT_QUOTES, 'UTF-8'); ?>">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ALABARTE – Aktuality (Admin)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../aktuality.css" />
+  <link rel="stylesheet" href="../typography.css">
+  <link rel="stylesheet" href="admin.css">
+
+  <script src="../index.js" defer></script>
+  <script src="../aktuality.js" defer></script>
+
+  <!-- Fix background image path for admin context (aktuality.css uses relative Images/...) -->
+  <style>
+    .hero{ background-image: url("../Images/Obrázek1.png"); }
+  </style>
+</head>
+
+<body>
+  <div class="admin-panel">
+    Přihlášen jako <strong><?php echo htmlspecialchars((string)current_admin_username(), ENT_QUOTES, 'UTF-8'); ?></strong>
+    | <a href="index.php">Administrace</a>
+    | <a href="logout.php">Odhlásit</a>
+  </div>
+
+  <section class="hero" aria-label="Aktuality">
+    <div class="hero-overlay">
+
+      <div class="hero-top">
+        <div class="lang-switcher" aria-label="Přepínač jazyka">
+          <button type="button" class="lang-btn" data-lang="cs">CS</button>
+          <button type="button" class="lang-btn" data-lang="en">EN</button>
+        </div>
+
+        <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
+          <a href="index.php" aria-current="page">Admin</a>
+          <a href="../index.php" data-key="home">Domů</a>
+          <a href="../vina.php" data-key="vina">Vína</a>
+          <a href="aktuality.php" data-key="aktuality">Aktuality</a>
+          <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-shop</a>
+        </nav>
+      </div>
+
+      <header class="page-head">
+        <h1 class="page-title" data-key="aktuality_title">Toskánský deník</h1>
+        <p class="page-lead" data-key="aktuality_lead">Novinky z našeho vinařství a život z Toskánska</p>
+      </header>
+
+      <main class="wrap" aria-label="Obsah aktualit">
+        <section class="mag" aria-label="Seznam aktualit">
+          <div class="mag-feature" id="newsFeatured" aria-label="Hlavní aktualita"></div>
+
+          <div class="mag-grid" aria-label="Další aktuality">
+            <div class="mag-left" id="newsLeft"></div>
+            <div class="mag-right" id="newsRight"></div>
+          </div>
+
+          <section class="quote" aria-label="Citát">
+            <div class="quote-inner">
+              <div class="quote-leaf" aria-hidden="true"></div>
+              <p class="quote-text">Víno je poezie uzavřená v lahvi.</p>
+              <div class="quote-author">— Robert Louis Stevenson</div>
+            </div>
+          </section>
+
+          <div class="mag-grid mag-grid--bottom" aria-label="Další aktuality dole">
+            <div class="mag-left" id="newsBottomLeft"></div>
+            <div class="mag-right" id="newsBottomRight"></div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer" id="kontakt" role="contentinfo">
+        <div class="site-footer__inner">
+          <div class="site-footer__title" data-key="kontakt_title">Kontakt</div>
+
+          <div class="contact-card" aria-label="Kontaktní údaje">
+            <div class="contact-card__cols">
+              <div class="contact-card__col">
+                <a class="contact-item" href="tel:+420777123456" aria-label="Telefon: +420 777 123 456">
+                  <span class="contact-item__icon" aria-hidden="true">☎</span>
+                  <span class="contact-item__text">+420 777 123 456</span>
+                </a>
+
+                <a class="contact-item" href="mailto:info@alabarte.cz" aria-label="E‑mail: info@alabarte.cz">
+                  <span class="contact-item__icon" aria-hidden="true">✉</span>
+                  <span class="contact-item__text">info@alabarte.cz</span>
+                </a>
+              </div>
+
+              <div class="contact-card__col contact-card__col--right">
+                <a class="contact-item contact-item--ig"
+                   href="https://www.instagram.com/alabarte.cz/?hl=en"
+                   target="_blank" rel="noopener noreferrer"
+                   aria-label="Alabarte na Instagramu — otevře se nové okno">
+                  <span class="contact-item__icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                      <path d="M12 7.2a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                      <circle cx="17.6" cy="6.4" r="0.9" fill="currentColor"/>
+                    </svg>
+                  </span>
+                  <span class="contact-item__text">@alabarte.cz</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="contact-card__meta">Alabarte</div>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  </section>
+
+  <!-- MODAL (používá se v aktuality.js) -->
+  <div class="modal" id="newsModal" aria-hidden="true">
+    <div class="modal__backdrop" data-close="true" aria-hidden="true"></div>
+
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="newsModalTitle">
+      <button class="modal__close" type="button" aria-label="Zavřít" data-close="true">✕</button>
+
+      <div class="modal__grid">
+        <div class="modal__media">
+          <img id="newsModalImage" src="" alt="" />
+        </div>
+
+        <div class="modal__content">
+          <div class="modal__topline">
+            <h2 class="modal__title" id="newsModalTitle" data-key="modal_title"></h2>
+            <div class="modal__meta" id="newsModalMeta"></div>
+          </div>
+
+          <p class="modal__story" id="newsModalPerex"></p>
+
+          <div class="modal__section">
+            <h3 class="modal__h3">Detail</h3>
+            <div class="modal__body" id="newsModalBody"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
