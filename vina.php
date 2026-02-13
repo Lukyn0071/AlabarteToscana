@@ -5,7 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALABARTE – Vína</title>
 
+    <!-- ✅ FONT (stejně jako index) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- ✅ TYPO SYSTEM + page CSS -->
+    <link rel="stylesheet" href="typography.css">
     <link rel="stylesheet" href="vina.css">
+
     <script src="index.js" defer></script>
     <script src="vina.js" defer></script>
 </head>
@@ -37,7 +49,7 @@
 
             <!-- ===== TITLE ===== -->
             <header class="vina-header">
-                <span class="vina-eyebrow" data-key="vina_eyebrow">Kolekce</span>
+                <span class="vina-eyebrow typo-eyebrow" data-key="vina_eyebrow">Kolekce</span>
 
                 <div class="vina-logo">
                     <a href="index.php">
@@ -45,42 +57,39 @@
                     </a>
                 </div>
 
-
-                <h1 class="vina-title" data-key="vina_title">
+                <!-- H1 může zůstat rozdělený na span, jen přidáme typotřídu -->
+                <h1 class="vina-title typo-h1" data-key="vina_title">
                     <span class="vina-title__small">Naše</span>
                     <span class="vina-title__big">vína</span>
                 </h1>
-
             </header>
-
-
 
             <!-- ===== CONTENT ===== -->
             <div class="vina-content">
-                <p data-key="vina_text">
+                <p class="typo-body" data-key="vina_text">
                     Nabízíme pečlivě vybraná toskánská vína z vinařství Fattoria La Torre, dovážená do České republiky s důrazem na kvalitu, tradici a jedinečný charakter každé lahve.
                 </p>
             </div>
 
             <!-- ===== VYHLEDÁVÁNÍ ===== -->
             <div class="wine-search" aria-label="Vyhledávání v nabídce vín">
-                <label class="wine-search__label" for="wineSearch">Vyhledat víno</label>
+                <label class="wine-search__label typo-meta" for="wineSearch">Vyhledat víno</label>
                 <div class="wine-search__controls">
                     <input
-                        id="wineSearch"
-                        class="wine-search__input"
-                        type="search"
-                        placeholder="Název, profil, párování…"
-                        autocomplete="off"
+                            id="wineSearch"
+                            class="wine-search__input"
+                            type="search"
+                            placeholder="Název, profil, párování…"
+                            autocomplete="off"
                     >
                     <button id="wineSearchClear" class="wine-search__clear" type="button">Vymazat</button>
                 </div>
-                <p id="wineSearchStatus" class="wine-search__status" aria-live="polite"></p>
+                <p id="wineSearchStatus" class="wine-search__status typo-meta" aria-live="polite"></p>
             </div>
 
             <!-- ===== KATEGORIE / FILTRY ===== -->
             <div class="wine-filters" aria-label="Kategorie vín">
-                <div class="wine-filters__label">Kategorie:</div>
+                <div class="wine-filters__label typo-meta">Kategorie:</div>
                 <div class="wine-filters__buttons" role="group" aria-label="Filtr kategorií">
                     <button type="button" class="wine-filter-btn is-active" data-filter="all">Všechna</button>
                     <button type="button" class="wine-filter-btn" data-filter="white">Bílá</button>
@@ -102,11 +111,11 @@
 
             <div class="wine-info">
                 <div class="wine-topline">
-                    <h2 class="wine-name">Vermentino IGT Bagiogie 2023</h2>
-                    <span class="wine-meta">2023 • suché bílé • Itálie</span>
+                    <h2 class="wine-name typo-h3">Vermentino IGT Bagiogie 2023</h2>
+                    <span class="wine-meta typo-meta">2023 • suché bílé • Itálie</span>
                 </div>
 
-                <p class="wine-story">
+                <p class="wine-story typo-body">
                     Svěží a minerální bílé víno z Toskánska s výraznými tóny citrusových plodů,
                     bylin a jemnou slaností v závěru.
                 </p>
@@ -120,17 +129,17 @@
         </article>
 
         <article class="wine-card wine-card--reverse" data-wine="chianti" tabindex="0" role="button" aria-label="Detail vína Chianti Colli Senesi DOCG 2023 La Villa">
-        <div class="wine-media">
+            <div class="wine-media">
                 <img src="Images/Vína/chiantisenesi23.png" alt="Chianti Colli Senesi DOCG 2023 La Villa">
             </div>
 
             <div class="wine-info">
                 <div class="wine-topline">
-                    <h2 class="wine-name">Chianti DOCG 2023 La Villa</h2>
-                    <span class="wine-meta">2023 • suché červené • Itálie</span>
+                    <h2 class="wine-name typo-h3">Chianti DOCG 2023 La Villa</h2>
+                    <span class="wine-meta typo-meta">2023 • suché červené • Itálie</span>
                 </div>
 
-                <p class="wine-story">
+                <p class="wine-story typo-body">
                     Tradiční toskánské červené víno z oblasti Colli Senesi vyrobené převážně
                     z odrůdy Sangiovese.
                 </p>
@@ -143,7 +152,6 @@
             </div>
         </article>
 
-
         <article class="wine-card" data-wine="rosato" tabindex="0" role="button" aria-label="Detail vína Rosato IGT Toscana 2023 Badalui">
             <div class="wine-media">
                 <img src="Images/Vína/rosatoigt23.png" alt="Rosato IGT Toscana 2023 Badalui">
@@ -151,11 +159,11 @@
 
             <div class="wine-info">
                 <div class="wine-topline">
-                    <h2 class="wine-name">Rosato IGT Badalui 2023</h2>
-                    <span class="wine-meta">2023 • růžové • Itálie</span>
+                    <h2 class="wine-name typo-h3">Rosato IGT Badalui 2023</h2>
+                    <span class="wine-meta typo-meta">2023 • růžové • Itálie</span>
                 </div>
 
-                <p class="wine-story">
+                <p class="wine-story typo-body">
                     Svěží růžové víno z Toskánska s ovocným projevem a lehkou strukturou.
                     Elegantní, příjemně suché a skvěle pitelné víno ideální pro teplejší dny.
                 </p>
@@ -168,7 +176,6 @@
             </div>
         </article>
 
-
         <article class="wine-card wine-card--reverse" data-wine="vernaccia" tabindex="0" role="button" aria-label="Detail vína Vernaccia di San Gimignano DOCG 2024">
             <div class="wine-media">
                 <img src="Images/Vína/vernaccia24.png" alt="Vernaccia di San Gimignano DOCG 2024">
@@ -176,11 +183,11 @@
 
             <div class="wine-info">
                 <div class="wine-topline">
-                    <h2 class="wine-name">Vernaccia DOCG 2024</h2>
-                    <span class="wine-meta">2024 • suché bílé • Itálie</span>
+                    <h2 class="wine-name typo-h3">Vernaccia DOCG 2024</h2>
+                    <span class="wine-meta typo-meta">2024 • suché bílé • Itálie</span>
                 </div>
 
-                <p class="wine-story">
+                <p class="wine-story typo-body">
                     Tradiční bílé víno z oblasti San Gimignano, vyznačující se svěžestí,
                     minerálním charakterem a precizní strukturou. Elegantní víno s typickým
                     toskánským projevem.
@@ -194,7 +201,6 @@
             </div>
         </article>
 
-
         <article class="wine-card" data-wine="guinzano" tabindex="0" role="button" aria-label="Detail vína San Gimignano Rosso DOC 2022 Guinzano">
             <div class="wine-media">
                 <img src="Images/Vína/rossodoc22.png" alt="San Gimignano Rosso DOC 2022 Guinzano">
@@ -202,11 +208,11 @@
 
             <div class="wine-info">
                 <div class="wine-topline">
-                    <h2 class="wine-name">Rosso DOC 2022 Guinzano</h2>
-                    <span class="wine-meta">2022 • suché červené • Itálie</span>
+                    <h2 class="wine-name typo-h3">Rosso DOC 2022 Guinzano</h2>
+                    <span class="wine-meta typo-meta">2022 • suché červené • Itálie</span>
                 </div>
 
-                <p class="wine-story">
+                <p class="wine-story typo-body">
                     Elegantní červené cuvée z Toskánska, které spojuje zralé červené ovoce,
                     jemné tóny dřeva a vyváženou strukturu. Působí středně plně, s jemnými
                     tříslovinami a dlouhým, hladkým závěrem.
@@ -227,11 +233,11 @@
 
             <div class="wine-info">
                 <div class="wine-topline">
-                    <h2 class="wine-name">Vernaccia Sciallebiancho DOCG 2022</h2>
-                    <span class="wine-meta">2022 • suché bílé • Itálie</span>
+                    <h2 class="wine-name typo-h3">Vernaccia Sciallebiancho DOCG 2022</h2>
+                    <span class="wine-meta typo-meta">2022 • suché bílé • Itálie</span>
                 </div>
 
-                <p class="wine-story">
+                <p class="wine-story typo-body">
                     Výrazné a strukturované bílé víno z Toskánska pocházející z vinic starých
                     přibližně 30 let. Riserva Sciallebiancho nabízí komplexní aromatiku,
                     minerální hloubku a elegantní projev s dlouhým dozvukem.
@@ -245,10 +251,9 @@
             </div>
         </article>
 
-
     </section>
 
-    <p id="wineNoResults" class="wine-no-results" hidden>Žádná vína neodpovídají zadanému hledání.</p>
+    <p id="wineNoResults" class="wine-no-results typo-meta" hidden>Žádná vína neodpovídají zadanému hledání.</p>
 
 </section>
 
@@ -273,19 +278,19 @@
 
             <div class="modal__content">
                 <div class="modal__topline">
-                    <h2 class="modal__title" id="modalTitle"></h2>
-                    <div class="modal__meta" id="modalMeta"></div>
+                    <h2 class="modal__title typo-h2" id="modalTitle"></h2>
+                    <div class="modal__meta typo-meta" id="modalMeta"></div>
                 </div>
 
-                <p class="modal__story" id="modalStory"></p>
+                <p class="modal__story typo-body" id="modalStory"></p>
 
                 <div class="modal__section">
-                    <h3 class="modal__h3">Specifikace</h3>
+                    <h3 class="modal__h3 typo-h3">Specifikace</h3>
                     <ul class="modal__specs" id="modalSpecs"></ul>
                 </div>
 
                 <div class="modal__section">
-                    <h3 class="modal__h3">Chuť a párování</h3>
+                    <h3 class="modal__h3 typo-h3">Chuť a párování</h3>
                     <ul class="modal__specs" id="modalPairing"></ul>
                 </div>
             </div>
