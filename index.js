@@ -55,103 +55,42 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     /* ================= LANGUAGE SYSTEM ================= */
-    const TRANSLATIONS = {
-        cs: {
-            hero_title: "ALABARTE",
-            kontakt: "Kontakt",
-            vina: "Vína",
-            aktuality: "Aktuality",
-            eshop: "E-shop",
-            read: "Přečíst",
-            detail_label: "Detail",
-
-            text1_h2: "Vernaccia di San Gimignano",
-            text1_p: "Svěží bílé víno s minerálním charakterem, jemnými citrusovými tóny a typickou elegancí toskánské krajiny.",
-
-            text2_h2: "Rosso Toscana",
-            text2_p: "Vyvážené červené víno s tóny zralého ovoce a jemného koření, které spojuje tradici Toskánska s moderním projevem.",
-
-            text3_h2: "Sangiovese z Toskánska",
-            text3_p: "Charakteristické červené víno s jemnými tříslovinami, ovocným profilem a dlouhým, harmonickým závěrem.",
-
-            about_eyebrow: "O nás",
-            about_title: "Alabarte – Toskánsko v každé lahvi",
-            about_p1: "Jsme česká firma, která dováží pečlivě vybraná vína z Toskánska do České republiky. Zaměřujeme se na charakter, čistotu a příběh každé lahve – od vinice až po váš stůl.",
-            about_p2: "Spolupracujeme s vinařstvím Fattoria La Torre a přinášíme vína, která vynikají elegancí, typickým projevem regionu a poctivou prací ve vinici.",
-
-            winery_eyebrow: "Vinařství",
-            winery_title: "Fattoria La Torre",
-            winery_p1: "Rodinné vinařství v srdci Toskánska, kde se potkává tradice s moderním přístupem. Důraz je kladen na práci ve vinici, šetrné zpracování a styl vín, který je věrný místu původu.",
-            winery_p2: "Hrozny se sbírají ve správný okamžik a zpracovávají šetrně, aby v lahvi zůstala čistota, elegance a opravdový „sense of place“. Výsledkem jsou vína, která skvěle fungují u stolu — od svěžích bílých po strukturovaná červená.",
-        },
-
-        en: {
-            hero_title: "ALABARTE",
-            kontakt: "Contact",
-            vina: "Wines",
-            aktuality: "News",
-            eshop: "Shop",
-            read: "Read",
-            detail_label: "Detail",
-
-            text1_h2: "Vernaccia di San Gimignano",
-            text1_p: "Fresh white wine with a mineral character, gentle citrus notes, and the signature elegance of Tuscany.",
-
-            text2_h2: "Rosso Toscana",
-            text2_p: "Balanced red wine with ripe fruit and subtle spice, blending Tuscan tradition with a modern expression.",
-
-            text3_h2: "Sangiovese from Tuscany",
-            text3_p: "A distinctive red with smooth tannins, a fruity profile, and a long, harmonious finish.",
-
-            about_eyebrow: "About",
-            about_title: "Alabarte – Tuscany in every bottle",
-            about_p1: "We are a Czech company bringing carefully selected Tuscan wines to the Czech Republic. We focus on character, purity, and the story behind each bottle—from vineyard to table.",
-            about_p2: "We work with Fattoria La Torre, offering wines defined by elegance, a true sense of place, and honest vineyard craft.",
-
-            winery_eyebrow: "Winery",
-            winery_title: "Fattoria La Torre",
-            winery_p1: "A family winery in the heart of Tuscany where tradition meets a modern approach. The focus is on vineyard work, gentle processing, and a style that stays true to its origin.",
-            winery_p2: "Grapes are picked at the right moment and handled gently to preserve purity, elegance, and a true sense of place. The result is food-friendly wines—from vibrant whites to structured reds.",
-        }
-    };
-
-    function setLanguage(lang) {
-        const dict = TRANSLATIONS[lang];
-        if (!dict) return;
-
-        document.querySelectorAll('[data-key]').forEach(el => {
-            const key = el.getAttribute('data-key');
-            if (dict[key]) {
-                el.textContent = dict[key];
-            }
-        });
-
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lang === lang);
-        });
-
-        document.documentElement.lang = lang;
-        localStorage.setItem('lang', lang);
-        // notify other scripts (e.g. aktuality.js) that language changed
-        try {
-            document.dispatchEvent(new CustomEvent('langchange', { detail: { lang } }));
-        } catch (e) {
-            // older browsers fallback
-            const ev = document.createEvent('CustomEvent');
-            ev.initCustomEvent('langchange', true, true, { lang });
-            document.dispatchEvent(ev);
-        }
-    }
-
-    // init jazyk
-    const savedLang = localStorage.getItem('lang') || 'cs';
-    setLanguage(savedLang);
+    // DB-driven on server side. Here we only store selection and highlight active button.
+    const params = new URLSearchParams(window.location.search);
+    const currentLang = params.get('lang') || localStorage.getItem('lang') || document.documentElement.lang || 'cs';
 
     document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            setLanguage(btn.dataset.lang);
+        const href = btn.getAttribute('href') || '';
+        const url = href ? new URL(href, window.location.href) : null;
+        const lang = btn.dataset.lang || (url ? (url.searchParams.get('lang') || '') : '');
+
+        if (lang === currentLang) btn.classList.add('active');
+
+        btn.addEventListener('click', (e) => {
+            try {
+                localStorage.setItem('lang', lang);
+                document.cookie = `lang=${lang}; path=/; max-age=${60 * 60 * 24 * 365}`;
+            } catch (err) {}
+
+            // Notify listeners (admin preview etc.)
+            try {
+                document.dispatchEvent(new CustomEvent('langchange', { detail: { lang } }));
+            } catch (err2) {
+                const ev = document.createEvent('CustomEvent');
+                ev.initCustomEvent('langchange', true, true, { lang });
+                document.dispatchEvent(ev);
+            }
+
+            // update active state immediately
+            document.querySelectorAll('.lang-btn').forEach(b => {
+                const bhref = b.getAttribute('href') || '';
+                const burl = bhref ? new URL(bhref, window.location.href) : null;
+                const bland = b.dataset.lang || (burl ? (burl.searchParams.get('lang') || '') : '');
+                b.classList.toggle('active', bland === lang);
+            });
         });
     });
+
     /* ================= REVEAL (O NÁS) ================= */
     const revealEls = document.querySelectorAll(".js-reveal");
 

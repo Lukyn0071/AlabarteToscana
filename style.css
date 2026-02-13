@@ -495,28 +495,74 @@ body {
     padding: 3.5rem 0 4.5rem;
     box-sizing: border-box;
 
-    background-color: #fff;
-    background-image: url("Images/dot-grid.webp");
-    background-repeat: repeat;
-    background-size: 420px 420px;
-    background-position: top left;
+    /* ✅ atraktivnější "papírový" podklad s jemnými vínovými a zlatými akcenty */
+    background-color: #fbfaf8;
+    background-image:
+            radial-gradient(1200px 700px at 12% 0%, rgba(111, 28, 45, 0.11) 0%, rgba(111, 28, 45, 0.00) 62%),
+            radial-gradient(900px 520px at 88% 10%, rgba(191, 155, 48, 0.10) 0%, rgba(191, 155, 48, 0.00) 58%),
+            linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(251,250,248,1) 45%, rgba(246,244,240,1) 100%),
+            /* jemná mikro-textura (bez obrázku) */
+            repeating-linear-gradient(0deg, rgba(0,0,0,0.012) 0 1px, rgba(0,0,0,0.0) 1px 6px);
+    background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+    background-position: center, center, center, 0 0;
+    background-size: auto, auto, auto, 100% 100%;
 
     position: relative;
     overflow: hidden;
 }
 
-.page-content::before {
+/* dekorativní "haze" vrstvy – držíme je pod obsahem */
+.page-content::before,
+.page-content::after {
     content: "";
     position: absolute;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.15);
     pointer-events: none;
     z-index: 0;
+}
+
+.page-content::before {
+    /* vínový akcent vpravo nahoře */
+    top: -140px;
+    right: -160px;
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(circle at 35% 35%, rgba(111, 28, 45, 0.22), rgba(111, 28, 45, 0.00) 66%);
+    filter: blur(14px);
+    opacity: 0.9;
+}
+
+.page-content::after {
+    /* zlatý akcent vlevo dole */
+    left: -180px;
+    bottom: -190px;
+    width: 680px;
+    height: 680px;
+    background: radial-gradient(circle at 60% 60%, rgba(191, 155, 48, 0.18), rgba(191, 155, 48, 0.00) 70%);
+    filter: blur(16px);
+    opacity: 0.85;
 }
 
 .page-content > * {
     position: relative;
     z-index: 1;
+}
+
+@media (max-width: 700px) {
+    .page-content::before {
+        width: 440px;
+        height: 440px;
+        top: -120px;
+        right: -140px;
+        filter: blur(12px);
+    }
+
+    .page-content::after {
+        width: 520px;
+        height: 520px;
+        left: -150px;
+        bottom: -160px;
+        filter: blur(14px);
+    }
 }
 
 /* ✅ jeden velký bílý box + zlatý okraj */

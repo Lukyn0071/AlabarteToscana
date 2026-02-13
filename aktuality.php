@@ -1,4 +1,4 @@
-<!-- aktuality.html -->
+<!-- aktuality.php -->
 <!doctype html>
 <html lang="cs">
 <head>
@@ -22,9 +22,9 @@
         </div>
 
         <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
-          <a href="index.html" data-key="home">Domů</a>
-          <a href="vina.html" data-key="vina">Vína</a>
-          <a href="aktuality.html" data-key="aktuality" aria-current="page">Aktuality</a>
+          <a href="index.php" data-key="home">Domů</a>
+          <a href="vina.php" data-key="vina">Vína</a>
+          <a href="aktuality.php" data-key="aktuality" aria-current="page">Aktuality</a>
           <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-shop</a>
         </nav>
       </div>

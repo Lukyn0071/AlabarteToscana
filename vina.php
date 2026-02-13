@@ -27,9 +27,9 @@
 
                 <!-- NAV (DŮLEŽITÉ: stejné id jako na indexu kvůli scrolled efektu) -->
                 <nav class="hero-nav" id="heroNav">
-                    <a href="index.html" data-key="home">Domů</a>
+                    <a href="index.php" data-key="home">Domů</a>
                     <a href="vina.html" data-key="vína">Kontakt</a>
-                    <a href="aktuality.html" data-key="aktuality">Aktuality</a>
+                    <a href="aktuality.php" data-key="aktuality">Aktuality</a>
                     <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-shop</a>
                 </nav>
 
@@ -40,7 +40,7 @@
                 <span class="vina-eyebrow" data-key="vina_eyebrow">Kolekce</span>
 
                 <div class="vina-logo">
-                    <a href="index.html">
+                    <a href="index.php">
                         <img src="Images/Alabarte-logo.webp" alt="Alabarte">
                     </a>
                 </div>

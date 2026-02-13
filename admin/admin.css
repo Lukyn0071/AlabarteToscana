@@ -1,0 +1,96 @@
+/* admin/admin.css
+   Styles specific to admin/index.php overlay controls (modals, toasts, drag&drop etc.)
+*/
+
+/* small admin panel on top of website layout */
+.admin-panel{
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 9999;
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+    font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    font-size: 14px;
+}
+.admin-panel a{color:#fff;text-decoration:underline}
+
+/* Toast under admin panel */
+.admin-panel .toast{
+    position:absolute;
+    top:calc(100% + 10px);
+    right:0;
+    z-index:11000;
+    display:none;
+    max-width:340px;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid rgba(0,0,0,.15);
+    background:#2ecc71;
+    color:#0b2b14;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    font-size:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.25);
+}
+.admin-panel .toast.is-show{display:block}
+.admin-panel .toast--error{background:#ffdddd;color:#3b0b0b;border-color:#ffb3b3}
+.admin-panel .toast a{color:#0b2b14;text-decoration:underline}
+.admin-panel .toast--error a{color:#3b0b0b}
+
+/* Admin form modals */
+.admin-add-wrap{max-width: 1100px; margin: 24px auto 40px; padding: 0 16px;}
+.admin-add{background: rgba(0,0,0,.55); color:#fff; padding: 16px; border-radius: 12px; backdrop-filter: blur(6px);}
+.admin-add h2{margin:0 0 12px; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size: 18px;}
+.admin-add form{display:grid; gap:12px;}
+.admin-grid{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
+.admin-add label{display:grid; gap:6px; font-size: 13px;}
+.admin-add input,.admin-add textarea{padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color:#fff;}
+.admin-add textarea{min-height:120px; resize:vertical;}
+.admin-add .row{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
+.admin-add .actions{display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+.admin-add button{padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,.25); background:#111; color:#fff; cursor:pointer;}
+@media (max-width: 900px){ .admin-grid,.admin-add .row{grid-template-columns: 1fr;} }
+
+.modal-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:10000;padding:16px}
+.modal-backdrop.is-open{display:flex}
+.modal{width:min(1100px,100%);max-height:90vh;overflow:auto;background:rgba(0,0,0,.78);color:#fff;border-radius:14px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+.modal-header h2{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:18px}
+.modal-close{appearance:none;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
+.modal-body{padding:16px}
+
+/* Section action buttons */
+.section-admin-tools{display:flex;gap:10px;justify-content:flex-end;margin:6px 0 0;}
+.section-admin-tools button{appearance:none;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer;font-size:12px}
+.section-admin-tools .danger{background:rgba(180,0,0,.35);border-color:rgba(255,120,120,.4)}
+
+/* Drag & drop wrapper */
+.section-dnd{border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.18);border-radius:16px;padding:12px 12px 14px;margin:14px 0;box-shadow:0 10px 22px rgba(0,0,0,.25);transition:transform .12s ease, box-shadow .18s ease, border-color .18s ease}
+.section-dnd:hover{border-color:rgba(255,255,255,.28);box-shadow:0 12px 28px rgba(0,0,0,.3)}
+.section-dnd.dragging{opacity:.85;transform:scale(1.01);box-shadow:0 16px 36px rgba(0,0,0,.38)}
+
+.dnd-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px}
+
+/* handle like Google Forms (dots) */
+.dnd-handle{display:inline-flex;align-items:center;gap:10px;cursor:grab;user-select:none;font-size:12px;padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff}
+.dnd-handle::before{content:"";display:inline-block;width:14px;height:14px;background:radial-gradient(circle, rgba(255,255,255,.85) 2px, transparent 3px) 0 0/7px 7px;opacity:.9;border-radius:4px}
+.dnd-handle:active{cursor:grabbing}
+
+.section-placeholder{height:82px;border:2px dashed rgba(255,255,255,.28);border-radius:16px;margin:14px 0;background:rgba(255,255,255,.05)}
+
+/* Keep existing click-to-move UI but make it smaller */
+.dnd-move select{min-width:70px}
+
+/* make sure content isn't hidden behind reorder bar */
+.page-content{padding-bottom:90px}
+
+/* Reorder bottom bar */
+.reorder-bar{position:fixed;left:0;right:0;bottom:0;z-index:12000;padding:12px 16px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.12)}
+.reorder-bar__inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.reorder-bar__text{font-size:13px;opacity:.95}
+.reorder-bar__actions{display:flex;gap:10px;align-items:center}
+.reorder-btn{appearance:none;border:1px solid rgba(255,255,255,.25);background:#fff;color:#111;border-radius:12px;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600}
+.reorder-btn--ghost{background:transparent;color:#fff}
