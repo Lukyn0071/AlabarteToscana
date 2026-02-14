@@ -76,14 +76,6 @@ $csrf = csrf_get_token()['token'];
 
     <button type="submit">Přihlásit</button>
 </form>
-
-<div class="links" style="margin-top:16px;">
-    <a href="register.php">Registrace admina</a>
-</div>
-
 <hr>
-<p style="font-size: 14px; color:#666;">
-    Pokud se přihlášení nedaří a ještě nemáte admin účet, nejdřív vytvořte tabulku a prvního admina přes registraci.
-</p>
 </body>
 </html>

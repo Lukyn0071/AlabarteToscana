@@ -32,6 +32,22 @@ function is_logged_in(): bool
 function require_login(): void
 {
     if (!is_logged_in()) {
+        // For API/AJAX requests return 401 instead of HTML redirect.
+        $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        $isApi = (strpos($uri, '/admin/api/') !== false);
+        $wantsJson = (stripos($accept, 'application/json') !== false);
+
+        if ($isApi || $wantsJson) {
+            if (!headers_sent()) {
+                header('Content-Type: application/json; charset=utf-8');
+                header('X-Content-Type-Options: nosniff');
+            }
+            http_response_code(401);
+            echo json_encode(['ok' => false, 'errors' => ['Not authenticated']], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
         header('Location: login.php');
         exit;
     }

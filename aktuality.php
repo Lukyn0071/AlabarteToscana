@@ -1,6 +1,18 @@
+<?php
+// aktuality.php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/admin/db.php';
+require_once __DIR__ . '/admin/content/page_content.php';
+require_once __DIR__ . '/admin/content/ui_texts.php';
+
+$lang = get_lang();
+$ui = load_ui_texts($pdo, $lang);
+?>
 <!-- aktuality.php -->
 <!doctype html>
-<html lang="cs">
+<html lang="<?php echo htmlspecialchars($lang, ENT_QUOTES, 'UTF-8'); ?>">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -12,8 +24,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="aktuality.css" />
   <link rel="stylesheet" href="typography.css">
+
+  <script>
+    // Inline diagnostics: this MUST show up if the HTML is the one being served.
+    (function(){
+      var dbg = (new URLSearchParams(window.location.search)).get('debug') === '1';
+      if(!dbg) return;
+      console.log('[aktuality] inline debug: page loaded', { href: location.href, path: location.pathname });
+      window.__aktuality_inline_debug = true;
+    })();
+  </script>
+
   <script src="index.js" defer></script>
-  <script src="aktuality.js" defer></script>
+  <!-- cache-bust to avoid serving stale aktuality.js from cache/CDN -->
+  <script src="aktuality.js?v=20260213" defer></script>
+
+  <!-- Keep hero background consistent with admin preview (which overrides due to relative Images path differences) -->
+  <style>
+    .hero{ background-image: url("Images/Obrázek1.png"); }
+  </style>
 </head>
 
 <body>
@@ -22,50 +51,42 @@
 
       <div class="hero-top">
         <div class="lang-switcher" aria-label="Přepínač jazyka">
-          <button type="button" class="lang-btn" data-lang="cs">CS</button>
-          <button type="button" class="lang-btn" data-lang="en">EN</button>
+          <a class="lang-btn" href="?lang=cs">CS</a>
+          <a class="lang-btn" href="?lang=en">EN</a>
         </div>
 
         <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
-          <a href="index.php" data-key="home">Domů</a>
-          <a href="vina.php" data-key="vina">Vína</a>
-          <a href="aktuality.php" data-key="aktuality" aria-current="page">Aktuality</a>
-          <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-shop</a>
+          <a href="index.php" data-key="home"><?php echo htmlspecialchars((string)($ui['nav_home'] ?? 'Domů'), ENT_QUOTES, 'UTF-8'); ?></a>
+          <a href="vina.php" data-key="vina"><?php echo htmlspecialchars((string)($ui['nav_vina'] ?? 'Vína'), ENT_QUOTES, 'UTF-8'); ?></a>
+          <a href="aktuality.php" data-key="aktuality" aria-current="page"><?php echo htmlspecialchars((string)($ui['nav_galerie'] ?? 'Aktuality'), ENT_QUOTES, 'UTF-8'); ?></a>
+          <a href="https://www.alabarte.cz/vino/" data-key="eshop"><?php echo htmlspecialchars((string)($ui['nav_eshop'] ?? 'E-shop'), ENT_QUOTES, 'UTF-8'); ?></a>
         </nav>
       </div>
 
       <header class="page-head">
-        <h1 class="page-title" data-key="aktuality_title">Toskánský deník</h1>
-        <p class="page-lead" data-key="aktuality_lead">Novinky z našeho vinařství a život z Toskánska</p>
+        <h1 class="page-title" data-key="aktuality_title"><?php echo htmlspecialchars((string)($ui['aktuality_title'] ?? 'Toskánský deník'), ENT_QUOTES, 'UTF-8'); ?></h1>
+        <p class="page-lead" data-key="aktuality_lead"><?php echo htmlspecialchars((string)($ui['aktuality_lead'] ?? 'Novinky z našeho vinařství a život z Toskánska'), ENT_QUOTES, 'UTF-8'); ?></p>
       </header>
 
-      <main class="wrap" aria-label="Obsah aktualit">
-        <section class="mag" aria-label="Seznam aktualit">
-          <div class="mag-feature" id="newsFeatured" aria-label="Hlavní aktualita"></div>
+        <main class="wrap" aria-label="Obsah aktualit">
+            <!-- Preview veřejné mřížky jako na /aktuality.php -->
+            <section class="mag" aria-label="Seznam aktualit">
+                <div class="news-grid-layout" id="newsGrid" aria-label="Mřížka aktualit"></div>
 
-          <div class="mag-grid" aria-label="Další aktuality">
-            <div class="mag-left" id="newsLeft"></div>
-            <div class="mag-right" id="newsRight"></div>
-          </div>
+                <section class="quote" aria-label="Citát">
+                    <div class="quote-inner">
+                        <div class="quote-leaf" aria-hidden="true"></div>
+                        <p class="quote-text"><?php echo htmlspecialchars((string)($ui['quote_text'] ?? 'Víno je poezie uzavřená v lahvi.'), ENT_QUOTES, 'UTF-8'); ?></p>
+                        <div class="quote-author"><?php echo htmlspecialchars((string)($ui['quote_author'] ?? '— Robert Louis Stevenson'), ENT_QUOTES, 'UTF-8'); ?></div>
+                    </div>
+                </section>
+            </section>
+        </main>
 
-          <section class="quote" aria-label="Citát">
-            <div class="quote-inner">
-              <div class="quote-leaf" aria-hidden="true"></div>
-              <p class="quote-text">Víno je poezie uzavřená v lahvi.</p>
-              <div class="quote-author">— Robert Louis Stevenson</div>
-            </div>
-          </section>
-
-          <div class="mag-grid mag-grid--bottom" aria-label="Další aktuality dole">
-            <div class="mag-left" id="newsBottomLeft"></div>
-            <div class="mag-right" id="newsBottomRight"></div>
-          </div>
-        </section>
-      </main>
 
       <footer class="site-footer" id="kontakt" role="contentinfo">
         <div class="site-footer__inner">
-          <div class="site-footer__title" data-key="kontakt_title">Kontakt</div>
+          <div class="site-footer__title" data-key="kontakt_title"><?php echo htmlspecialchars((string)($ui['kontakt_title'] ?? 'Kontakt'), ENT_QUOTES, 'UTF-8'); ?></div>
 
           <div class="contact-card" aria-label="Kontaktní údaje">
             <div class="contact-card__cols">
@@ -127,7 +148,7 @@
           <p class="modal__story" id="newsModalPerex"></p>
 
           <div class="modal__section">
-            <h3 class="modal__h3">Detail</h3>
+            <h3 class="modal__h3"><?php echo htmlspecialchars((string)($ui['modal_detail_h3'] ?? 'Detail'), ENT_QUOTES, 'UTF-8'); ?></h3>
             <div class="modal__body" id="newsModalBody"></div>
           </div>
         </div>

@@ -14,6 +14,7 @@ function ensure_ui_texts_table(PDO $pdo, string $tableName): void
 
             `site_title` VARCHAR(255) NOT NULL DEFAULT '',
 
+            `nav_home` VARCHAR(80) NOT NULL DEFAULT '',
             `nav_kontakt` VARCHAR(80) NOT NULL DEFAULT '',
             `nav_vina` VARCHAR(80) NOT NULL DEFAULT '',
             `nav_galerie` VARCHAR(80) NOT NULL DEFAULT '',
@@ -32,6 +33,16 @@ function ensure_ui_texts_table(PDO $pdo, string $tableName): void
             `cta_wines` VARCHAR(80) NOT NULL DEFAULT '',
             `cta_shop` VARCHAR(80) NOT NULL DEFAULT '',
 
+            -- Aktuality page UI
+            `aktuality_title` VARCHAR(255) NOT NULL DEFAULT '',
+            `aktuality_lead` TEXT NOT NULL,
+            `quote_text` VARCHAR(255) NOT NULL DEFAULT '',
+            `quote_author` VARCHAR(255) NOT NULL DEFAULT '',
+            `modal_detail_h3` VARCHAR(80) NOT NULL DEFAULT '',
+
+            -- shared/footer
+            `kontakt_title` VARCHAR(80) NOT NULL DEFAULT '',
+
             `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
@@ -47,6 +58,7 @@ function load_ui_texts(PDO $pdo, ?string $lang = null): array
 
     $empty = [
         'site_title' => 'ALABARTE',
+        'nav_home' => '',
         'nav_kontakt' => '',
         'nav_vina' => '',
         'nav_galerie' => '',
@@ -61,6 +73,16 @@ function load_ui_texts(PDO $pdo, ?string $lang = null): array
         'slide3_p' => '',
         'cta_wines' => '',
         'cta_shop' => '',
+
+        // Aktuality page UI
+        'aktuality_title' => '',
+        'aktuality_lead' => '',
+        'quote_text' => '',
+        'quote_author' => '',
+        'modal_detail_h3' => '',
+
+        // shared/footer
+        'kontakt_title' => '',
     ];
 
     try {

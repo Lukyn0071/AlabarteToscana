@@ -2,6 +2,8 @@
 require_once __DIR__ . '/auth/bootstrap.php';
 require_login();
 
+/** @var PDO $pdo */
+
 require_once __DIR__ . '/content/page_sections.php';
 require_once __DIR__ . '/content/ui_texts.php';
 require_once __DIR__ . '/content/hero_ui.php';
@@ -407,8 +409,8 @@ $toastUndo = isset($_GET['u']) && (string)$_GET['u'] === '1';
 
             <div class="hero-top">
                 <div class="lang-switcher">
-                    <button type="button" class="lang-btn" data-lang="cs">CS</button>
-                    <button type="button" class="lang-btn" data-lang="en">EN</button>
+                    <a class="lang-btn" href="?lang=cs" data-lang="cs">CS</a>
+                    <a class="lang-btn" href="?lang=en" data-lang="en">EN</a>
                 </div>
 
                 <nav class="hero-nav" id="heroNav">
@@ -578,10 +580,10 @@ $toastUndo = isset($_GET['u']) && (string)$_GET['u'] === '1';
 
         <?php endforeach; ?>
 
-        <div style="margin: 26px 0 40px; text-align:center;">
-            <button type="button" class="cta-btn cta-btn--primary" id="btnOpenAdd">Přidat sekci</button>
-        </div>
+    </div>
 
+    <div style="margin: 26px 0 40px; text-align:center;">
+        <button type="button" class="cta-btn cta-btn--primary" id="btnOpenAdd">Přidat sekci</button>
     </div>
 </div>
 
