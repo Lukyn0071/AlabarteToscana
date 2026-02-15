@@ -110,7 +110,10 @@ a { color: inherit; }
 .page-lead { margin-top: 0.6rem; color: rgba(17,17,17,0.72); font-size: 1.05rem; }
 
 /* Content wrap */
-.wrap { width: min(1120px, 92%); margin: 2rem auto 0; }
+.wrap { 
+  width: min(1120px, 92%);
+  margin: 2rem auto 0;
+}
 
 /* MAG layout */
 .mag { display: grid; gap: 1.6rem; }
@@ -152,27 +155,87 @@ a { color: inherit; }
 .news-card--featured { min-height: 360px; border-radius:26px; }
 .news-card--stack { min-height: 240px; }
 
-/* Layout-driven grid (from DB) */
+/* Layout-driven grid (from DB)
+   Required public geometry (with gap = 20px):
+   - 1x1: 540x360
+   - 2x1: 1040x360  (540 + 20 + 540)
+   - 1x2: 540x740   (360 + 20 + 360)
+   - 2x2: 1040x740
+*/
 .news-grid-layout{
-  width: 100%;
+  --cols: 2;
+  --rows: var(--grid-rows, 8);
+  --gap: 20px;
+  --col-size: 540px;
+  --row-size: 360px;
+
+  width: calc((var(--col-size) * var(--cols)) + (var(--gap) * (var(--cols) - 1)));
+  margin-left: auto;
+  margin-right: auto;
+
   display: grid;
-  grid-template-columns: repeat(var(--grid-cols, 2), minmax(0, 1fr));
-  grid-auto-rows: minmax(180px, auto);
-  gap: 1.25rem;
+  grid-template-columns: repeat(var(--cols), var(--col-size));
+  grid-auto-rows: var(--row-size);
+  /* IMPORTANT: do NOT reserve full grid height on public page; empty rows under last post must not show */
+  /* grid-template-rows: repeat(var(--rows), var(--row-size)); */
+  gap: var(--gap);
   align-items: stretch;
 }
 
-/* Make cards in grid adapt nicely */
-.news-grid-layout .news-card{ min-height: 240px; }
-.news-grid-layout .news-card.news-card--featured{ min-height: 360px; }
+/* Cards fill their grid area */
+.news-grid-layout .news-card{
+  min-height: 0;
+  height: 100%;
+  align-self: stretch;
+}
 
-@media (max-width: 960px){
-  .news-grid-layout{ gap: 1rem; }
+/* Allow inner flex content to shrink properly */
+.news-grid-layout .news-card__content{ min-height: 0; }
+
+/* Admin-like empty cells on public grid (rendered by aktuality.js when data-admin-grid="1") */
+.news-grid-layout .ng-cell{
+  position: relative;
+  border-radius:18px;
+  border:1px dashed rgba(0,0,0,.18);
+  background:rgba(255,255,255,0.30);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height: 100%;
+  min-height: 0;
+  align-self: stretch;
+  padding: 0;
+}
+
+.news-grid-layout .ng-cell .ng-plus{
+  font-size:46px;
+  line-height:1;
+  color:rgba(0,0,0,.35);
+  font-weight:500;
+  display:block;
+}
+
+/* Make sure public placeholders never look clickable */
+.news-grid-layout .ng-cell.ng-cell--public{
+  cursor: default;
+  pointer-events: none;
+}
+
+@media (max-width: 1140px){
+  /* Fit into viewport while keeping 2-column layout as long as possible */
+  .news-grid-layout{
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* keep row height for consistent tile sizing; width will scale down */
+  }
 }
 
 /* Responsive: collapse to 1 column for readability */
 @media (max-width: 620px){
-  .news-grid-layout{ grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .news-grid-layout{ 
+    grid-template-columns: 1fr;
+    grid-auto-rows: 360px;
+  }
   .news-grid-layout .news-card{ grid-column: 1 / -1 !important; grid-row: auto !important; }
 }
 

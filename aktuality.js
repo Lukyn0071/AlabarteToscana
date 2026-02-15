@@ -199,15 +199,6 @@
         });
     }
 
-    const slots = {
-        featured: document.getElementById("newsFeatured"),
-        left: document.getElementById("newsLeft"),
-        right1: document.getElementById("newsRight"),
-        right2: document.getElementById("newsRight"),
-        bottomLeft: document.getElementById("newsBottomLeft"),
-        bottomRight: document.getElementById("newsBottomRight")
-    };
-
     function escapeText(s) {
         return String(s)
             .replaceAll("&", "&amp;")
@@ -288,6 +279,16 @@
         return '';
     }
 
+    function maxBottomY(items){
+        let m = 0;
+        for(const it of (items || [])){
+            const y = Number(it.y || 0);
+            const h = Math.max(1, Number(it.h || 1));
+            m = Math.max(m, y + h);
+        }
+        return m;
+    }
+
     function renderLayoutGrid(layout, items) {
         const gridMount = document.getElementById('newsGrid');
         if (!gridMount) {
@@ -297,11 +298,61 @@
 
         clearEl(gridMount);
 
-        const gridCols = (layout && Number(layout.grid_cols)) ? Number(layout.grid_cols) : 12;
-        gridMount.style.setProperty('--grid-cols', String(gridCols));
+        const gridCols = (layout && Number(layout.grid_cols)) ? Number(layout.grid_cols) : 2;
+        const gridRowsFromApi = (layout && Number(layout.grid_rows)) ? Number(layout.grid_rows) : 0;
+        const neededRows = maxBottomY(items);
+        // Keep the container height consistent with saved layout, but we'll render placeholders only up to needed rows.
+        const gridRows = Math.max(gridRowsFromApi, neededRows, 1);
+
+        // Keep CSS vars aligned with admin grid
+        gridMount.style.setProperty('--grid-cols', String(gridCols)); // backward-compat
+        gridMount.style.setProperty('--cols', String(gridCols));
+        gridMount.style.setProperty('--rows', String(gridRows));
+        gridMount.style.setProperty('--grid-rows', String(gridRows));
+
+        // --- Admin-like empty cells (public, inert) ---
+        // Enable by adding data-admin-grid="1" to #newsGrid
+        const adminLike = gridMount.getAttribute('data-admin-grid') === '1';
+        if (adminLike) {
+            const occ = new Set();
+            for (const it of (items || [])) {
+                const x0 = Number(it.x || 0);
+                const y0 = Number(it.y || 0);
+                const w0 = Math.max(1, Number(it.w || 1));
+                const h0 = Math.max(1, Number(it.h || 1));
+                for (let dy = 0; dy < h0; dy++) {
+                    for (let dx = 0; dx < w0; dx++) {
+                        occ.add(`${x0 + dx}:${y0 + dy}`);
+                    }
+                }
+            }
+
+            // Render placeholders only up to the last row that contains any post.
+            // This removes empty rows under the last post completely.
+            const placeholderRows = Math.max(neededRows, 1);
+
+            for (let y = 0; y < placeholderRows; y++) {
+                for (let x = 0; x < gridCols; x++) {
+                    const key = `${x}:${y}`;
+                    if (occ.has(key)) continue;
+
+                    const cell = document.createElement('button');
+                    cell.type = 'button';
+                    cell.className = 'ng-cell ng-cell--public';
+                    cell.disabled = true;
+                    cell.setAttribute('aria-hidden', 'true');
+                    // Make placeholders invisible (but they still occupy grid tracks)
+                    cell.style.opacity = '0';
+                    cell.style.gridColumn = `${x + 1} / span 1`;
+                    cell.style.gridRow = `${y + 1} / span 1`;
+                    cell.innerHTML = '<span class="ng-plus">+</span>';
+                    gridMount.appendChild(cell);
+                }
+            }
+        }
 
         // Ensure stable ordering (top-left first)
-        const ordered = [...items].sort((a, b) => {
+        const ordered = [...(items || [])].sort((a, b) => {
             const ay = Number(a.y || 0), by = Number(b.y || 0);
             const ax = Number(a.x || 0), bx = Number(b.x || 0);
             if (ay !== by) return ay - by;
@@ -335,7 +386,7 @@
             gridMount.appendChild(card);
         }
 
-        if (DEBUG) console.log('[aktuality] rendered cards', ordered.length);
+        if (DEBUG) console.log('[aktuality] rendered cards', ordered.length, { gridCols, gridRows, adminLike });
 
         return true;
     }
@@ -353,17 +404,18 @@
 
     // Allow other scripts (admin preview/editor) to force refresh.
     window.aktuality = window.aktuality || {};
-    window.aktuality.refresh = function(){
-        return renderAll().catch((e)=>{ console.error(e); });
+    window.aktuality.refresh = function () {
+        return renderAll().catch((e) => {
+            console.error(e);
+        });
     };
 
     // Live update when admin saves layout (same-origin tabs)
     try {
         if (typeof BroadcastChannel !== 'undefined') {
             const ch = new BroadcastChannel('alabarte_news_layout');
-            ch.addEventListener('message', (ev)=>{
+            ch.addEventListener('message', (ev) => {
                 if (!ev || !ev.data || ev.data.type !== 'layout_saved') return;
-                // only aktuality page should react
                 window.aktuality.refresh();
             });
         }

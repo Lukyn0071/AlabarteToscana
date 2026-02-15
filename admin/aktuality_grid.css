@@ -15,27 +15,145 @@
 .ng-rows-counter{font-size:12px; font-weight:700; color:#111; opacity:.8}
 #btnGridRowRemove:disabled{opacity:.45; cursor:not-allowed}
 
+/* Row add/remove buttons (shared style) */
+.ng-row-gutter .ng-row-btn,
+.ng-row-inserter .ng-row-btn{
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(17,17,17,0.18);
+  background: rgba(255,255,255,0.92);
+  color: #111;
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.10);
+  backdrop-filter: blur(6px);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ng-row-gutter .ng-row-btn:disabled{
+  opacity: .35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ng-row-gutter .ng-row-btn:not(:disabled):hover,
+.ng-row-inserter .ng-row-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.14);
+  border-color: rgba(17,17,17,0.30);
+}
+
+.ng-row-gutter .ng-row-btn:not(:disabled):active,
+.ng-row-inserter .ng-row-btn:active{
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
+
+.ng-row-gutter .ng-row-btn:focus-visible,
+.ng-row-inserter .ng-row-btn:focus-visible{
+  outline: 3px solid rgba(46, 156, 255, 0.35);
+  outline-offset: 2px;
+}
+
+/* Variant accents */
+.ng-row-inserter .ng-row-btn--add{
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #065f46;
+}
+
+.ng-row-gutter .ng-row-btn--remove{
+  background: rgba(239, 68, 68, 0.10);
+  border-color: rgba(239, 68, 68, 0.32);
+  color: #7f1d1d;
+}
+
 /* Editor grid should match public layout grid geometry */
 .ng-grid{
   --cols: 2;
   --rows: 8;
-  --gap: 1.25rem;
+  --gap: 20px; /* match aktuality.css (.news-grid-layout) */
+  --col-size: 540px;
+  --row-size: 360px;
+
+  /* match public grid sizing as closely as possible */
+  width: calc((var(--col-size) * var(--cols)) + (var(--gap) * (var(--cols) - 1)));
+  margin-left: auto;
+  margin-right: auto;
+
   display:grid;
-  grid-template-columns:repeat(var(--cols), minmax(0, 1fr));
-  grid-template-rows: repeat(var(--rows), minmax(180px, auto));
+  grid-template-columns: repeat(var(--cols), var(--col-size));
+  grid-auto-rows: var(--row-size);
+  /* Keep a fixed number of editor rows (JS sets --rows) */
+  grid-template-rows: repeat(var(--rows), var(--row-size));
   gap:var(--gap);
+
   padding:12px;
   border-radius:18px;
-  background:rgba(255,255,255,0.65);
-  backdrop-filter: blur(8px);
-  border:1px solid rgba(0,0,0,.10);
-  box-shadow: 0 18px 55px rgba(0,0,0,0.10);
-  position:relative;
-  min-height: 180px;
+  background: transparent; /* background will be drawn by ::before so we can extend it */
+  position: relative;
+  min-height: var(--row-size);
+  align-items: stretch;
+  box-sizing: border-box;
+  overflow: visible; /* background panel extends outside */
 }
-.ng-grid.is-dragover{outline:2px dashed rgba(0,0,0,.5);outline-offset:6px}
 
-.ng-cell{position:relative;border-radius:18px;border:1px dashed rgba(0,0,0,.18);background:rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s ease, background .12s ease}
+/* Extended background panel for admin grid (prevents right-edge looking clipped) */
+.ng-grid::before{
+  content: "";
+  position: absolute;
+  inset: -6px -36px -6px -14px; /* top right bottom left */
+  border-radius: 20px;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,0,0,.10);
+  box-shadow: 0 18px 55px rgba(0,0,0,0.10);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ensure all grid children stay above the extended panel */
+.ng-grid > *{ position: relative; z-index: 1; }
+
+/* Responsive: if viewport is narrower than the fixed 2-col width, fall back to fluid columns like public */
+@media (max-width: 1140px){
+  .ng-grid{
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* keep row height constant */
+  }
+}
+
+@media (max-width: 620px){
+  .ng-grid{
+    grid-template-columns: 1fr;
+    grid-auto-rows: var(--row-size);
+    grid-template-rows: repeat(var(--rows), var(--row-size));
+  }
+}
+
+.ng-cell{
+  position:relative;
+  border-radius:18px;
+  border:1px dashed rgba(0,0,0,.18);
+  background:rgba(255,255,255,0.3);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform .12s ease, background .12s ease;
+  /* important: fill the grid area like cards do */
+  height: 100%;
+  min-height: 0;
+  align-self: stretch;
+}
 .ng-cell:hover{transform:translateY(-1px);background:rgba(255,255,255,0.55)}
 .ng-cell:disabled{opacity:0.0;pointer-events:none}
 
@@ -53,7 +171,7 @@
   overflow:auto;
   border:1px solid rgba(0,0,0,.08);
   background:rgba(0,0,0,.02);
-  border-radius:12px;
+  border-radius: 12px;
   padding:10px;
   max-height: 260px;
 }
@@ -100,6 +218,13 @@
   min-height: 28px;
 }
 
+/* Ensure rendered cards also fill their grid cell(s) so empty slots match */
+#newsGridAdmin .news-card.ng-tile-card{
+  height: 100%;
+  min-height: 0;
+  align-self: stretch;
+}
+
 /* Make perex scroll in admin if needed */
 #newsGridAdmin .news-perex{ max-height: 260px; overflow:auto; padding-right:6px; }
 
@@ -107,8 +232,10 @@
 #newsGridAdmin .news-chip:empty{ display:none; }
 
 /* --- Editor panel (no fullscreen modal/backdrop) --- */
-.ng-editor-panel{ display:none; position: fixed; inset: 0; z-index: 2100; pointer-events:none; }
-.ng-editor-panel.is-open{ display:block; }
+/* Editor panel needs to sit above the admin grid; give it a high but reasonable z-index.
+   Set pointer-events on the open state so it becomes interactive when shown. */
+.ng-editor-panel{ display:none; position: fixed; inset: 0; z-index: 100000; pointer-events:none; }
+.ng-editor-panel.is-open{ display:block; pointer-events: auto; }
 
 .ng-editor-panel__inner{
   pointer-events:auto;
@@ -241,9 +368,126 @@
 #ngPostEditorPanel .ng-upload__btn span:hover,
 .ng-editor-panel .ng-upload__btn span:hover{ border-color:#111; background: rgba(17,17,17,0.10); }
 
-@media (max-width: 960px){
-  .ng-editor-panel__grid{ grid-template-columns: 1fr; }
-  .ng-editor-panel__media{ display:none; }
-  #ngPostEditorPanel .ng-editorrow,
-  .ng-editor-panel .ng-editorrow{ grid-template-columns: 1fr; }
+/* Per-row gutter controls (inside .ng-grid) */
+.ng-row-gutter{
+  position: relative;
+  pointer-events: none;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+  padding-right: 6px;
+  z-index: 60;
 }
+
+/* Hide remove by default; show only on hover of that row (or keyboard focus) */
+.ng-row-gutter .ng-row-btn--remove{
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity .14s ease, transform .14s ease;
+}
+
+.ng-row-gutter:hover .ng-row-btn--remove,
+.ng-row-gutter:focus-within .ng-row-btn--remove{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (hover: none){
+  .ng-row-gutter .ng-row-btn--remove{ opacity: 1; transform: none; }
+}
+
+/* Inserter between rows ("+") */
+.ng-row-inserter{
+  position: absolute;
+  right: 523px;
+  /* Place into the vertical gap below row y
+     NOTE: keep calc() free of comments; some parsers can invalidate the whole value.
+     14px = half of button height, to center it in the gap.
+  */
+  top: calc(
+    ((var(--row-size, 360px) + var(--gap, 20px)) * (var(--ri, 0) + 1))
+    - (var(--gap, 20px) / 2)
+    - 14px
+  );
+  transform: translateY(40%);
+  z-index: 70;
+
+  /* Hidden by default; shown when user hovers near the row gap */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .14s ease, transform .14s ease;
+}
+
+/* Make hovering "near the gap" easier: invisible hover zone around the button */
+.ng-row-inserter::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: calc(var(--gap, 20px) + 30px);
+  pointer-events: none; /* do not capture pointer events so it can't block cards */
+  z-index: 0; /* sit beneath the button and cards */
+}
+
+/* Reveal when hovering the hover zone or the button itself */
+.ng-row-inserter:hover,
+.ng-row-inserter:focus-within{
+  opacity: 1;
+  pointer-events: auto; /* allow interaction when visible */
+  transform: translateY(40%) scale(1.02);
+}
+
+.ng-row-inserter .ng-row-btn{
+  pointer-events: auto; /* ensure the button itself can be clicked */
+  z-index: 70;
+}
+
+/* On touch devices / small screens keep it visible (no hover) */
+@media (hover: none){
+  .ng-row-inserter{ opacity: 1; pointer-events: none; }
+}
+
+@media (max-width: 620px){
+  .ng-row-gutter{ justify-content:flex-start; padding-left: 6px; padding-right: 0; }
+  .ng-row-inserter{ right: auto; left: 18px; }
+}
+
+/* Inserter above the first row */
+.ng-row-inserter--top{
+  /* Move into the top padding area so it appears above row 1 */
+  transform: translateY(35%);
+}
+
+.ng-row-inserter--top:hover,
+.ng-row-inserter--top:focus-within{
+  transform: translateY(35%) scale(1.02);
+}
+
+/* Slight push of page content if you want (only applies if admin has a fixed header, optional) */
+html:not(.no-banner-top-padding) body{ /* keep default unchanged */ }
+
+.ng-cell--occupied{ opacity: 0.08; background: rgba(0,0,0,0.02); cursor: default; }
+
+#newsGridAdmin {
+  position: relative;
+  z-index: 10;
+}
+
+/* Inserter – jen tlačítko interaktivní */
+#newsGridAdmin .ng-row-inserter {
+  pointer-events: none;
+}
+#newsGridAdmin .ng-row-inserter .ng-row-btn {
+  pointer-events: auto;
+  z-index: 20;
+}
+
+/* Overlay akce nad kartou */
+#newsGridAdmin .ng-actions--overlay {
+  z-index: 80;
+}
+/* Ensure the public news modal (rendered on this page) when hidden can't capture clicks */
+#newsModal[aria-hidden="true"] { display: none; pointer-events: none; }
+#newsModal[aria-hidden="false"] { display: block; pointer-events: auto; }

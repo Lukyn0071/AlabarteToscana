@@ -9,6 +9,15 @@ require_once __DIR__ . '/admin/content/ui_texts.php';
 
 $lang = get_lang();
 $ui = load_ui_texts($pdo, $lang);
+
+// Cache-bust for public assets to avoid stale JS/CSS
+$assetV = (string)max(
+    @filemtime(__DIR__ . '/aktuality.js') ?: 0,
+    @filemtime(__DIR__ . '/aktuality.css') ?: 0,
+    @filemtime(__DIR__ . '/index.js') ?: 0,
+    @filemtime(__DIR__ . '/typography.css') ?: 0,
+    time() // fallback
+);
 ?>
 <!-- aktuality.php -->
 <!doctype html>
@@ -22,8 +31,8 @@ $ui = load_ui_texts($pdo, $lang);
 
   <link href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="aktuality.css" />
-  <link rel="stylesheet" href="typography.css">
+  <link rel="stylesheet" href="aktuality.css?v=<?php echo urlencode($assetV); ?>" />
+  <link rel="stylesheet" href="typography.css?v=<?php echo urlencode($assetV); ?>">
 
   <script>
     // Inline diagnostics: this MUST show up if the HTML is the one being served.
@@ -35,9 +44,8 @@ $ui = load_ui_texts($pdo, $lang);
     })();
   </script>
 
-  <script src="index.js" defer></script>
-  <!-- cache-bust to avoid serving stale aktuality.js from cache/CDN -->
-  <script src="aktuality.js?v=20260213" defer></script>
+  <script src="index.js?v=<?php echo urlencode($assetV); ?>" defer></script>
+  <script src="aktuality.js?v=<?php echo urlencode($assetV); ?>" defer></script>
 
   <!-- Keep hero background consistent with admin preview (which overrides due to relative Images path differences) -->
   <style>
@@ -71,7 +79,7 @@ $ui = load_ui_texts($pdo, $lang);
         <main class="wrap" aria-label="Obsah aktualit">
             <!-- Preview veřejné mřížky jako na /aktuality.php -->
             <section class="mag" aria-label="Seznam aktualit">
-                <div class="news-grid-layout" id="newsGrid" aria-label="Mřížka aktualit"></div>
+                <div class="news-grid-layout" id="newsGrid" data-admin-grid="1" aria-label="Mřížka aktualit"></div>
 
                 <section class="quote" aria-label="Citát">
                     <div class="quote-inner">

@@ -13,17 +13,23 @@ require_once __DIR__ . '/content/ui_texts.php';
 $lang = get_lang();
 $ui = load_ui_texts($pdo, $lang);
 
-// Cache-bust for static assets in admin (prevents hosting/CDN/browser stale files)
-// Use file modification times so it changes after every deploy that updates the files.
-$assetV = (string)max(
-    @filemtime(__DIR__ . '/aktuality_grid.js') ?: 0,
-    @filemtime(__DIR__ . '/aktuality_grid.css') ?: 0,
-    @filemtime(__DIR__ . '/../aktuality.js') ?: 0,
-    @filemtime(__DIR__ . '/../aktuality.css') ?: 0,
-    @filemtime(__DIR__ . '/admin.css') ?: 0,
-    @filemtime(__DIR__ . '/../index.js') ?: 0,
-    time() // fallback if filemtime is not available
-);
+// Cache-bust helper: use each file's mtime if available, otherwise fallback to current time.
+// Using a per-file version avoids the situation where a single max(...) value hides updates
+// to individual files and also makes it easier to debug caching issues on hosting/CDN.
+function asset_ver(string $filePath): string {
+    $t = @filemtime($filePath);
+    if ($t && is_int($t)) return (string)$t;
+    return (string)time();
+}
+
+// Precompute versions for the assets we include on this page
+$ver_aktuality_css = asset_ver(__DIR__ . '/../aktuality.css');
+$ver_typography_css = asset_ver(__DIR__ . '/../typography.css');
+$ver_admin_css = asset_ver(__DIR__ . '/admin.css');
+$ver_grid_css = asset_ver(__DIR__ . '/aktuality_grid.css');
+$ver_index_js = asset_ver(__DIR__ . '/../index.js');
+$ver_aktuality_js = asset_ver(__DIR__ . '/../aktuality.js');
+$ver_grid_js = asset_ver(__DIR__ . '/aktuality_grid.js');
 ?>
 <!doctype html>
 <html lang="<?php echo htmlspecialchars($lang, ENT_QUOTES, 'UTF-8'); ?>">
@@ -37,20 +43,56 @@ $assetV = (string)max(
   <link href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../aktuality.css?v=<?php echo urlencode($assetV); ?>" />
-  <link rel="stylesheet" href="../typography.css?v=<?php echo urlencode($assetV); ?>">
-  <link rel="stylesheet" href="admin.css?v=<?php echo urlencode($assetV); ?>">
-  <link rel="stylesheet" href="aktuality_grid.css?v=<?php echo urlencode($assetV); ?>">
+  <link rel="stylesheet" href="../aktuality.css?v=<?php echo urlencode($ver_aktuality_css); ?>" />
+  <link rel="stylesheet" href="../typography.css?v=<?php echo urlencode($ver_typography_css); ?>">
+  <link rel="stylesheet" href="admin.css?v=<?php echo urlencode($ver_admin_css); ?>">
+  <link rel="stylesheet" href="aktuality_grid.css?v=<?php echo urlencode($ver_grid_css); ?>">
 
-  <script src="../index.js?v=<?php echo urlencode($assetV); ?>" defer></script>
-  <script src="../aktuality.js?v=<?php echo urlencode($assetV); ?>" defer></script>
+  <script src="../index.js?v=<?php echo urlencode($ver_index_js); ?>" defer></script>
+  <script src="../aktuality.js?v=<?php echo urlencode($ver_aktuality_js); ?>" defer></script>
   <!-- Load grid script as module to ensure consistent execution timing (avoids cases where deferred script doesn't run until reload) -->
-  <script type="module" src="aktuality_grid.js?v=<?php echo urlencode($assetV); ?>"></script>
+  <script type="module" src="aktuality_grid.js?v=<?php echo urlencode($ver_grid_js); ?>"></script>
 
   <!-- Fix background image path for admin context (aktuality.css uses relative Images/...) -->
   <style>
     .hero{ background-image: url("../Images/Obrázek1.png"); }
   </style>
+
+  <!-- Ensure the public news modal (used on the public page) is hidden in admin unless opened. -->
+  <style>
+    /* Keep modal hidden unless scripts open it */
+    #newsModal[aria-hidden="true"] { display: none; pointer-events: none; }
+    #newsModal[aria-hidden="false"] { display: block; pointer-events: auto; }
+
+    /* Prevent the inserter pseudo-element from capturing clicks */
+    #newsGridAdmin .ng-row-inserter::before { pointer-events: none; }
+
+    /* Make the inserter container itself non-intercepting, but keep its button clickable. */
+    #newsGridAdmin .ng-row-inserter { pointer-events: none; }
+    #newsGridAdmin .ng-row-inserter .ng-row-btn { pointer-events: auto; }
+
+    /* Keep grid positioning modest — the editor panel has a very high z-index in CSS so it will sit above. */
+    #newsGridAdmin { position: relative; z-index: 10; }
+    #newsGridAdmin .ng-actions--overlay { z-index: 80; }
+  </style>
+
+  <!-- Debug: expose actual per-file asset version values in browser console to help detect caching/CDN issues -->
+  <script>
+    (function(){
+      try{
+        var __ASSET_VERSIONS = {
+          aktuality_css: <?php echo json_encode($ver_aktuality_css); ?>,
+          typography_css: <?php echo json_encode($ver_typography_css); ?>,
+          admin_css: <?php echo json_encode($ver_admin_css); ?>,
+          grid_css: <?php echo json_encode($ver_grid_css); ?>,
+          index_js: <?php echo json_encode($ver_index_js); ?>,
+          aktuality_js: <?php echo json_encode($ver_aktuality_js); ?>,
+          grid_js: <?php echo json_encode($ver_grid_js); ?>
+        };
+        console.log('admin asset versions:', __ASSET_VERSIONS);
+      }catch(e){/* ignore */}
+    })();
+  </script>
 </head>
 
 <body>
@@ -169,5 +211,97 @@ $assetV = (string)max(
 
     </div>
   </div>
+
+  <!-- Debug helper: when visiting with ?dbg=1, log elementAtPoint on clicks to help find overlays that block clicks -->
+  <script>
+    (function(){
+      if(!/([?&])dbg=1($|&)/.test(location.search)) return;
+      console.log('[DBG] admin debug enabled');
+
+      function describeEl(el){
+        if(!el) return null;
+        return {
+          tag: el.tagName,
+          id: el.id || null,
+          cls: el.className || null,
+          rect: el.getBoundingClientRect ? el.getBoundingClientRect().toJSON() : null
+        };
+      }
+
+      // Create a visual overlay to show the element under the cursor
+      var dbgOverlay = document.createElement('div');
+      dbgOverlay.id = 'dbg-overlay';
+      dbgOverlay.style.position = 'fixed';
+      dbgOverlay.style.pointerEvents = 'none';
+      dbgOverlay.style.zIndex = '25000';
+      dbgOverlay.style.border = '3px solid rgba(255,0,0,0.9)';
+      dbgOverlay.style.background = 'rgba(255,0,0,0.06)';
+      dbgOverlay.style.display = 'none';
+      dbgOverlay.style.transition = 'none';
+      document.body.appendChild(dbgOverlay);
+
+      function updateOverlayFor(el){
+        if(!el || !el.getBoundingClientRect) { dbgOverlay.style.display = 'none'; return; }
+        var r = el.getBoundingClientRect();
+        dbgOverlay.style.left = (r.left) + 'px';
+        dbgOverlay.style.top = (r.top) + 'px';
+        dbgOverlay.style.width = (r.width) + 'px';
+        dbgOverlay.style.height = (r.height) + 'px';
+        dbgOverlay.style.display = 'block';
+      }
+
+      document.addEventListener('mousemove', function(ev){
+        try{
+          var x = ev.clientX, y = ev.clientY;
+          var top = document.elementFromPoint(x,y);
+          updateOverlayFor(top);
+        }catch(e){}
+      }, {passive:true});
+
+      document.addEventListener('click', function(ev){
+        try{
+          var x = ev.clientX, y = ev.clientY;
+          var top = document.elementFromPoint(x,y);
+          console.log('[DBG] click at', x, y, 'event.target:', describeEl(ev.target), 'elementFromPoint:', describeEl(top));
+
+          if(top){
+            var cs = getComputedStyle(top);
+            console.log('[DBG] top computed style zIndex=', cs.zIndex, 'pointerEvents=', cs.pointerEvents, 'position=', cs.position);
+          }
+
+          // show ancestor chain up to body
+          var chain = [];
+          var e = top;
+          var depth = 0;
+          while(e && e !== document.body && depth < 32){
+            var c = getComputedStyle(e);
+            chain.push({desc: (e.tagName + (e.id?('#'+e.id):'') + (e.className?('.'+String(e.className).replace(/\s+/g,'.')):'')), z: c.zIndex, pe: c.pointerEvents});
+            e = e.parentElement;
+            depth++;
+          }
+          console.log('[DBG] ancestor chain:', chain);
+
+        }catch(err){ console.warn('[DBG] error', err); }
+      }, true);
+
+      // Hide overlay if mouse leaves window
+      window.addEventListener('mouseout', function(ev){
+        dbgOverlay.style.display = 'none';
+      });
+
+      // Additional: temporarily isolate pointer events so only admin grid and admin UI receive clicks.
+      // This is a destructive but temporary diagnostic: it helps confirm if an external element is stealing clicks.
+      try {
+        var s = document.createElement('style');
+        s.id = 'dbg-pointer-isolate';
+        s.textContent = '\n          body.dbg-pointer-test * { pointer-events: none !important; }\n          body.dbg-pointer-test #newsGridAdmin, body.dbg-pointer-test #newsGridAdmin * { pointer-events: auto !important; }\n          body.dbg-pointer-test .admin-panel, body.dbg-pointer-test .admin-panel * { pointer-events: auto !important; }\n          body.dbg-pointer-test #newsModal[aria-hidden="false"], body.dbg-pointer-test #newsModal[aria-hidden="false"] * { pointer-events: auto !important; }\n          body.dbg-pointer-test #newsGridAdmin { z-index: 25000 !important; }\n        ';
+        document.head.appendChild(s);
+        document.documentElement.classList.add('dbg-pointer-test');
+        console.log('[DBG] pointer isolation enabled: only #newsGridAdmin and .admin-panel accept pointer events. Remove ?dbg=1 to revert.');
+      } catch(e) { console.warn('[DBG] pointer isolation failed', e); }
+
+    })();
+  </script>
+
 </body>
 </html>

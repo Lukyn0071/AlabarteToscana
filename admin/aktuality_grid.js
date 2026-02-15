@@ -12,6 +12,8 @@
   // (row controls are rendered into the actions bar)
   const toastOk = document.getElementById('toastOk');
 
+  let lastSnap = null;
+
   if(!gridEl){
     console.warn('[aktuality_grid] #newsGridAdmin not found');
     return;
@@ -129,12 +131,6 @@
     return p;
   }
 
-  function cssUrlEscape(url){
-    // Make as safe as possible for CSS url(...)
-    const u = encodeURI(String(url || ''));
-    return u.replace(/"/g, '%22').replace(/\)/g, '%29').replace(/\(/g, '%28');
-  }
-
   function cssUrlValue(url){
     // Returns a value suitable for element.style.backgroundImage
     // Always quote and URI-encode to handle spaces/diacritics safely.
@@ -143,67 +139,6 @@
       .replace(/\)/g, '%29')
       .replace(/\(/g, '%28');
     return `url("${u}")`;
-  }
-
-  // --- Row controls (add/remove rows of cells) ---
-  // This affects editor workspace height and is persisted via API as grid_rows.
-
-  function ensureRowControls(){
-    const head = root.querySelector('.ng-head');
-    if(!head) return;
-    const bar = head.querySelector('.ng-actionsbar');
-    if(!bar) return;
-
-    // Avoid duplicates
-    if(bar.querySelector('.ng-row-controls')) return;
-
-    const wrap = document.createElement('div');
-    wrap.className = 'ng-row-controls';
-
-    const label = document.createElement('span');
-    label.className = 'ng-rows-label';
-    label.textContent = (lang === 'en') ? 'Rows:' : 'Řádky:';
-
-    const btnAdd = document.createElement('button');
-    btnAdd.type = 'button';
-    btnAdd.className = 'ng-btn';
-    btnAdd.id = 'btnGridRowAdd';
-    btnAdd.title = (lang === 'en') ? 'Add one empty row of cells' : 'Přidat prázdný řádek políček';
-    btnAdd.textContent = (lang === 'en') ? '+ row' : '+ řádek';
-
-    const btnRemove = document.createElement('button');
-    btnRemove.type = 'button';
-    btnRemove.className = 'ng-btn';
-    btnRemove.id = 'btnGridRowRemove';
-    btnRemove.title = (lang === 'en') ? 'Remove the last empty row' : 'Odebrat poslední prázdný řádek';
-    btnRemove.textContent = (lang === 'en') ? '− row' : '− řádek';
-
-    const counter = document.createElement('span');
-    counter.className = 'ng-rows-counter';
-    counter.setAttribute('aria-live', 'polite');
-
-    wrap.appendChild(label);
-    wrap.appendChild(btnAdd);
-    wrap.appendChild(btnRemove);
-    wrap.appendChild(counter);
-
-    // Put before Save if possible
-    const saveBtn = bar.querySelector('#btnNewsGridSave');
-    if(saveBtn && saveBtn.parentNode === bar){
-      bar.insertBefore(wrap, saveBtn);
-    } else {
-      bar.appendChild(wrap);
-    }
-
-    btnAdd.addEventListener('click', ()=> addRow(1));
-    btnRemove.addEventListener('click', ()=> removeRow(1));
-
-    // store refs
-    bar._ngRowCounter = counter;
-    bar._ngRowRemoveBtn = btnRemove;
-
-    // initial state
-    try { updateRowControlsUI(); } catch (e) {}
   }
 
   function getPost(postId){
@@ -224,14 +159,6 @@
     return occ;
   }
 
-  function overlapsAny(candidate, items){
-    for(const it of items){
-      if(it.post_id === candidate.post_id) continue;
-      if(rectOverlap(candidate, it)) return true;
-    }
-    return false;
-  }
-
   function canFitBounds(x,y,w,h){
     if(x < 0 || y < 0) return false;
     if(![1,2].includes(w) || ![1,2].includes(h)) return false;
@@ -245,59 +172,334 @@
    * - If it collides, we push colliding tiles down (and cascades) until stable.
    * - This prefers minimal movement and keeps X positions.
    */
+  function placeSmart(postId, x, y, w, h){
+
+    if(!canFitBounds(x,y,w,h)) return {ok:false};
+
+    const items = state.items;
+    const moving = items.find(it => it.post_id === postId);
+    if(!moving) return {ok:false};
+
+    const area = {x,y,w,h};
+
+    const hits = items.filter(it =>
+        it.post_id !== postId &&
+        rectOverlap(area,it)
+    );
+
+    // 1) prázdné místo → move
+    if(hits.length === 0){
+      moving.x = x;
+      moving.y = y;
+      render();
+      return {ok:true};
+    }
+
+    // 2) swap pokud 1 karta
+    if(hits.length === 1){
+
+      const target = hits[0];
+      const oldArea = {x:moving.x,y:moving.y};
+
+      if(canFitBounds(oldArea.x, oldArea.y, target.w, target.h)){
+
+        moving.x = x;
+        moving.y = y;
+
+        target.x = oldArea.x;
+        target.y = oldArea.y;
+
+        render();
+        return {ok:true};
+      }
+    }
+
+    // 3) jinak push
+    return placeWithPush(postId, x, y, w, h);
+  }
+
   function placeWithPush(postId, x, y, w, h){
-    if(!canFitBounds(x,y,w,h)) return {ok:false, error:'Mimo mřížku'};
 
-    const moving = state.items.find(it=>it.post_id===postId);
-    if(!moving) return {ok:false, error:'Neznámý post'};
+    if(!canFitBounds(x,y,w,h)){
+      return {ok:false, error:"Out of bounds"};
+    }
 
-    // Clone items for simulation
-    const items = state.items.map(it => ({...it}));
-    const m = items.find(it=>it.post_id===postId);
-    m.x = x; m.y = y; m.w = w; m.h = h;
+    const items = state.items;
+    const moving = items.find(it => it.post_id === postId);
+    if(!moving) return {ok:false};
 
-    // Cascade: while there is any overlap, push down the ones that overlap.
+    // 1) nastav moving kartu
+    moving.x = x;
+    moving.y = y;
+    moving.w = w;
+    moving.h = h;
+
     let changed = true;
     let guard = 0;
-    while(changed && guard++ < 500){
+
+    // =====================================================
+    // 🔥 Push dokud existují kolize
+    // =====================================================
+    while(changed && guard++ < 200){
+
       changed = false;
 
+      // 2) všechny kolize s moving → posun dolů
       for(const it of items){
+
         if(it.post_id === postId) continue;
-        if(rectOverlap(m, it)){
-          // push this tile just below moving tile
-          it.y = m.y + m.h;
+
+        if(rectOverlap(moving, it)){
+          it.y = moving.y + moving.h;
           changed = true;
         }
       }
 
-      // Now resolve overlaps between non-moving tiles as well by scanning top-down.
-      const sorted = [...items].sort((a,b)=> (a.y-b.y) || (a.x-b.x) || (a.post_id-b.post_id));
-      for(let i=0;i<sorted.length;i++){
-        for(let j=i+1;j<sorted.length;j++){
+      // 3) kolize mezi ostatními kartami (cascade)
+      const sorted = [...items].sort((a,b)=>
+          (a.y - b.y) || (a.x - b.x)
+      );
+
+      for(let i=0; i<sorted.length; i++){
+
+        for(let j=i+1; j<sorted.length; j++){
+
           const a = sorted[i];
           const b = sorted[j];
+
           if(a.post_id === b.post_id) continue;
+
           if(rectOverlap(a,b)){
-            // push lower priority one down below the other (the one with bigger y stays, push the other down)
-            if(a.y <= b.y){
-              b.y = a.y + a.h;
-            } else {
-              a.y = b.y + b.h;
-            }
+            b.y = a.y + a.h;
             changed = true;
           }
         }
       }
     }
 
-    if(guard >= 500) return {ok:false, error:'Nelze vyřešit kolize'};
+    if(guard >= 200){
+      return {ok:false, error:"Push overflow"};
+    }
 
-    // Apply back
-    state.items = items;
-    ensureRowsFor(state.items);
+    // grid může růst dolů
+    ensureRowsFor(items);
+
     render();
     return {ok:true};
+  }
+
+  function previewPushLayout(postId, x, y, w, h) {
+
+    // 1) klon layoutu (preview nesmí měnit state.items)
+    const items = state.items.map(it => ({ ...it }));
+
+    // 2) moving karta
+    const moving = items.find(it => it.post_id === postId);
+    if (!moving) return;
+
+    moving.x = x;
+    moving.y = y;
+    moving.w = w;
+    moving.h = h;
+
+    let changed = true;
+    let guard = 0;
+
+    // =====================================================
+    // 🔥 push preview dokud existují kolize
+    // =====================================================
+    while (changed && guard++ < 200) {
+
+      changed = false;
+
+      // A) kolize s moving kartou
+      for (const it of items) {
+
+        if (it.post_id === postId) continue;
+
+        if (rectOverlap(moving, it)) {
+          it.y = moving.y + moving.h;
+          changed = true;
+        }
+      }
+
+      // B) cascade kolize mezi ostatními kartami
+      const sorted = [...items].sort((a, b) =>
+          (a.y - b.y) || (a.x - b.x)
+      );
+
+      for (let i = 0; i < sorted.length; i++) {
+        for (let j = i + 1; j < sorted.length; j++) {
+
+          const a = sorted[i];
+          const b = sorted[j];
+
+          if (rectOverlap(a, b)) {
+            b.y = a.y + a.h;
+            changed = true;
+          }
+        }
+      }
+    }
+
+    // =====================================================
+    // ✅ aplikace preview pozic na DOM
+    // =====================================================
+    items.forEach(it => {
+
+      const card = gridEl.querySelector(
+          `.news-card[data-post-id="${it.post_id}"]`
+      );
+      if (!card) return;
+
+      card.style.gridColumn = `${it.x + 1} / span ${it.w}`;
+      card.style.gridRow = `${it.y + 1} / span ${it.h}`;
+    });
+
+    // =====================================================
+    // ✅ oprava prázdných slotů v preview
+    // =====================================================
+    const occ = occupiedMap(items);
+
+    gridEl.querySelectorAll('.ng-cell').forEach(cell => {
+
+      const cx = parseInt(cell.dataset.x, 10);
+      const cy = parseInt(cell.dataset.y, 10);
+
+      const isOccupied = occ.has(cellKey(cx, cy));
+
+      if (isOccupied) {
+        cell.style.visibility = "hidden";
+        cell.style.pointerEvents = "none";
+      } else {
+        cell.style.visibility = "visible";
+        cell.style.pointerEvents = "auto";
+      }
+    });
+  }
+
+
+  function previewSmartLayout(postId, x, y, w, h) {
+
+    // 🚫 karta se nevejde → žádný preview
+    if (!canFitBounds(x, y, w, h)) {
+      render();
+      return;
+    }
+
+    const items = state.items.map(it => ({ ...it }));
+    const moving = items.find(it => it.post_id === postId);
+    if (!moving) return;
+
+    const area = { x, y, w, h };
+
+    const hits = items.filter(it =>
+        it.post_id !== postId &&
+        rectOverlap(area, it)
+    );
+
+    // ✅ CASE 1: oblast prázdná
+    if (hits.length === 0) {
+
+      moving.x = x;
+      moving.y = y;
+
+    } else {
+
+      const oldArea = {
+        x: moving.x,
+        y: moving.y,
+        w: moving.w,
+        h: moving.h
+      };
+
+      const remaining = items.filter(it =>
+          it.post_id === postId ||
+          !rectOverlap(area, it)
+      );
+
+      moving.x = x;
+      moving.y = y;
+      moving.w = w;
+      moving.h = h;
+
+      const collisionAfterMove = remaining.some(it =>
+          it.post_id !== postId &&
+          rectOverlap(moving, it)
+      );
+
+      if (!collisionAfterMove) {
+
+        let canFitBack = true;
+
+        for (const hit of hits) {
+
+          const test = {
+            ...hit,
+            x: oldArea.x,
+            y: oldArea.y
+          };
+
+          // 🚫 nesmí být mimo grid
+          if (!canFitBounds(test.x, test.y, test.w, test.h)) {
+            canFitBack = false;
+            break;
+          }
+
+          const collides = remaining.some(it =>
+              it.post_id !== postId &&
+              rectOverlap(test, it)
+          );
+
+          if (collides) {
+            canFitBack = false;
+            break;
+          }
+        }
+
+        if (canFitBack) {
+
+          for (const hit of hits) {
+            hit.x = oldArea.x;
+            hit.y = oldArea.y;
+          }
+
+        } else {
+          return previewPushLayout(postId, x, y, w, h);
+        }
+
+      } else {
+        return previewPushLayout(postId, x, y, w, h);
+      }
+    }
+
+    // ✅ aplikace preview do DOM
+    items.forEach(it => {
+      const card = gridEl.querySelector(
+          `.news-card[data-post-id="${it.post_id}"]`
+      );
+      if (!card) return;
+
+      card.style.gridColumn = `${it.x + 1} / span ${it.w}`;
+      card.style.gridRow = `${it.y + 1} / span ${it.h}`;
+    });
+
+  }
+
+
+
+  function rowBoundaryIsClear(afterRowIndex){
+    // True if there is NO item that spans across the boundary between row afterRowIndex and afterRowIndex+1.
+    // Example: afterRowIndex = 0 means boundary between row 0 and row 1.
+    const y = parseInt(String(afterRowIndex), 10);
+    if(!Number.isFinite(y) || y < 0) return false;
+    for(const it of state.items){
+      const top = it.y;
+      const bottomExclusive = it.y + it.h;
+      // Item spans across boundary if it covers rows y and y+1
+      if(top <= y && bottomExclusive >= (y + 2)) return false;
+    }
+    return true;
   }
 
   function render(){
@@ -307,41 +509,94 @@
 
     gridEl.innerHTML = '';
 
-    // background cells with plus
-    const occ = occupiedMap();
-    for(let y=0;y<state.gridRows;y++){
-      for(let x=0;x<state.gridCols;x++){
-        const cell = document.createElement('button');
-        cell.type = 'button';
-        cell.className = 'ng-cell';
-        cell.dataset.x = String(x);
-        cell.dataset.y = String(y);
-        cell.style.gridColumn = `${x+1} / span 1`;
-        cell.style.gridRow = `${y+1} / span 1`;
+    // --- Row gutter controls ---
+    // "−" is attached to each row, "+" is an inserter between rows.
 
-        const isOcc = occ.has(cellKey(x,y));
-        cell.disabled = isOcc;
-        cell.innerHTML = '<span class="ng-plus">+</span>';
-        cell.addEventListener('click', ()=>{
-          if(isOcc) return;
-          // open editor in "create" mode (empty values); on save it will create a new post and place it here
-          openPostEditor({mode:'create', x, y}).catch(err=>setStatus(err.message,true));
-        });
+    // Inserter above the first row (adds a new row at the very top)
+    // This is equivalent to "add row after -1".
+    {
+      const y = -1;
+      // Only show if the boundary before the first row is considered clear.
+      // (Always true with current layout constraints, but keep same logic.)
+      if(rowBoundaryIsClear(0)){
+        const insTop = document.createElement('div');
+        insTop.className = 'ng-row-inserter ng-row-inserter--top';
+        insTop.dataset.rowIndex = String(y);
+        insTop.dataset.action = 'row-add-after';
+        insTop.style.setProperty('--ri', String(y));
+        insTop.title = (lang === 'en') ? 'Add row above first row' : 'Přidat řádek nad první řádek';
+        insTop.setAttribute('aria-label', insTop.title);
 
-        gridEl.appendChild(cell);
+        const btnAddTop = document.createElement('button');
+        btnAddTop.type = 'button';
+        btnAddTop.className = 'ng-row-btn ng-row-btn--add';
+        btnAddTop.dataset.action = 'row-add-after';
+        btnAddTop.dataset.rowIndex = String(y);
+        btnAddTop.title = insTop.title;
+        btnAddTop.setAttribute('aria-label', insTop.title);
+        btnAddTop.textContent = '+';
+
+        insTop.appendChild(btnAddTop);
+        gridEl.appendChild(insTop);
       }
     }
 
-    // tiles (rendered as final .news-card)
+    for(let y=0; y<state.gridRows; y++){
+      const gutter = document.createElement('div');
+      gutter.className = 'ng-row-gutter';
+      gutter.style.gridColumn = `1 / span ${state.gridCols}`;
+      gutter.style.gridRow = `${y+1} / span 1`;
+      gutter.dataset.rowIndex = String(y);
+
+      // Render remove only for empty rows
+      if(rowIsEmpty(y)){
+        const btnRemove = document.createElement('button');
+        btnRemove.type = 'button';
+        btnRemove.className = 'ng-row-btn ng-row-btn--remove';
+        btnRemove.dataset.action = 'row-remove';
+        btnRemove.dataset.rowIndex = String(y);
+        btnRemove.title = (lang === 'en') ? `Remove row ${y+1}` : `Odebrat řádek ${y+1}`;
+        btnRemove.setAttribute('aria-label', btnRemove.title);
+        btnRemove.textContent = '−';
+        gutter.appendChild(btnRemove);
+      }
+
+      gridEl.appendChild(gutter);
+
+      // Inserter between row y and y+1 (including after last row)
+      // Show only if there is no tile spanning across this boundary.
+      if(rowBoundaryIsClear(y)){
+        const ins = document.createElement('div');
+        ins.className = 'ng-row-inserter';
+        ins.dataset.rowIndex = String(y);
+        ins.dataset.action = 'row-add-after';
+        ins.style.setProperty('--ri', String(y));
+        ins.title = (lang === 'en') ? `Add row after row ${y+1}` : `Přidat řádek za řádek ${y+1}`;
+        ins.setAttribute('aria-label', ins.title);
+
+        const btnAddAfter = document.createElement('button');
+        btnAddAfter.type = 'button';
+        btnAddAfter.className = 'ng-row-btn ng-row-btn--add';
+        btnAddAfter.dataset.action = 'row-add-after';
+        btnAddAfter.dataset.rowIndex = String(y);
+        btnAddAfter.title = ins.title;
+        btnAddAfter.setAttribute('aria-label', ins.title);
+        btnAddAfter.textContent = '+';
+
+        ins.appendChild(btnAddAfter);
+        gridEl.appendChild(ins);
+      }
+    }
     for(const it of state.items){
       const post = getPost(it.post_id) || {post_id: it.post_id, title_cs: '', title_en: '', perex_cs:'', perex_en:'', body_cs:'', body_en:'', badge:'', date:'', image:''};
 
       const card = document.createElement('article');
       card.className = 'news-card ng-tile-card';
       card.dataset.postId = String(it.post_id);
-      card.draggable = true;
       card.style.gridColumn = `${it.x+1} / span ${it.w}`;
       card.style.gridRow = `${it.y+1} / span ${it.h}`;
+      // Ensure card is clickable (override accidental global styles)
+      card.style.pointerEvents = 'auto';
 
       const bg = document.createElement('div');
       bg.className = 'news-card__bg';
@@ -398,7 +653,7 @@
         <button type="button" data-size="1x1">1×1</button>
         <button type="button" data-size="2x1">2×1</button>
         <button type="button" data-size="1x2">1×2</button>
-        <button type="button" data-size="2x2">2×2</button>
+        <button type="button" data-size="2x2">2x2</button>
         <button type="button" data-action="edit">${lang === 'en' ? 'Edit' : 'Upravit'}</button>
         <button type="button" data-action="remove">Odebrat</button>
       `;
@@ -427,8 +682,8 @@
         ev.stopPropagation();
 
         const ok = window.confirm(lang === 'en'
-          ? 'Delete this post permanently? (This will remove it from DB)'
-          : 'Opravdu smazat tento příspěvek? (Smaže se z databáze)'
+            ? 'Delete this post permanently? (This will remove it from DB)'
+            : 'Opravdu smazat tento příspěvek? (Smaže se z databáze)'
         );
         if(!ok) return;
 
@@ -470,23 +725,212 @@
       card.appendChild(overlay);
       card.appendChild(content);
       card.appendChild(actions);
-
-      card.addEventListener('dragstart', (e)=>{
-        state.draggingPostId = it.post_id;
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', String(it.post_id));
-      });
-      card.addEventListener('dragend', ()=>{ state.draggingPostId = null; gridEl.classList.remove('is-dragover'); });
-
       gridEl.appendChild(card);
+      setupBetterDrag(card, it);
+    }
+    // background cells with plus
+    // background cells with plus (jen prázdné)
+    const occ = occupiedMap();
+
+    for(let y = 0; y < state.gridRows; y++){
+      for(let x = 0; x < state.gridCols; x++){
+
+        if(occ.has(cellKey(x,y))) continue; // 🔥 přeskoč obsazené
+
+        const cell = document.createElement('button');
+        cell.type = 'button';
+        cell.className = 'ng-cell';
+        cell.dataset.x = String(x);
+        cell.dataset.y = String(y);
+        cell.style.gridColumn = `${x+1} / span 1`;
+        cell.style.gridRow = `${y+1} / span 1`;
+
+        cell.dataset.occupied = '0';
+        cell.innerHTML = '<span class="ng-plus">+</span>';
+
+        cell.addEventListener('click', ()=>{
+          openPostEditor({mode:'create', x, y}).catch(err=>setStatus(err.message,true));
+        });
+
+        gridEl.appendChild(cell);
+      }
     }
 
-    // row controls
-    // (removed)
+    // tiles (rendered as final .news-card)
 
-    // Update row UI (buttons/counter)
+
+    // Update UI
+    // Defensive: ensure grid and its children accept pointer events (override external CSS overlays)
+    try{
+      gridEl.style.pointerEvents = 'auto';
+      // Avoid forcing a very large inline z-index here. Leave stacking to CSS where
+      // `.ng-editor-panel` intentionally has a very high z-index so it stays above.
+      // Only set a minimal inline z-index if none exists (keeps interactive but doesn't
+      // push the editor panel behind the grid).
+      gridEl.style.zIndex = String(parseInt(gridEl.style.zIndex || '10', 10) || 10);
+
+      // Make sure important interactive elements accept pointer events
+      // Allow cards, cells, action buttons
+      gridEl.querySelectorAll('.ng-cell, .news-card, .ng-row-gutter .ng-row-btn, .ng-row-inserter .ng-row-btn, .ng-actions--overlay button').forEach(el=>{
+        try{ el.style.pointerEvents = 'auto'; }catch(e){}
+      });
+      // Ensure row inserter containers themselves do not intercept clicks (only the button should respond)
+      gridEl.querySelectorAll('.ng-row-inserter').forEach(ins=>{ try{ ins.style.pointerEvents = 'none'; }catch(e){} });
+    }catch(e){}
+
     updateRowControlsUI();
   }
+  function setupBetterDrag(card, it){
+
+    let isDragging = false;
+    let dragStarted = false;
+    let startX = 0;
+    let startY = 0;
+
+    const DRAG_THRESHOLD = 6; // kolik px musí uživatel potáhnout, aby to byl drag
+
+    let gridRect;
+    let colWidth;
+    let rowHeight;
+
+    const onMouseDown = (e)=>{
+      if(e.button !== 0) return;
+      if(e.target.closest('.ng-actions')) return;
+
+      startX = e.clientX;
+      startY = e.clientY;
+      dragStarted = false;
+      isDragging = true;
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    };
+
+    const startDrag = (e)=>{
+      dragStarted = true;
+
+      const rect = card.getBoundingClientRect();
+      gridRect = gridEl.getBoundingClientRect();
+
+      colWidth = gridRect.width / state.gridCols;
+      rowHeight = gridRect.height / state.gridRows;
+
+      card.style.width = rect.width + 'px';
+      card.style.height = rect.height + 'px';
+      card.style.left = rect.left + 'px';
+      card.style.top = rect.top + 'px';
+
+      card.classList.add('is-dragging');
+      card.style.position = 'fixed';
+      card.style.zIndex = '9999';
+      card.style.pointerEvents = 'none';
+
+      moveAt(e);
+    };
+
+    const moveAt = (e)=>{
+      card.style.left = e.clientX - card.offsetWidth/2 + 'px';
+      card.style.top  = e.clientY - card.offsetHeight/2 + 'px';
+    };
+
+    const onMouseMove = (e)=>{
+      if(!isDragging) return;
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      // 🔥 nezačneme drag, dokud se fakt nehýbe
+      if(!dragStarted){
+        if(Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD){
+          startDrag(e);
+        } else {
+          return;
+        }
+      }
+
+      moveAt(e);
+
+      lastSnap = getSnapPosition(e, it);
+
+      if (lastSnap) {
+        previewSmartLayout(
+            it.post_id,
+            lastSnap.x,
+            lastSnap.y,
+            it.w,
+            it.h
+        );
+      }
+    };
+
+    const onMouseUp = (e)=>{
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+
+      if(!isDragging){
+        return;
+      }
+
+      // Pokud se nikdy nezačalo táhnout → je to klik
+      if(!dragStarted){
+        isDragging = false;
+        return;
+      }
+
+      // reset stylů
+      card.classList.remove('is-dragging');
+      card.style.position = '';
+      card.style.left = '';
+      card.style.top = '';
+      card.style.zIndex = '';
+      card.style.pointerEvents = '';
+      card.style.width = '';
+      card.style.height = '';
+
+      if (lastSnap) {
+        const res = placeSmart(
+            it.post_id,
+            lastSnap.x,
+            lastSnap.y,
+            it.w,
+            it.h
+        );
+
+        if (res.ok) {
+          markDirty();
+          setStatus('Přesunuto. Nezapomeň uložit.');
+        } else {
+          setStatus(res.error || 'Nelze přesunout.', true);
+        }
+      }
+
+      lastSnap = null;
+      isDragging = false;
+
+      render();
+    };
+
+    card.addEventListener('mousedown', onMouseDown);
+  }
+  function getSnapPosition(e, it){
+    const gridRect = gridEl.getBoundingClientRect();
+
+    const colWidth = gridRect.width / state.gridCols;
+    const rowHeight = gridRect.height / state.gridRows;
+
+    const rawX = (e.clientX - gridRect.left) / colWidth;
+    const rawY = (e.clientY - gridRect.top) / rowHeight;
+
+    let x = Math.round(rawX - it.w / 2);
+    let y = Math.round(rawY - it.h / 2);
+
+    x = Math.min(Math.max(x, 0), state.gridCols - it.w);
+    y = Math.max(y, 0);
+
+    return { x, y };
+  }
+
+
 
   function gridPointFromEvent(e){
     // snap to actual cell under pointer
@@ -523,7 +967,7 @@
       if(!it) return;
 
       const cell = gridPointFromEvent(e);
-      const res = placeWithPush(postId, cell.x, cell.y, it.w, it.h);
+      const res = placeSmart(postId, cell.x, cell.y, it.w, it.h);
       if(res.ok){
         markDirty();
         setStatus('Přesunuto. Nezapomeň uložit.');
@@ -565,9 +1009,8 @@
         state.gridRowsManual = persistedRows;
         // reflect in DOM dataset for any later reads
         root.dataset.gridRows = String(persistedRows);
-        // ensure effect is visible even before items are applied
-        state.rowsMode = 'manual';
-        recomputeRows(state.items);
+        // NOTE: rows are now handled in AUTO mode on load, to avoid empty rows after reload.
+        // Persisted value is kept as a manual minimum only.
       }
     } catch (e) {}
 
@@ -602,13 +1045,11 @@
       state.items = layout.items.map(it=>({post_id:it.post_id,x:it.x,y:it.y,w:it.w,h:it.h}));
       ensureRowsFor(state.items);
     }
-
-    // default: keep manual rows, but ensure enough for tiles
     state.rowsMode = 'manual';
-    state.gridRowsManual = Math.max(state.gridRowsManual || 1, 1);
+    state.gridRowsManual = Math.max(state.gridRowsManual, neededRowsByTiles(), 1);
+
 
     ensureRowsFor(state.items);
-    // make sure --rows matches persisted manual rows (or neededByTiles)
     recomputeRows(state.items);
     render();
     setStatus('Načteno.');
@@ -667,42 +1108,88 @@
     return Math.max(maxBottomY(state.items), 1);
   }
 
-  function canRemoveRow(){
-    // Removing 1 row is allowed only if it won't cut off any existing item.
-    const after = Math.max((state.gridRowsManual || 1) - 1, 1);
-    return neededRowsByTiles() <= after;
+  function clampManualRows(){
+    state.gridRowsManual = Math.max(1, parseInt(String(state.gridRowsManual || 1), 10) || 1);
   }
 
-  function addRow(count = 1){
-    const n = Math.max(1, parseInt(String(count), 10) || 1);
+  function addRowAfter(rowIndex){
+    const y = Math.max(-1, parseInt(String(rowIndex), 10));
     state.rowsMode = 'manual';
-    state.gridRowsManual = Math.max(1, (state.gridRowsManual || 1) + n);
+    clampManualRows();
+
+    // Insert a row after y: shift items with y > rowIndex down by 1
+    for(const it of state.items){
+      if(it.y > y) it.y += 1;
+    }
+
+    state.gridRowsManual += 1;
     recomputeRows(state.items);
     render();
     markDirty();
     setStatus((lang === 'en') ? 'Row added. Don\'t forget to save.' : 'Řádek přidán. Nezapomeň uložit.');
   }
 
-  function removeRow(count = 1){
-    const n = Math.max(1, parseInt(String(count), 10) || 1);
-    state.rowsMode = 'manual';
+  function rowIsEmpty(rowIndex){
+    const y = parseInt(String(rowIndex), 10);
+    if(!Number.isFinite(y) || y < 0) return false;
+    for(const it of state.items){
+      const top = it.y;
+      const bottomExclusive = it.y + it.h;
+      if(y >= top && y < bottomExclusive) return false;
+    }
+    return true;
+  }
 
-    let removed = 0;
-    for(let i=0;i<n;i++){
-      if(!canRemoveRow()) break;
-      state.gridRowsManual = Math.max(1, (state.gridRowsManual || 1) - 1);
-      removed++;
+  function canRemoveSpecificRow(rowIndex){
+    clampManualRows();
+    const y = parseInt(String(rowIndex), 10);
+    if(!Number.isFinite(y) || y < 0) return {ok:false, reason:'bad_index'};
+    if(state.gridRowsManual <= 1) return {ok:false, reason:'min_1'};
+    if(y >= state.gridRowsManual) return {ok:false, reason:'not_in_manual'};
+    if(!rowIsEmpty(y)) return {ok:false, reason:'not_empty'};
+
+    // Simulate: remove row y and shift items below up by 1
+    const sim = state.items.map(it => ({...it}));
+    for(const it of sim){
+      if(it.y > y) it.y -= 1;
     }
 
-    if(removed === 0){
-      setStatus(
-        (lang === 'en')
-          ? 'Cannot remove: there are items in the last row.'
-          : 'Nelze odebrat: v posledním řádku už jsou položky.',
-        true
-      );
+    const neededAfter = Math.max(maxBottomY(sim), 1);
+    const manualAfter = Math.max(state.gridRowsManual - 1, 1);
+    if(neededAfter > manualAfter) return {ok:false, reason:'would_cut'};
+
+    return {ok:true};
+  }
+
+  function removeSpecificRow(rowIndex){
+    const check = canRemoveSpecificRow(rowIndex);
+    if(!check.ok){
+      const msg = (function(){
+        switch(check.reason){
+          case 'min_1':
+            return (lang === 'en') ? 'At least 1 row must remain.' : 'Musí zůstat alespoň 1 řádek.';
+          case 'not_empty':
+            return (lang === 'en') ? 'Cannot remove: row is not empty.' : 'Nelze odebrat: řádek není prázdný.';
+          case 'would_cut':
+            return (lang === 'en') ? 'Cannot remove: it would cut off existing tiles.' : 'Nelze odebrat: došlo by k oříznutí dlaždic.';
+          default:
+            return (lang === 'en') ? 'Cannot remove this row.' : 'Tento řádek nelze odebrat.';
+        }
+      })();
+      setStatus(msg, true);
       return;
     }
+
+    const y = parseInt(String(rowIndex), 10);
+
+    // Apply: remove row y
+    for(const it of state.items){
+      if(it.y > y) it.y -= 1;
+    }
+
+    state.rowsMode = 'manual';
+    clampManualRows();
+    state.gridRowsManual = Math.max(1, state.gridRowsManual - 1);
 
     recomputeRows(state.items);
     render();
@@ -711,80 +1198,72 @@
   }
 
   function updateRowControlsUI(){
-    const bar = root.querySelector('.ng-actionsbar');
-    if(!bar) return;
-    const counter = bar._ngRowCounter;
-    const btnRemove = bar._ngRowRemoveBtn;
-
-    if(counter){
+    // per-row UI is rendered into the grid; we only keep the counter in status if needed
+    // and ensure gutter buttons are disabled correctly.
+    try {
       const needed = neededRowsByTiles();
-      counter.textContent = `${state.gridRowsManual} (min ${needed})`;
-      counter.title = (lang === 'en')
-        ? `Saved rows: ${state.gridRowsManual}. Minimum required by tiles: ${needed}.`
-        : `Uložené řádky: ${state.gridRowsManual}. Minimum podle dlaždic: ${needed}.`;
-    }
-    if(btnRemove){
-      btnRemove.disabled = !canRemoveRow();
-    }
+      // Soft hint:
+      if(statusEl && !statusEl.textContent){
+        statusEl.textContent = (lang === 'en')
+          ? `Rows: ${state.gridRowsManual} (min ${needed}).`
+          : `Řádky: ${state.gridRowsManual} (min ${needed}).`;
+      }
+    } catch (e) {}
+
+    // Update gutter button disabled states (after each render)
+    const gutters = gridEl.querySelectorAll('.ng-row-gutter');
+    gutters.forEach(g=>{
+      const y = parseInt(g.dataset.rowIndex || '-1', 10);
+      const btnRemove = g.querySelector('[data-action="row-remove"]');
+      if(btnRemove){
+        const ok = canRemoveSpecificRow(y).ok;
+        btnRemove.disabled = !ok;
+      }
+    });
   }
 
   function ensureRowControls(){
-    const head = root.querySelector('.ng-head');
-    if(!head) return;
-    const bar = head.querySelector('.ng-actionsbar');
-    if(!bar) return;
+    // Deprecated: row controls are now per-row.
+    return;
+  }
 
-    if(bar.querySelector('.ng-row-controls')) return;
+  function setupRowGutterActions(){
+    gridEl.addEventListener('click', (ev)=>{
+      const btn = ev.target && ev.target.closest ? ev.target.closest('[data-action]') : null;
+      if(!btn) return;
+      const action = btn.getAttribute('data-action');
+      if(action !== 'row-add-after' && action !== 'row-remove') return;
 
-    const wrap = document.createElement('div');
-    wrap.className = 'ng-row-controls';
+      ev.preventDefault();
+      ev.stopPropagation();
 
-    const label = document.createElement('span');
-    label.className = 'ng-rows-label';
-    label.textContent = (lang === 'en') ? 'Rows:' : 'Řádky:';
+      const y = parseInt(btn.getAttribute('data-row-index') || btn.dataset.rowIndex || '-1', 10);
+      if(!Number.isFinite(y)) return;
 
-    const btnAdd = document.createElement('button');
-    btnAdd.type = 'button';
-    btnAdd.className = 'ng-btn';
-    btnAdd.id = 'btnGridRowAdd';
-    btnAdd.title = (lang === 'en') ? 'Add one empty row of cells' : 'Přidat prázdný řádek políček';
-    btnAdd.textContent = (lang === 'en') ? '+ row' : '+ řádek';
-
-    const btnRemove = document.createElement('button');
-    btnRemove.type = 'button';
-    btnRemove.className = 'ng-btn';
-    btnRemove.id = 'btnGridRowRemove';
-    btnRemove.title = (lang === 'en') ? 'Remove the last empty row' : 'Odebrat poslední prázdný řádek';
-    btnRemove.textContent = (lang === 'en') ? '− row' : '− řádek';
-
-    const counter = document.createElement('span');
-    counter.className = 'ng-rows-counter';
-    counter.setAttribute('aria-live', 'polite');
-
-    wrap.appendChild(label);
-    wrap.appendChild(btnAdd);
-    wrap.appendChild(btnRemove);
-    wrap.appendChild(counter);
-
-    const saveBtn = bar.querySelector('#btnNewsGridSave');
-    if(saveBtn && saveBtn.parentNode === bar){
-      bar.insertBefore(wrap, saveBtn);
-    } else {
-      bar.appendChild(wrap);
-    }
-
-    btnAdd.addEventListener('click', ()=> addRow(1));
-    btnRemove.addEventListener('click', ()=> removeRow(1));
-
-    bar._ngRowCounter = counter;
-    bar._ngRowRemoveBtn = btnRemove;
-
-    updateRowControlsUI();
+      if(action === 'row-add-after'){
+        addRowAfter(y);
+        setTimeout(()=>{
+          const q = `.ng-row-inserter [data-action="row-add-after"][data-row-index="${y}"]`;
+          const el = gridEl.querySelector(q);
+          if(el) el.focus();
+        }, 0);
+      }
+      if(action === 'row-remove'){
+        removeSpecificRow(y);
+        setTimeout(()=>{
+          const y2 = Math.max(0, Math.min(y, state.gridRows - 1));
+          const q = `.ng-row-inserter [data-action="row-add-after"][data-row-index="${y2}"]`;
+          const el = gridEl.querySelector(q);
+          if(el) el.focus();
+        }, 0);
+      }
+    });
   }
 
   // Initial paint so user always sees grid cells even if API fails.
   try {
-    ensureRowControls();
+    // ensureRowControls(); // deprecated
+    setupRowGutterActions();
     gridEl.style.setProperty('--cols', String(state.gridCols));
     gridEl.style.setProperty('--rows', String(state.gridRows));
     render();
@@ -1174,5 +1653,42 @@
   const cssEscape = (typeof CSS !== 'undefined' && CSS && typeof CSS.escape === 'function')
     ? CSS.escape.bind(CSS)
     : (s)=>String(s).replace(/[^a-zA-Z0-9_\-]/g, '\\$&');
+
+  // Debug helpers exposed for diagnostics
+  try{
+    if(typeof window !== 'undefined'){
+      window.aktualityGrid = window.aktualityGrid || {};
+      window.aktualityGrid.inspect = function(){
+        try{
+          const grid = document.getElementById('newsGridAdmin');
+          if(!grid){ console.warn('newsGridAdmin not found'); return; }
+          const cs = getComputedStyle(grid);
+          console.log('newsGridAdmin computed:', {pointerEvents: cs.pointerEvents, zIndex: cs.zIndex, rect: grid.getBoundingClientRect()});
+          const childs = Array.from(grid.querySelectorAll('.ng-cell, .news-card, .ng-row-inserter, .ng-row-inserter::before'));
+          console.log('sample children (first 10) computed styles:');
+          childs.slice(0,10).forEach(el=>{
+            try{ const c = getComputedStyle(el); console.log(el, {tag: el.tagName, cls: el.className, pe: c.pointerEvents, z: c.zIndex}); }catch(e){}
+          });
+          // element under center
+          const r = grid.getBoundingClientRect();
+          const cx = Math.round(r.left + r.width/2);
+          const cy = Math.round(r.top + r.height/2);
+          const top = document.elementFromPoint(cx, cy);
+          console.log('elementFromPoint at grid center:', top, top && getComputedStyle(top) ? getComputedStyle(top).pointerEvents : null);
+        }catch(e){ console.warn('inspect failed', e); }
+      };
+
+      window.aktualityGrid.ensurePointerEvents = function(){
+        try{
+          const grid = document.getElementById('newsGridAdmin');
+          if(!grid) return;
+          grid.style.pointerEvents = 'auto';
+          grid.style.zIndex = '25000';
+          Array.from(grid.querySelectorAll('*')).forEach(el=>{ el.style.pointerEvents = 'auto'; });
+          console.log('ensured pointer-events:auto on #newsGridAdmin and children');
+        }catch(e){ console.warn('ensurePointerEvents failed', e); }
+      };
+    }
+  }catch(e){}
 
 })();
