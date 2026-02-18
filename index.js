@@ -1,3 +1,5 @@
+import { initDragDrop } from "./dragdrop.js";
+
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ================= SLIDESHOW ================= */
@@ -29,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
             updateSlides();
         }, 3000);
     }
+    initDragDrop(".your-container", ".draggable");
 
     /* ================= STICKY NAV ================= */
     const nav = document.getElementById('heroNav');

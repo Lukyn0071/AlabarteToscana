@@ -360,6 +360,7 @@ $toastUndo = isset($_GET['u']) && (string)$_GET['u'] === '1';
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="admin.css">
     <script src="../index.js" defer></script>
+    <script src="index_drag&drop.js" defer></script>
 
     <!-- admin styles moved to admin/admin.css -->
 </head>
@@ -504,7 +505,7 @@ $toastUndo = isset($_GET['u']) && (string)$_GET['u'] === '1';
 
             <div class="section-dnd" draggable="true" data-sort-order="<?php echo (int)$sortOrder; ?>">
                 <div class="dnd-head">
-                    <span class="dnd-handle" title="Přetáhnout / klik pro přesun na pozici">↕ Přetáhnout</span>
+                    <span class="dnd-handle" data-drag-handle title="Přetáhnout">↕ Přetáhnout</span>
                     <span class="dnd-note">Pořadí: <?php echo (int)$sortOrder; ?></span>
                     <span class="dnd-move">
                         <label style="font-size:12px;opacity:.9">Přesunout na:</label>
@@ -856,140 +857,6 @@ $toastUndo = isset($_GET['u']) && (string)$_GET['u'] === '1';
         const l = (e && e.detail && e.detail.lang) ? e.detail.lang : (localStorage.getItem('lang') || 'cs');
         applySectionsLang(l);
     });
-})();
-</script>
-
-<script>
-(function(){
-    const container = document.getElementById('sectionsContainer');
-    if(!container) return;
-
-    const bar = document.getElementById('reorderBar');
-    const btnSave = document.getElementById('btnSaveOrder');
-    const btnCancel = document.getElementById('btnCancelOrder');
-
-    let dragging = null;
-    let dirty = false;
-    const originalOrder = [...container.querySelectorAll('.section-dnd')].map(el => el.getAttribute('data-sort-order'));
-
-    const placeholder = document.createElement('div');
-    placeholder.className = 'section-placeholder';
-    placeholder.setAttribute('aria-hidden','true');
-
-    function setDirty(v){
-        dirty = v;
-        if(bar) bar.style.display = dirty ? 'block' : 'none';
-        // update pickers
-        if(window.__refreshPositionSelects) window.__refreshPositionSelects();
-    }
-
-    function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.section-dnd:not(.dragging)')];
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
-    }
-
-    function ensurePlaceholder(){
-        if(!placeholder.parentNode && dragging){
-            container.insertBefore(placeholder, dragging.nextSibling);
-        }
-    }
-
-    function removePlaceholder(){
-        if(placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
-    }
-
-    function buildOrderInputs(){
-        const items = [...container.querySelectorAll('.section-dnd')];
-        const inputsWrap = document.getElementById('reorderInputs');
-        if(!inputsWrap) return;
-        inputsWrap.innerHTML = '';
-        items.forEach(el => {
-            const sort = el.getAttribute('data-sort-order');
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'order[]';
-            input.value = sort;
-            inputsWrap.appendChild(input);
-        });
-    }
-
-    function currentOrder(){
-        return [...container.querySelectorAll('.section-dnd')].map(el => el.getAttribute('data-sort-order'));
-    }
-
-    function restoreOriginal(){
-        const map = new Map();
-        container.querySelectorAll('.section-dnd').forEach(el => map.set(el.getAttribute('data-sort-order'), el));
-        originalOrder.forEach(k => {
-            const el = map.get(k);
-            if(el) container.appendChild(el);
-        });
-        setDirty(false);
-    }
-
-    // drag interactions (more Google-Forms-ish)
-    container.addEventListener('dragstart', (e) => {
-        const item = e.target.closest('.section-dnd');
-        if(!item) return;
-        dragging = item;
-        item.classList.add('dragging');
-        ensurePlaceholder();
-        // Make the dragged card slightly detached
-        try {
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', item.getAttribute('data-sort-order') || '');
-        } catch(err) {}
-    });
-
-    container.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        if(!dragging) return;
-        const afterEl = getDragAfterElement(container, e.clientY);
-        if (afterEl == null) {
-            container.appendChild(placeholder);
-        } else {
-            container.insertBefore(placeholder, afterEl);
-        }
-    });
-
-    container.addEventListener('drop', (e) => {
-        e.preventDefault();
-        if(!dragging) return;
-        container.insertBefore(dragging, placeholder);
-        setDirty(true);
-    });
-
-    container.addEventListener('dragend', (e) => {
-        const item = e.target.closest('.section-dnd');
-        if(item) item.classList.remove('dragging');
-        dragging = null;
-        removePlaceholder();
-        if(window.__refreshPositionSelects) window.__refreshPositionSelects();
-    });
-
-    // Save/cancel
-    if(btnSave) btnSave.addEventListener('click', () => {
-        buildOrderInputs();
-        document.getElementById('reorderForm').submit();
-    });
-
-    if(btnCancel) btnCancel.addEventListener('click', () => {
-        restoreOriginal();
-    });
-
-    // when click-to-move changes order, mark dirty but do not submit
-    window.__markOrderDirty = () => setDirty(true);
-
-    // initial
-    setDirty(false);
 })();
 </script>
 

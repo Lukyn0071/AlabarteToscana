@@ -546,6 +546,23 @@ body {
     position: relative;
     z-index: 1;
 }
+.section-dnd {
+    will-change: transform;
+}
+
+.section-dnd.dragging {
+    opacity: 0.95;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    cursor: grabbing;
+}
+
+.section-placeholder {
+    background: rgba(0,0,0,0.05);
+    border: 2px dashed rgba(0,0,0,0.15);
+    border-radius: 12px;
+    margin: 16px 0;
+}
+
 
 @media (max-width: 700px) {
     .page-content::before {
