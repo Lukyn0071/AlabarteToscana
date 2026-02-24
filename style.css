@@ -1084,7 +1084,7 @@ body {
 
     animation: none !important; /* ✅ vypne fade animaci */
 }
-arrow {
+.scroll-hint__arrow {
     font-size: 1.35rem;
     line-height: 1;
     animation: scrollHintBounce 1.35s ease-in-out infinite;

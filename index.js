@@ -1,5 +1,3 @@
-import { initDragDrop } from "./dragdrop.js";
-
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ================= SLIDESHOW ================= */
@@ -26,18 +24,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (total > 0) {
+        updateSlides(); // <-- PŘIDEJ TOTO
+
         setInterval(() => {
             index = (index + 1) % total;
             updateSlides();
         }, 3000);
     }
-    initDragDrop(".your-container", ".draggable");
-
     /* ================= STICKY NAV ================= */
-    const nav = document.getElementById('heroNav');
-    window.addEventListener('scroll', () => {
-        nav.classList.toggle('scrolled', window.scrollY > 40);
-    });
+    const nav = document.querySelector('.hero-nav');
+
+    if (nav) {
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 40);
+        });
+    }
 
     /* ================= SCROLL CROSSFADE (hero background) ================= */
     const heroBg = document.querySelector(".hero-bg");

@@ -21,11 +21,10 @@ $sections = load_page_sections($pdo, $lang);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css">
-    <script src="index.js" defer></script>
+    <link rel="stylesheet" href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>">
+    <script src="index.js?v=<?= filemtime(__DIR__ . '/index.js') ?>" defer></script>
 </head>
 <body>
-
 <section class="hero">
     <!-- ✅ jen tato část má pozadí -->
     <div class="hero-bg">
