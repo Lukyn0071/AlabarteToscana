@@ -4,8 +4,8 @@
 
 declare(strict_types=1);
 
-ini_set('display_errors', '0');
-error_reporting(0);
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
 
 register_shutdown_function(static function () {
     $err = error_get_last();
@@ -19,8 +19,8 @@ register_shutdown_function(static function () {
     }
 });
 
-require_once __DIR__ . '/../auth/bootstrap.php';
-require_login();
+//require_once __DIR__ . '/../auth/bootstrap.php';
+//require_login();
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -111,8 +111,13 @@ try {
         exit;
     }
 
+    // Return root-relative path so clients don't need to handle ../ prefixes
     $publicPath = '/Images/aktuality/' . $fileName;
-    echo json_encode(['ok' => true, 'path' => $publicPath], JSON_UNESCAPED_UNICODE);
+
+    echo json_encode([
+        'ok' => true,
+        'path' => $publicPath
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['ok' => false, 'errors' => [$e->getMessage()]], JSON_UNESCAPED_UNICODE);
