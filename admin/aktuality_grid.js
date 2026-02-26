@@ -1310,6 +1310,7 @@
           <div class="modal__media">
             <button type="button" class="modal__nav-arrow modal__nav-prev" data-action="img-prev" aria-label="Předchozí">◀</button>
             <img id="ngPostEditorPreview" src="" alt="" />
+            <div class="ng-preview-counter" aria-hidden="true"><span id="ngPostEditorPreviewCounter"></span></div>
             <button type="button" class="modal__nav-delete" data-action="img-delete" aria-label="Smazat obrázek">🗑</button>
             <button type="button" class="modal__nav-arrow modal__nav-next" data-action="img-next" aria-label="Další">▶</button>
           </div>
@@ -1495,6 +1496,15 @@
         if(up){ prev.src = resolveAssetPath(up); prev.style.display = ''; } else { prev.src = ''; prev.style.display = 'none'; }
       }
     }
+    // update counter under preview
+    try{
+      const counterEl = dlg.querySelector('#ngPostEditorPreviewCounter');
+      const total = (imgs && imgs.length) ? imgs.length : (String(dlg.dataset.uploadedImage || '').trim() ? 1 : 0);
+      if(counterEl){
+        if(total <= 0){ counterEl.parentElement.style.display = 'none'; }
+        else { counterEl.parentElement.style.display = ''; counterEl.textContent = `${Math.max(1, idx + 1)} / ${total}`; }
+      }
+    }catch(e){}
     // toggle nav disabled states
     const prevBtn = dlg.querySelector('[data-action="img-prev"]');
     const nextBtn = dlg.querySelector('[data-action="img-next"]');

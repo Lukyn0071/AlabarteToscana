@@ -155,7 +155,15 @@
         media.className = 'modal__media';
         modalImg = document.createElement('img');
         modalImg.id = 'newsModalImage';
-        media.appendChild(modalImg);
+        // Wrap image in a slide wrapper so we can animate incoming/outgoing images
+        const slideWrap = document.createElement('div');
+        slideWrap.className = 'slide-wrap';
+        slideWrap.style.width = '100%';
+        slideWrap.style.height = '100%';
+        slideWrap.style.position = 'relative';
+        slideWrap.style.overflow = 'hidden';
+        slideWrap.appendChild(modalImg);
+        media.appendChild(slideWrap);
 
         // Prev / Next arrows overlaying the media
         const prevArrow = document.createElement('button');
@@ -236,6 +244,43 @@
         modalMeta = document.getElementById("newsModalMeta");
         modalPerex = document.getElementById("newsModalPerex");
         modalBody = document.getElementById("newsModalBody");
+        // Ensure modalImg is wrapped in .slide-wrap so sliding animations always have a container.
+        try {
+            if (modalImg && modalImg.parentElement && !modalImg.parentElement.classList.contains('slide-wrap')) {
+                const parent = modalImg.parentElement;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'slide-wrap';
+                // preserve inline sizing
+                wrapper.style.width = parent.style.width || '100%';
+                wrapper.style.height = parent.style.height || '100%';
+                wrapper.style.position = 'relative';
+                wrapper.style.overflow = 'hidden';
+                parent.replaceChild(wrapper, modalImg);
+                wrapper.appendChild(modalImg);
+            }
+        } catch (e) {}
+        // Ensure arrows exist in modal (create them if server template omitted them)
+        try {
+            const mediaEl = modal ? (modal.querySelector('.modal__media') || modal) : null;
+            if (mediaEl) {
+                if (!mediaEl.querySelector('.modal__nav-prev')) {
+                    const prevArrow = document.createElement('button');
+                    prevArrow.className = 'modal__nav-arrow modal__nav-prev';
+                    prevArrow.type = 'button';
+                    prevArrow.setAttribute('aria-label', 'Předchozí obrázek');
+                    prevArrow.innerHTML = '◀';
+                    mediaEl.appendChild(prevArrow);
+                }
+                if (!mediaEl.querySelector('.modal__nav-next')) {
+                    const nextArrow = document.createElement('button');
+                    nextArrow.className = 'modal__nav-arrow modal__nav-next';
+                    nextArrow.type = 'button';
+                    nextArrow.setAttribute('aria-label', 'Následující obrázek');
+                    nextArrow.innerHTML = '▶';
+                    mediaEl.appendChild(nextArrow);
+                }
+            }
+        } catch (e) {}
         const prevArrowBtn = modal ? modal.querySelector('.modal__nav-prev') : null;
         const nextArrowBtn = modal ? modal.querySelector('.modal__nav-next') : null;
         if (!modal || !modalImg || !modalTitle || !modalMeta || !modalPerex || !modalBody) {
@@ -249,73 +294,238 @@
         // Galerie obrázků
         const images = Array.isArray(item.images) && item.images.length > 0 ? item.images : (item.image ? [item.image] : []);
         CURRENT_IMAGE_INDEX = 0;
-        function showImage(idx) {
-            if (!images.length) return;
-            CURRENT_IMAGE_INDEX = ((idx % images.length) + images.length) % images.length;
-            // Visual loading state: add class and remove on load for smooth fade
-            try { modalImg.classList.add('is-loading'); } catch(e){}
-            // Cleanup previous onload
-            try { modalImg.onload = null; } catch(e){}
-            modalImg.alt = localizedField(item, 'title').replaceAll("\n", " ") + (images.length > 1 ? ` (${CURRENT_IMAGE_INDEX+1}/${images.length})` : '');
-            modalImg.onload = function(){ try{ modalImg.classList.remove('is-loading'); }catch(e){} modalImg.onload = null; };
-            modalImg.src = resolveAssetPath(images[CURRENT_IMAGE_INDEX]);
 
-            // Update thumb active state and center the current thumb (animated) if nav exists.
+        // internal state for sliding
+        let _isSliding = false;
+        let _slideTimeout = null;
+
+        function finishSlideCleanup(oldEl, newEl) {
             try {
-                if (nav && nav._track) {
+                if (oldEl && oldEl.parentElement) oldEl.parentElement.removeChild(oldEl);
+            } catch (e) {}
+            // ensure modalImg points to the active image element and has the same id
+            try {
+                if (newEl) {
+                    // normalize styles so the image sits normally in the flow inside slide-wrap
                     try {
-                        const track = nav._track;
-                        const thumbs = Array.from(track.children);
-                        thumbs.forEach((b, i) => { if (i === CURRENT_IMAGE_INDEX) b.classList.add('is-active'); else b.classList.remove('is-active'); });
-                    } catch (e) {}
-                    try { updateThumbs(); } catch(e){}
-                } else {
-                    // nav not ready yet (first open) — retry shortly
-                    setTimeout(() => {
-                        try {
-                            if (nav && nav._track) {
-                                const track = nav._track;
-                                const thumbs = Array.from(track.children);
-                                thumbs.forEach((b, i) => { if (i === CURRENT_IMAGE_INDEX) b.classList.add('is-active'); else b.classList.remove('is-active'); });
-                                updateThumbs();
-                            }
-                        } catch (e) {}
-                    }, 80);
+                        newEl.id = 'newsModalImage';
+                        newEl.classList.remove('slide');
+                        newEl.style.transition = '';
+                        newEl.style.transform = '';
+                        newEl.style.opacity = '';
+                        newEl.style.position = '';
+                        newEl.style.top = '';
+                        newEl.style.left = '';
+                        newEl.style.width = '';
+                        newEl.style.height = '';
+                        newEl.style.zIndex = '';
+                        newEl.style.willChange = '';
+                    } catch (ee) {}
+                    modalImg = newEl;
                 }
             } catch (e) {}
+            _isSliding = false;
+            if (_slideTimeout) { clearTimeout(_slideTimeout); _slideTimeout = null; }
+        }
+
+        function showImage(idx, opts) {
+            opts = opts || {};
+            if (!images.length) return;
+            const prevIndex = CURRENT_IMAGE_INDEX;
+            const tgt = ((idx % images.length) + images.length) % images.length;
+            // if same index and not forced, no-op
+            if (tgt === prevIndex && !opts.force) return;
+
+            // direction: 'right' means image moves from right -> center (we advanced forward), 'left' opposite
+            let direction = opts.dir;
+            if (!direction) {
+                try {
+                    const n2 = images.length;
+                    const forward = (tgt - prevIndex + n2) % n2;
+                    const backward = (prevIndex - tgt + n2) % n2;
+                    direction = (forward <= backward) ? 'right' : 'left';
+                } catch (e) { direction = (tgt > prevIndex) ? 'right' : 'left'; }
+            }
+
+            CURRENT_IMAGE_INDEX = tgt;
+
+            // Visual loading state
+            try { if (!opts.instant) modalImg.classList.add('is-loading'); } catch(e){}
+
+            // If instant requested (first show) just swap src without animation
+            const media = modalImg.closest('.modal__media') || modalImg.parentElement || document.body;
+            const slideWrap = modalImg.parentElement && modalImg.parentElement.classList.contains('slide-wrap') ? modalImg.parentElement : (media.querySelector('.slide-wrap') || null);
+
+            if (opts.instant) {
+                try {
+                    // reset any previous inline positioning so image displays normally
+                    try {
+                        modalImg.style.transition = '';
+                        modalImg.style.transform = 'translateX(0)';
+                        modalImg.style.opacity = '1';
+                        modalImg.style.position = '';
+                        modalImg.style.top = '';
+                        modalImg.style.left = '';
+                        modalImg.style.width = '';
+                        modalImg.style.height = '';
+                        modalImg.style.zIndex = '';
+                        modalImg.style.willChange = '';
+                    } catch (e) {}
+                    modalImg.onload = function(){ try{ modalImg.classList.remove('is-loading'); }catch(e){} modalImg.onload = null; };
+                    modalImg.src = resolveAssetPath(images[CURRENT_IMAGE_INDEX]);
+                } catch(e){}
+                // update thumbs
+                try { if (nav && nav._track) { const track = nav._track; const thumbs = Array.from(track.children); thumbs.forEach((b, i) => { if (i === CURRENT_IMAGE_INDEX) b.classList.add('is-active'); else b.classList.remove('is-active'); }); updateThumbs(); } } catch(e){}
+                return;
+            }
+
+            // Prevent overlapping animations
+            if (_isSliding) {
+                // if already sliding, do a hard swap (cancel previous) to keep UI responsive
+                try {
+                    const current = modalImg;
+                    current.onload = null;
+                    // reset current positioning so replacement looks correct
+                    try {
+                        current.style.transition = '';
+                        current.style.transform = 'translateX(0)';
+                        current.style.opacity = '1';
+                        current.style.position = '';
+                        current.style.top = '';
+                        current.style.left = '';
+                        current.style.width = '';
+                        current.style.height = '';
+                        current.style.zIndex = '';
+                        current.classList.remove('slide');
+                    } catch (ee) {}
+                    current.src = resolveAssetPath(images[CURRENT_IMAGE_INDEX]);
+                    current.classList.remove('is-loading');
+                } catch (e) {}
+                try { updateThumbs(); } catch(e){}
+                return;
+            }
+
+            _isSliding = true;
+
+            // create new image element
+            const newImg = document.createElement('img');
+            newImg.className = modalImg.className || '';
+            newImg.classList.add('slide');
+            newImg.loading = 'eager';
+            newImg.alt = modalImg.alt || '';
+            // ensure absolute positioning so transforms move the element cleanly
+            newImg.style.position = 'absolute';
+            newImg.style.top = '30px';
+            newImg.style.left = '35px';
+            newImg.style.width = '100%';
+            newImg.style.height = '100%';
+            newImg.style.objectFit = 'contain';
+            newImg.style.willChange = 'transform, opacity';
+            newImg.style.transform = (direction === 'right') ? 'translateX(100%)' : 'translateX(-100%)';
+            newImg.style.transition = 'transform 420ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease';
+            newImg.style.zIndex = '50';
+
+            // ensure new image src loads then animate
+            newImg.onload = function () { try{ newImg.classList.remove('is-loading'); }catch(e){} newImg.onload = null; };
+            newImg.src = resolveAssetPath(images[CURRENT_IMAGE_INDEX]);
+
+            // put new image into slideWrap (fallback to media if not found)
+            const container = slideWrap || media;
+            // ensure container is positioned and overflow hidden
+            try { container.style.position = container.style.position || 'relative'; container.style.overflow = 'hidden'; } catch(e){}
+
+            // make sure old image is absolute so it animates out predictably
+            try {
+                if (modalImg && (!modalImg.style.position || modalImg.style.position === 'relative')) {
+                    modalImg.style.position = 'absolute';
+                    modalImg.style.top = '30px';
+                    modalImg.style.left = '35px';
+                    modalImg.style.width = '100%';
+                    modalImg.style.height = '100%';
+                    modalImg.style.objectFit = 'contain';
+                    modalImg.style.zIndex = '40';
+                }
+            } catch (e) {}
+
+            // append new image
+            container.appendChild(newImg);
+
+            // force reflow then animate both images
+            requestAnimationFrame(() => {
+                try {
+                    // animate old image out and new image in
+                    const old = modalImg;
+                    if (old) {
+                        old.style.transition = 'transform 420ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease';
+                        old.style.transform = (direction === 'right') ? 'translateX(-100%)' : 'translateX(100%)';
+                        old.style.opacity = '0';
+                        old.style.zIndex = '40';
+                    }
+                    newImg.style.transform = 'translateX(0)';
+                    newImg.style.opacity = '1';
+                } catch (e) { if (DEBUG) console.warn('[aktuality] slide animate failed', e); }
+            });
+
+            // After animation complete, remove old image and set modalImg to new
+            _slideTimeout = setTimeout(() => {
+                try {
+                    // ensure new image is exactly centered and visible
+                    try {
+                        if (newImg) {
+                            newImg.style.transition = '';
+                            newImg.style.transform = 'translateX(0)';
+                            newImg.style.opacity = '1';
+                            newImg.style.position = '';
+                            newImg.style.top = '';
+                            newImg.style.left = '';
+                            newImg.style.width = '';
+                            newImg.style.height = '';
+                            newImg.style.zIndex = '';
+                            newImg.classList.remove('slide');
+                        }
+                    } catch (ee) {}
+                } catch (e) {}
+                try { finishSlideCleanup(modalImg, newImg); } catch (e) {}
+                try { updateThumbs(); } catch(e){}
+            }, 460);
         }
 
         // Helper to navigate to target index with direction calculated for thumb update
-        function navigateTo(targetIndex) {
+        function navigateTo(targetIndex, forcedDir) {
             const n = images.length;
             if (!n) return;
             const tgt = ((targetIndex % n) + n) % n;
             const prev = CURRENT_IMAGE_INDEX;
-            showImage(tgt);
-            // determine direction (shortest circular path)
-            try {
-                const n2 = images.length;
-                const forward = (tgt - prev + n2) % n2;
-                const backward = (prev - tgt + n2) % n2;
-                const dir = (forward <= backward) ? 'right' : 'left';
-                updateThumbs(dir);
-            } catch (e) { updateThumbs(undefined); }
+            // determine direction: if caller forced it, use forcedDir (explicit prev/next buttons)
+            let dir = forcedDir;
+            if (!dir) {
+                try {
+                    const n2 = images.length;
+                    const forward = (tgt - prev + n2) % n2;
+                    const backward = (prev - tgt + n2) % n2;
+                    dir = (forward <= backward) ? 'right' : 'left';
+                } catch (e) { dir = (tgt > prev) ? 'right' : 'left'; }
+            }
+            showImage(tgt, { dir: dir });
+            // update thumbs (pass direction so it shifts by one step animated)
+            try { updateThumbs(dir); } catch (e) { updateThumbs(); }
         }
 
         // attach arrow handlers (if present)
         try {
             if (prevArrowBtn) {
-                prevArrowBtn.onclick = (ev) => { ev && ev.preventDefault && ev.preventDefault(); navigateTo(CURRENT_IMAGE_INDEX - 1); };
+                prevArrowBtn.onclick = (ev) => { ev && ev.preventDefault && ev.preventDefault(); navigateTo(CURRENT_IMAGE_INDEX - 1, 'left'); };
             }
             if (nextArrowBtn) {
-                nextArrowBtn.onclick = (ev) => { ev && ev.preventDefault && ev.preventDefault(); navigateTo(CURRENT_IMAGE_INDEX + 1); };
+                nextArrowBtn.onclick = (ev) => { ev && ev.preventDefault && ev.preventDefault(); navigateTo(CURRENT_IMAGE_INDEX + 1, 'right'); };
             }
         } catch (e) {}
 
-        showImage(0);
+        // show initial image without animation
+        showImage(0, { instant: true, force: true });
 
         // Přidání šipek pro galerii
-        let nav = modalImg.parentElement.querySelector('.modal-gallery-thumbs');
+        let nav = modalImg.closest('.modal__media').querySelector('.modal-gallery-thumbs');
         if (!nav) {
             nav = document.createElement('div');
             nav.className = 'modal-gallery-thumbs';
@@ -344,10 +554,13 @@
 
                 btn.onclick = (ev) => {
                     ev && ev.preventDefault && ev.preventDefault();
-                    showImage(idx);
-                    // center clicked thumb (animate)
-                    ensureThumbVisible(idx, false);
-                 };
+                    // use navigateTo so sliding animation occurs and thumbs update correctly
+                    // determine visual direction based on relative position to current image
+                    const forcedDir = (idx < CURRENT_IMAGE_INDEX) ? 'left' : (idx > CURRENT_IMAGE_INDEX ? 'right' : undefined);
+                    navigateTo(idx, forcedDir);
+                     // center clicked thumb (animate)
+                     ensureThumbVisible(idx, false);
+                  };
 
                  track.appendChild(btn);
               }
@@ -513,25 +726,11 @@
         // Keyboard navigation for gallery
         function onKeyDown(e) {
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                const target = (e.key === 'ArrowLeft') ? (CURRENT_IMAGE_INDEX - 1) : (CURRENT_IMAGE_INDEX + 1);
-                // wrap index like showImage would
-                const n = images.length;
-                if (!n) return;
-                const tgt = ((target % n) + n) % n;
-                const prev = CURRENT_IMAGE_INDEX; // remember before changing
-                showImage(tgt);
-                // compute circular distances to determine shortest direction (handles wrapping)
-                let dir;
-                try {
-                    const n2 = images.length;
-                    const forward = (tgt - prev + n2) % n2;
-                    const backward = (prev - tgt + n2) % n2;
-                    if (forward === 0 && backward === 0) dir = undefined;
-                    else dir = (forward <= backward) ? 'right' : 'left';
-                } catch (e) { dir = (tgt > prev) ? 'right' : (tgt < prev ? 'left' : undefined); }
-                updateThumbs(dir);
-                 e.preventDefault();
-             }
+                const isLeft = e.key === 'ArrowLeft';
+                const target = isLeft ? (CURRENT_IMAGE_INDEX - 1) : (CURRENT_IMAGE_INDEX + 1);
+                navigateTo(target, isLeft ? 'left' : 'right');
+                e.preventDefault();
+            }
          }
         // Attach handler on document so Arrow keys work even when focus is inside image
         document.addEventListener('keydown', onKeyDown);
