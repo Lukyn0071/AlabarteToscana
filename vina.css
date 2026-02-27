@@ -1,113 +1,96 @@
-html {
+html{
     scrollbar-gutter: stable;
+    width: 100%;
+    overflow-x: hidden; /* ✅ zastaví posun do stran */
 }
 
-/* ===== ZÁKLAD ===== */
-/* ✅ Fonty primárně řídí typography.css + .typo-* třídy v HTML.
-   Tady necháváme jen layout/styling, případně UI texty držíme v sans přes proměnné. */
-body {
-    overflow-y: auto;
+*,
+*::before,
+*::after{
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   ZÁKLAD
+   ========================================================= */
+body{
+    width: 100%;
+    overflow-x: hidden; /* ✅ zastaví posun do stran */
     margin: 0;
+    overflow-y: auto;
     font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     color: #111;
 
-    /* Pozadí přes celou stránku – při scrollu se NEPOSOUVÁ */
-    background-color: #f6f3ee; /* fallback */
-    background-image: url("Images/Obrázek1.png");
+    /* ✅ pozadí stránky (obrázek je jen nahoře) */
+    background-color: #f6f3ee;
+}
+
+/* =========================================================
+   HERO + TOP BACKGROUND
+   ========================================================= */
+.hero{
+    position: relative;
+    isolation: isolate;
+    background: none;
+    min-height: 0;
+}
+
+/* ✅ jen tahle horní část má background obrázek */
+.vina-top-bg{
+    position: relative;
+    width: 100%;
+    background-image: url("Images/backgrounds/bg-vina1.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+
+    padding-bottom: 1.2rem;
 }
 
-/* ===== HERO ===== */
-.hero {
-    /* původně 100vh + background – pozadí teď řeší jen horní wrapper */
-    min-height: 0;
-    background: none;
+/* jemný přechod do čisté barvy */
+.vina-top-bg::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height: 120px;
+    pointer-events:none;
+    background: linear-gradient(to bottom, rgba(246,243,238,0), rgba(246,243,238,1));
+}
+
+/* overlay obsah */
+.hero-overlay{
     position: relative;
-
-    /* aby se oddělovač/vrstvy chovaly správně */
-    isolation: isolate;
-}
-
-/* Horní část už nepoužívá vlastní background (pozadí řeší body) */
-.vina-top-bg {
-    background-image: none;
-    background-attachment: scroll;
-
-    position: relative;
-
-    /* jemný oddělovač do spodní části stránky */
-    padding-bottom: 2.75rem;
-}
-
-/* vinná rostlina po horním okraji "main" části */
-.vina-top-bg::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-
-    /* sedí na hraně mezi hero a mainem (nad gradientem) */
-    bottom: 34px;
-    height: 80px;
-
-    background-repeat: repeat-x;
-    background-position: center bottom;
-    background-size: auto 80px;
-
-    opacity: 0.9;
-    pointer-events: none;
     z-index: 1;
-}
-
-/* Pozn.: na iOS/Safari může být background-attachment: fixed omezené.
-   V tom případě to jen spadne na standardní scrollování (bez rozbití layoutu). */
-
-/* CSS-only oddělovač (bez zásahu do HTML) */
-.vina-top-bg::after {
-    /* odstraněno – dělalo bílý pruh na hraně mezi horním blokem a main částí */
-    content: none;
-    display: none;
-}
-
-.hero-overlay {
-    /* původně min-height: 100vh; – ať se výška řídí obsahem */
-    min-height: 0;
-
-    /* odstraněno ztmavení horní části */
-    background: transparent;
 
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem 1.5rem;
-    box-sizing: border-box;
 
-    /* nad pseudo-elementem oddělovače */
-    position: relative;
-    z-index: 1;
+    min-height: 0;
+    background: transparent;
+    padding: 1rem 1.5rem;
 }
 
-/* ===== HERO TOP (stejné jako index) ===== */
-.hero-top {
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+.hero-top{
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    width: 100%;
+
     padding: 0.5rem 2rem;
-    box-sizing: border-box;
     position: relative;
 }
 
-/* ===== LANG SWITCHER ===== */
-.lang-switcher {
+/* LANG SWITCHER */
+.lang-switcher{
     display: flex;
     gap: 0.5rem;
 }
 
-.lang-btn {
+.lang-btn{
     font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     background: #111;
     color: #fff;
@@ -117,16 +100,21 @@ body {
     border-radius: 6px;
     font-weight: 700;
     font-size: 0.85rem;
-    transition: background 0.2s;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 
-.lang-btn.active {
+.lang-btn:hover{
+    transform: translateY(-1px);
+}
+
+.lang-btn.active,
+.lang-btn.is-active{
     background: #fff;
     color: #111;
 }
 
-/* ===== NAV (centrovaná absolutně) ===== */
-.hero-nav {
+/* NAV */
+.hero-nav{
     position: absolute;
     left: 50%;
     top: 50%;
@@ -134,17 +122,18 @@ body {
 
     display: flex;
     gap: 2.5rem;
+
     padding: 0.5rem 1rem;
+    border-radius: 999px;
 
     background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(10px);
-    border-radius: 999px;
 
     transition: background 0.3s ease, box-shadow 0.3s ease;
     z-index: 1000;
 }
 
-.hero-nav a {
+.hero-nav a{
     font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     color: #fff;
     text-decoration: none;
@@ -155,31 +144,39 @@ body {
     transition: opacity 0.2s ease;
 }
 
-.hero-nav a:hover {
-    opacity: 1;
-}
+.hero-nav a:hover{ opacity: 1; }
 
-/* scroll efekt – index.js ti na #heroNav přidává class "scrolled" */
-.hero-nav.scrolled {
+.hero-nav.scrolled{
     background: rgba(0, 0, 0, 0.75);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
-/* ===== VÍNA – HLAVIČKA ===== */
-.vina-header {
-    margin-top: 4rem;
+/* =========================================================
+   BÍLÁ ČÁST (slider + lupa/search)
+   ========================================================= */
+.vina-white-area{
+    width: 100%;
+    background: #f6f3ee;
+    padding: 1.6rem 0 0.6rem;
+    overflow-x: hidden;
+}
+
+/* =========================================================
+   HLAVIČKA „Naše vína“
+   ========================================================= */
+.vina-header{
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;   /* 👈 změna */
+    align-items: center;
+
+    padding-top: 8rem;             /* 👈 posun nahoru/dolů */
+    margin-top: 0;
     text-align: center;
-    color: #111;
+    color: #000000;
 }
 
-/* ✅ font/velikost řeší typography.css přes .typo-eyebrow v HTML */
-.vina-eyebrow {
-    display: block;
-    margin-bottom: 0.6rem;
-}
-
-/* ===== NADPIS: 2 úrovně ===== */
-/* ✅ H1 font řeší typography.css přes .typo-h1 na .vina-title */
 .vina-title{
     margin: 0;
     display: grid;
@@ -190,7 +187,6 @@ body {
     padding-bottom: 1.4rem;
 }
 
-/* ✅ malé "Naše" držíme jako UI/sans (luxusní editorial vibe) */
 .vina-title__small{
     font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     font-size: 1.05rem;
@@ -201,7 +197,6 @@ body {
     color: rgba(17, 17, 17, 0.9);
 }
 
-/* ✅ velké "vína" dědí serif z .typo-h1, tady jen dorovnáváme vzhled */
 .vina-title__big{
     font-weight: 520;
     letter-spacing: 0.05em;
@@ -211,268 +206,508 @@ body {
             0 8px 30px rgba(0,0,0,0.06);
 }
 
-/* linka pod titulkem */
 .vina-title::after{
     content: "";
     display: block;
     width: 140px;
     height: 2px;
     margin: 1.2rem auto 0;
-
-    background: linear-gradient(
-            to right,
-            transparent,
-            rgba(17,17,17,0.35),
-            transparent
-    );
+    background: linear-gradient(to right, transparent, rgba(17,17,17,0.35), transparent);
     border-radius: 2px;
 }
 
-.vina-logo {
-    filter: grayscale(100%) brightness(0.55);
-    margin-bottom: 3rem;
-    opacity: 0.6;
-}
+/* =========================================================
+   LOGA POD "NAŠE VÍNA" – CENTROVANÉ
+   ========================================================= */
 
-/* ===== CONTENT ===== */
-/* ✅ font/velikost řeší typography.css přes .typo-body v HTML */
-.vina-content {
-    max-width: 700px;
-    margin-top: 2rem;
-    text-align: center;
-    color: #111;
-}
+.vina-brands{
+    margin-top: 1.2rem;
 
-/* ===== JEMNÝ NÁJEZD (hlavička + text) ===== */
-.vina-header,
-.vina-content {
-    opacity: 0;
-    transform: translateY(14px);
-    transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-.vina-header.is-visible,
-.vina-content.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* ===== VÍNA: prezentační katalog + jemný nájezd CELÉ SEKCE ===== */
-.wines {
-    width: min(1200px, 92%);
-
-    /* víc prostoru od hero části */
-    margin: 1.25rem auto 3rem;
-
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
-
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.9s ease, transform 0.9s ease;
-}
-
-.wines.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* jedna karta = image + text (prezentace, ne e-shop) */
-.wine-card {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 1.25rem;
+    display: flex;
+    justify-content: center;   /* 👈 důležité */
     align-items: center;
+    gap: 2rem;                 /* mezera mezi logy */
+}
 
-    background: rgba(255, 255, 255, 0.50);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+.vina-brands img{
+    height: 100px;
+    width: auto;
+    object-fit: contain;
+
+    opacity: 0.85;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.vina-brands img:hover{
+    transform: scale(1.05);
+    opacity: 1;
+}
+
+/* mobil */
+@media (max-width: 600px){
+    .vina-brands{
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+
+    .vina-brands img{
+        height: 55px;
+    }
+}
+
+/* =========================================================
+   PREZENTAČNÍ SLIDER – stabilní
+   ========================================================= */
+.presentation-shell{
+    position: relative;
+    width: min(1200px, 92%);
+    margin: 0 auto 1.25rem;
+
+    background: rgba(255,255,255,0.70);
+    border: 1px solid rgba(17,17,17,0.08);
     border-radius: 18px;
-    padding: 1.25rem;
+    padding: 1rem;
 
     backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
 
-    cursor: pointer;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.wine-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 34px rgba(0,0,0,0.16);
-}
-
-.wine-card:focus {
-    outline: none;
-}
-
-.wine-card:focus-visible {
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.65), 0 14px 34px rgba(0,0,0,0.16);
-}
-
-.wine-card--reverse {
-    grid-template-columns: 1fr 220px;
-}
-
-.wine-card--reverse .wine-media {
-    order: 2;
-}
-
-.wine-media {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    /* ✅ důležité: aby se nic neřezalo a zoom byl vidět */
     overflow: visible;
 }
 
-.wine-media img {
-    height: 320px;
+.wine-presentation-slider{
+    position: relative;
+    width: 100%;
+    height: clamp(280px, 42vh, 560px);
+    border-radius: 14px;
+    overflow: hidden;
+    background: transparent;
+}
+
+.presentation-slide{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.presentation-slide.is-active{
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.presentation-slide.is-enter{
+    transform: translateX(100%);
+    opacity: 0;
+    z-index: 3;
+}
+
+.presentation-slide.is-exit{
+    transform: translateX(-100%);
+    opacity: 0;
+    z-index: 1;
+}
+
+.presentation-slide.is-animating{
+    transition:
+            transform 2000ms cubic-bezier(.22,1,.36,1),
+            opacity  2000ms cubic-bezier(.22,1,.36,1);
+}
+
+.presentation-slide img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: transparent;
+}
+
+/* Šipky */
+.presentation-arrow{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+
+    width: auto;
+    height: auto;
+
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+
+    color: #111;              /* černá šipka */
+    font-size: 48px;          /* můžeš upravit velikost */
+    font-weight: 300;
+    line-height: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    padding: 0;
+    transition: transform 180ms ease, color 180ms ease;
+}
+
+
+.presentation-arrow:hover{
+    transform: translateY(-50%) scale(1.1);
+    color: #000;
+}
+
+.presentation-arrow:active{
+    transform: translateY(-50%) scale(0.95);
+}
+
+/* pozice */
+.presentation-arrow--prev{
+    left: 0;
+}
+
+.presentation-arrow--next{
+    right: 0;
+}
+
+/* mobil */
+@media (max-width: 560px){
+    .wine-presentation-slider{ height: 240px; border-radius: 20px; }
+
+    .presentation-arrow{
+        width: 40px;
+        height: 40px;
+        font-size: 28px;
+    }
+
+    .presentation-arrow--prev{ left: -20px; }
+    .presentation-arrow--next{ right: -20px; }
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+    .presentation-slide.is-animating{ transition: none !important; }
+}
+
+/* =========================================================
+   VYHLEDÁVÁNÍ – TOGGLE (lupa vlevo)
+   ========================================================= */
+.wine-search-wrap{
+    width: min(1200px, 92%);
+    margin: 1rem auto 0.25rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.wine-search-toggle--icon{
+    width: 44px;
+    height: 44px;
+    padding: 0;
+
+    border-radius: 999px;
+    border: 1px solid rgba(17,17,17,0.15);
+    background: #fff;
+    color: #111;
+
+    display: grid;
+    place-items: center;
+
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.wine-search-icon{
+    width: 18px;
+    height: 18px;
+    display: block;
+    transform: translate(0px, 0px); /* ✅ centrované */
+}
+
+.wine-search-toggle--icon:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+.wine-search-toggle--icon:active{
+    transform: translateY(-1px) scale(0.98);
+}
+
+.wine-search-toggle--icon:focus{ outline: none; }
+.wine-search-toggle--icon:focus-visible{
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.65), 0 10px 24px rgba(0,0,0,0.10);
+}
+
+/* Panel */
+.wine-search{
+    width: min(1200px, 92%);
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+
+    background: rgba(255, 255, 255, 0.40);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 16px;
+    padding: 0.9rem 1rem;
+
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+}
+
+.wine-search--panel{
+    width: min(920px, 100%);
+}
+
+.wine-search__label{
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+.wine-search__controls{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.wine-search__input{
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid rgba(17, 17, 17, 0.15);
+    background: rgba(255, 255, 255, 0.7);
+    outline: none;
+    font-size: 1rem;
+}
+
+.wine-search__input:focus{
+    border-color: rgba(17, 17, 17, 0.35);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.55);
+}
+
+.wine-search__clear{
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    border: none;
+    background: rgba(17, 17, 17, 0.85);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.wine-search__clear:disabled{
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.wine-search__status{
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* =========================================================
+   FILTRY / KATEGORIE (uvnitř panelu)
+   ========================================================= */
+.wine-filters{
+    width: 100%;
+    margin: 0.25rem 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.30);
+    border-radius: 16px;
+    padding: 0.75rem 1rem;
+
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.wine-filters__label{
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+.wine-filters__buttons{
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.wine-filter-btn{
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    border: 1px solid rgba(17, 17, 17, 0.18);
+    background: rgba(255, 255, 255, 0.65);
+    color: #111;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.wine-filter-btn:hover{
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.wine-filter-btn.is-active{
+    background: rgba(17, 17, 17, 0.85);
+    color: #fff;
+    border-color: rgba(17, 17, 17, 0.85);
+}
+
+.wine-filter-btn:focus{ outline: none; }
+.wine-filter-btn:focus-visible{
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.55);
+}
+
+/* =========================================================
+   KATALOG VÍN – STYLE JAKO SCREENSHOT
+   ========================================================= */
+.wines{
+    width: min(1200px, 92%);
+    margin: 2.2rem auto 4rem;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* ✅ 3 sloupce */
+    gap: 3rem;
+    align-items: start;
+}
+
+/* karta bez boxu */
+.wine-card{
+    cursor: pointer;
+}
+
+.wine-card--catalog{
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+
+    transition: transform 0.28s ease;
+}
+
+.wine-card--catalog:hover{
+    transform: translateY(-6px);
+}
+
+.wine-card--catalog:focus{ outline: none; }
+.wine-card--catalog:focus-visible{
+    outline: 3px solid rgba(140,130,92,0.28);
+    outline-offset: 6px;
+    border-radius: 16px;
+}
+
+/* láhev */
+.wine-card--catalog .wine-media{
+    margin-bottom: 1.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wine-card--catalog .wine-media img{
+    height: 340px;
     width: auto;
     max-width: 100%;
     object-fit: contain;
     display: block;
 
-    filter: drop-shadow(0 18px 24px rgba(0,0,0,0.25));
-
-    /* ✅ plynulost */
-    transform-origin: center center;
-    will-change: transform;
+    filter: none;
+    transform-origin: center;
+    transition: transform 0.35s ease;
 }
 
-/* ✅ HOVER EFEKT – stejný vibe jako index */
-.wine-card:hover .wine-media img {
-    animation: slowZoom 6s ease-in-out forwards;
+.wine-card--catalog:hover .wine-media img{
+    transform: scale(1.04);
 }
 
-.wine-info {
-    color: #111;
-}
-
-.wine-topline {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 0.4rem;
-}
-
-/* ✅ font/velikosti řeší typography.css přes .typo-h3 v HTML */
-.wine-name {
+/* text */
+.wine-card--catalog .wine-name{
     margin: 0;
-    max-width: 18ch;
-    line-height: 1.25;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.2;
 }
 
-/* ✅ font/velikosti řeší typography.css přes .typo-meta v HTML */
-.wine-meta {
-    opacity: 0.75;
-    white-space: nowrap;
+.wine-divider{
+    width: 82%;
+    height: 1px;
+    background: rgba(0,0,0,0.22);
+    margin: 1.05rem auto 0.9rem;
 }
 
-/* ✅ font/velikosti řeší typography.css přes .typo-body v HTML */
-.wine-story {
-    margin: 0.35rem 0 0.9rem;
-    opacity: 0.92;
-}
-
-/* poznámky necháme v sans a čitelné */
-.wine-notes {
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+.wine-appellation{
     margin: 0;
-    padding-left: 1.1rem;
-    display: grid;
-    gap: 0.25rem;
-    font-size: 0.92rem;
-    line-height: 1.6;
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(17,17,17,0.75);
 }
 
-.wine-notes strong {
-    font-weight: 650;
+.wine-price{
+    margin: 0.85rem 0 0;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: #c6a85c;
+    display: none !important;
 }
 
-/* ===== RESPONSIVE (TOP) ===== */
-@media (max-width: 768px) {
-    .hero-top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
+/* vyhledávání/filtr umí schovat karty */
+.wine-card.is-filtered-out{ display: none !important; }
 
-    .hero-nav {
-        position: static;
-        transform: none;
-        margin-top: 0.5rem;
-        gap: 1.5rem;
-        padding: 0.5rem 1rem;
-    }
+.wine-no-results{
+    width: min(1200px, 92%);
+    margin: -2rem auto 2.5rem;
+    text-align: center;
 
-    .lang-btn {
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
-    }
-
-    .vina-header {
-        margin-top: 3rem;
-    }
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(17, 17, 17, 0.08);
+    border-radius: 16px;
+    padding: 1rem;
+    backdrop-filter: blur(6px);
 }
 
-/* ===== RESPONSIVE (KATALOG) ===== */
-@media (max-width: 980px) {
-    .wines {
-        grid-template-columns: 1fr;
-    }
-
-    .wine-card,
-    .wine-card--reverse {
-        grid-template-columns: 180px 1fr;
-    }
-
-    .wine-card--reverse .wine-media {
-        order: 0;
-    }
-}
-
-@media (max-width: 560px) {
-    .wine-card,
-    .wine-card--reverse {
-        grid-template-columns: 1fr;
-        text-align: left;
-    }
-
-    .wine-media img {
-        max-width: 160px;
-    }
-
-    .wine-topline {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-/* ===== MODAL (POPUP) ===== */
-.modal {
+/* =========================================================
+   MODAL (POPUP)
+   ========================================================= */
+.modal{
     position: fixed;
     inset: 0;
     display: none;
     z-index: 2000;
 }
 
-.modal.is-open {
-    display: block;
-}
+.modal.is-open{ display: block; }
 
-/* Fade-out režim (aktivuje JS přidáním class is-closing) */
-.modal.is-closing .modal__panel {
+.modal.is-closing .modal__panel{
     animation: modalOut 0.25s ease forwards;
 }
-
-.modal.is-closing .modal__backdrop {
+.modal.is-closing .modal__backdrop{
     animation: backdropOut 0.25s ease forwards;
 }
 
-.modal__backdrop {
+.modal__backdrop{
     position: absolute;
     inset: 0;
     background: rgba(0,0,0,0.35);
@@ -480,7 +715,7 @@ body {
     opacity: 1;
 }
 
-.modal__panel {
+.modal__panel{
     position: relative;
     width: min(980px, 92%);
     margin: 5vh auto;
@@ -489,7 +724,6 @@ body {
     border: 1px solid rgba(255,255,255,0.45);
     box-shadow: 0 24px 70px rgba(0,0,0,0.25);
     backdrop-filter: blur(14px);
-    overflow: hidden;
 
     transform: translateY(12px);
     opacity: 0;
@@ -497,11 +731,32 @@ body {
 
     max-height: calc(100vh - 10vh);
     overflow: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
 }
 
-/* ===== MODAL NAVIGATION (NO CIRCLE) ===== */
-.modal__nav {
+.modal__close{
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    border: 0;
+    background: rgba(17,17,17,0.08);
+    color: #111;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 38px;
+    z-index: 30;
+}
+
+.modal__close:hover{
+    background: rgba(17,17,17,0.12);
+}
+
+.modal__nav{
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -524,95 +779,51 @@ body {
 
     transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
     z-index: 10;
+
     opacity: 0;
     pointer-events: none;
 }
 
-.modal__nav:hover {
+.modal__nav:hover{
     color: rgba(17, 17, 17, 0.92);
     opacity: 1;
     transform: translateY(-50%) scale(1.06);
 }
 
-.modal__nav--prev { left: -18px; }
-.modal__nav--next { right: -18px; }
+.modal__nav--prev{ left: -18px; }
+.modal__nav--next{ right: -18px; }
 
-/* aby nevznikal horizontální scrollbar */
-.modal__panel { overflow-x: hidden; }
-
-.modal.is-open .modal__nav {
+.modal.is-open .modal__nav{
     opacity: 0.75;
     pointer-events: auto;
 }
-.modal.is-open .modal__panel:hover .modal__nav {
+
+.modal.is-open .modal__panel:hover .modal__nav{
     opacity: 0.95;
 }
 
-/* ===== MODAL: ANIMACE PŘEPÍNÁNÍ OBSAHU ===== */
-.modal__grid {
-    transition: opacity 160ms ease, transform 160ms ease;
-    will-change: opacity, transform;
-}
-
-.modal__panel.is-switching-left .modal__grid {
-    opacity: 0;
-    transform: translateX(-18px);
-}
-
-.modal__panel.is-switching-right .modal__grid {
-    opacity: 0;
-    transform: translateX(18px);
-}
-
-/* Na mobilu schovat */
-@media (max-width: 640px) {
-    .modal__nav { display: none; }
-}
-
-/* ===== ANIMACE (modal) ===== */
-@keyframes modalIn {
-    to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes modalOut {
-    to { transform: translateY(12px); opacity: 0; }
-}
-
-@keyframes backdropOut {
-    to { opacity: 0; }
-}
-
-.modal__close {
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    border: 0;
-    background: rgba(17,17,17,0.08);
-    color: #111;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 38px;
-    z-index: 30;
-    pointer-events: auto;
-}
-
-.modal__close:hover {
-    background: rgba(17,17,17,0.12);
-}
-
-.modal__grid {
+.modal__grid{
     display: grid;
     grid-template-columns: 360px 1fr;
     gap: 1.25rem;
     padding: 1.25rem;
     align-items: stretch;
+
+    transition: opacity 160ms ease, transform 160ms ease;
+    will-change: opacity, transform;
 }
 
-.modal__media {
+.modal__panel.is-switching-left .modal__grid{
+    opacity: 0;
+    transform: translateX(-18px);
+}
+
+.modal__panel.is-switching-right .modal__grid{
+    opacity: 0;
+    transform: translateX(18px);
+}
+
+.modal__media{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -621,7 +832,7 @@ body {
     padding: 1rem;
 }
 
-.modal__media img {
+.modal__media img{
     width: 100%;
     max-width: 260px;
     height: auto;
@@ -629,21 +840,19 @@ body {
     filter: drop-shadow(0 18px 26px rgba(0,0,0,0.28));
 }
 
-.modal__content {
+.modal__content{
     color: #111;
     padding: 0.25rem 0.25rem 0.75rem 0.25rem;
 }
 
-.modal__topline {
+.modal__topline{
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     gap: 1rem;
-    padding-right: 0;
 }
 
-/* ✅ font/velikosti řeší typography.css přes .typo-h2 v HTML */
-.modal__title {
+.modal__title{
     margin: 0;
     letter-spacing: 0.06em;
     min-width: 0;
@@ -653,32 +862,28 @@ body {
     overflow-wrap: anywhere;
 }
 
-/* ✅ font/velikosti řeší typography.css přes .typo-meta v HTML */
-.modal__meta {
+.modal__meta{
     opacity: 0.75;
     white-space: nowrap;
     margin-right: 48px;
     text-align: right;
 }
 
-/* ✅ font/velikosti řeší typography.css přes .typo-body v HTML */
-.modal__story {
+.modal__story{
     margin: 0.75rem 0 1.1rem;
     opacity: 0.95;
 }
 
-.modal__section { margin-top: 1rem; }
+.modal__section{ margin-top: 1rem; }
 
-/* ✅ H3 už má v HTML .typo-h3, tady jen uppercase vibe pokud chceš */
-.modal__h3 {
+.modal__h3{
     margin: 0 0 0.5rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     opacity: 0.8;
 }
 
-/* seznamy držíme v sans pro čitelnost */
-.modal__specs {
+.modal__specs{
     font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     margin: 0;
     padding-left: 1.1rem;
@@ -688,165 +893,69 @@ body {
     line-height: 1.6;
 }
 
-body.modal-open { overflow: hidden; }
+body.modal-open{ overflow: hidden; }
 
-/* ===== RESPONSIVE (MODAL) ===== */
-@media (max-width: 860px) {
-    .modal__grid { grid-template-columns: 1fr; }
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1100px){
+    .wines{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2.5rem;
+    }
+}
 
-    .modal__media img { max-width: 220px; }
-
-    .modal__topline {
+@media (max-width: 768px){
+    .hero-top{
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.5rem 1.25rem;
     }
 
-    .modal__panel { margin: 3vh auto; }
+    .hero-nav{
+        position: static;
+        transform: none;
+        margin-top: 0.5rem;
+        gap: 1.5rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .lang-btn{
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .vina-header{ margin-top: 3rem; }
 }
 
-/* ===== VYHLEDÁVÁNÍ VÍN ===== */
-.wine-search {
-    width: min(1200px, 92%);
-    margin: 1.25rem auto 0.5rem;
-    display: grid;
-    gap: 0.5rem;
-
-    background: rgba(255, 255, 255, 0.40);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 16px;
-    padding: 0.9rem 1rem;
-
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+@media (max-width: 640px){
+    .wine-search__controls{ grid-template-columns: 1fr; }
+    .modal__nav{ display: none; }
+    .modal__grid{ grid-template-columns: 1fr; }
+    .modal__media img{ max-width: 220px; }
 }
 
-/* ✅ label má v HTML .typo-meta, tady jen spacing */
-.wine-search__label {
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.85;
+@media (max-width: 600px){
+    .wines{ grid-template-columns: 1fr; }
+    .wine-card--catalog .wine-media img{ height: 260px; }
 }
 
-.wine-search__controls {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.6rem;
-    align-items: center;
+/* =========================================================
+   ANIMACE
+   ========================================================= */
+@keyframes modalIn{
+    to{ transform: translateY(0); opacity: 1; }
+}
+@keyframes modalOut{
+    to{ transform: translateY(12px); opacity: 0; }
+}
+@keyframes backdropOut{
+    to{ opacity: 0; }
 }
 
-.wine-search__input {
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-    width: 100%;
-    padding: 0.7rem 0.9rem;
-    border-radius: 12px;
-    border: 1px solid rgba(17, 17, 17, 0.15);
-    background: rgba(255, 255, 255, 0.7);
-    outline: none;
-    font-size: 1rem;
-}
-
-.wine-search__input:focus {
-    border-color: rgba(17, 17, 17, 0.35);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.55);
-}
-
-.wine-search__clear {
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-    padding: 0.7rem 0.9rem;
-    border-radius: 12px;
-    border: none;
-    background: rgba(17, 17, 17, 0.85);
-    color: #fff;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.wine-search__clear:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
-/* ✅ status má v HTML .typo-meta, tady jen spacing */
-.wine-search__status {
-    margin: 0;
-    opacity: 0.8;
-}
-
-.wine-no-results {
-    width: min(1200px, 92%);
-    margin: -2rem auto 2.5rem;
-    text-align: center;
-
-    /* na světlém pozadí ať působí víc "card" než sklo */
-    background: rgba(255, 255, 255, 0.78);
-    border: 1px solid rgba(17, 17, 17, 0.08);
-    border-radius: 16px;
-    padding: 1rem;
-    backdrop-filter: blur(6px);
-}
-
-.wine-card.is-filtered-out { display: none; }
-
-/* ===== FILTRY / KATEGORIE ===== */
-.wine-filters {
-    width: min(1200px, 92%);
-    margin: 0.75rem auto 0.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-
-    background: rgba(255, 255, 255, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.30);
-    border-radius: 16px;
-    padding: 0.75rem 1rem;
-
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-}
-
-/* ✅ label má v HTML .typo-meta, tady jen spacing */
-.wine-filters__label {
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.85;
-}
-
-.wine-filters__buttons {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.wine-filter-btn {
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-    border: 1px solid rgba(17, 17, 17, 0.18);
-    background: rgba(255, 255, 255, 0.65);
-    color: #111;
-    padding: 0.45rem 0.75rem;
-    border-radius: 999px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.wine-filter-btn:hover {
-    background: rgba(255, 255, 255, 0.85);
-}
-
-.wine-filter-btn.is-active {
-    background: rgba(17, 17, 17, 0.85);
-    color: #fff;
-    border-color: rgba(17, 17, 17, 0.85);
-}
-
-.wine-filter-btn:focus { outline: none; }
-
-.wine-filter-btn:focus-visible {
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.55);
-}
-
-/* pomocná utilita pro přístupnost */
-.sr-only {
+/* util */
+.sr-only{
     position: absolute !important;
     width: 1px !important;
     height: 1px !important;
@@ -858,14 +967,6 @@ body.modal-open { overflow: hidden; }
     border: 0 !important;
 }
 
-@media (max-width: 640px) {
-    .wine-search__controls {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ===== ANIMACE (hover lahve) ===== */
-@keyframes slowZoom {
-    from { transform: scale(1); }
-    to   { transform: scale(1.12); } /* ✅ o trochu výraznější, aby to bylo vidět */
+#wineSearchPanel[hidden]{
+    display: none !important;
 }
