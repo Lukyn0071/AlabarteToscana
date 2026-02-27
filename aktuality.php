@@ -47,10 +47,6 @@ $assetV = (string)max(
   <script src="index.js?v=<?php echo urlencode($assetV); ?>" defer></script>
   <script src="aktuality.js?v=<?php echo urlencode($assetV); ?>" defer></script>
 
-  <!-- Keep hero background consistent with admin preview (which overrides due to relative Images path differences) -->
-  <style>
-    .hero{ background-image: url("Images/Obrázek1.png"); }
-  </style>
 </head>
 
 <body>

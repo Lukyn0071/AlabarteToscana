@@ -292,7 +292,7 @@ a { color: inherit; }
   justify-content:center;
   flex-direction: column-reverse;
   padding:1.25rem;
-  background-color: #08d6d0;
+  background-image: url("Images/RedM.jpg");
   border-radius: 20px;
   border-right: 1px solid rgba(0,0,0,0.04);
   position: relative;

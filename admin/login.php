@@ -4,7 +4,7 @@ require_once __DIR__ . '/db.php'; // cesta k souboru s připojením
 
 // If already logged in, go to dashboard
 if (is_logged_in()) {
-    header('Location: index.php');
+    header('Location: aktuality.php');
     exit;
 }
 
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Neplatný username nebo heslo.';
             } else {
                 login_admin((int)$user['id'], (string)$user['username']);
-                header('Location: index.php');
+                header('Location: aktuality.php');
                 exit;
             }
         } catch (Throwable $e) {
