@@ -21,6 +21,8 @@ register_shutdown_function(static function () {
 
 require_once __DIR__ . '/../auth/bootstrap.php';
 require_login();
+require_once __DIR__ . '/../db.php';
+$pdo = $pdo ?? null;
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -29,37 +31,12 @@ require_once __DIR__ . '/../content/news_posts.php';
 
 ensure_news_tables($pdo);
 
-/**
- * Normalize stored image_path to a URL that works from anywhere.
- * Preferred format for front-end: root-relative (/Images/...).
- */
-function normalize_image_url(string $path): string {
-    $p0 = trim($path);
-    if ($p0 === '') return '';
-
-    $p = str_replace('\\', '/', $p0);
-    $p = preg_replace('~^\./+~', '', $p) ?? $p;
-
-    // Keep absolute URLs, protocol-relative, and root-relative paths.
-    if (preg_match('~^(https?:)?//~i', $p) || str_starts_with($p, '/')) return $p;
-
-    // Keep ../ paths as-is (legacy values)
-    if (str_starts_with($p, '../')) return $p;
-
-    // Most common legacy values are stored as "Images/..."
-    if (str_starts_with($p, 'Images/')) {
-        return '/' . $p;
-    }
-
-    return $p;
-}
-
 try {
     $sql = "
         SELECT
             p.id,
             p.badge,
-            p.image_path,
+            p.image_paths,
             COALESCE(p.display_date, DATE_FORMAT(p.published_at, '%m/%Y')) AS display_date,
             cs.title AS title_cs,
             en.title AS title_en,
@@ -76,10 +53,28 @@ try {
     if (!is_array($rows)) $rows = [];
 
     $out = array_map(static function($r){
+        $images = [];
+        if (!empty($r['image_paths'])) {
+            $decoded = json_decode($r['image_paths'], true);
+            if (is_array($decoded)) {
+                // Normalize each image path if helper exists
+                if (function_exists('normalize_image_url')) {
+                    $normalized = [];
+                    foreach ($decoded as $img) {
+                        if (!is_string($img)) continue;
+                        $normalized[] = normalize_image_url($img);
+                    }
+                    $images = $normalized;
+                } else {
+                    $images = $decoded;
+                }
+            }
+        }
         return [
             'id' => (int)$r['id'],
             'badge' => (string)($r['badge'] ?? ''),
-            'image' => normalize_image_url((string)($r['image_path'] ?? '')),
+            'images' => $images,
+            'image' => (function_exists('normalize_image_url') ? normalize_image_url($images[0] ?? '') : ($images[0] ?? '')),
             'date' => (string)($r['display_date'] ?? ''),
             'title_cs' => (string)($r['title_cs'] ?? ''),
             'title_en' => (string)($r['title_en'] ?? ''),

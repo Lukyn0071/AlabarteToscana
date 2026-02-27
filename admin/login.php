@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/auth/bootstrap.php';
+require_once __DIR__ . '/db.php'; // cesta k souboru s připojením
 
 // If already logged in, go to dashboard
 if (is_logged_in()) {

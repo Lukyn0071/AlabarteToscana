@@ -50,12 +50,17 @@ function news_image_public_to_fs(string $publicPath): ?string {
 }
 
 function list_used_news_images(PDO $pdo): array {
-    $rows = $pdo->query("SELECT DISTINCT image_path FROM news_posts WHERE image_path IS NOT NULL AND image_path <> ''")->fetchAll();
+    $rows = $pdo->query("SELECT image_paths FROM news_posts WHERE image_paths IS NOT NULL AND image_paths <> ''")->fetchAll();
     if (!is_array($rows)) return [];
     $out = [];
     foreach ($rows as $r) {
         if (!is_array($r)) continue;
-        $out[] = (string)($r['image_path'] ?? '');
+        $decoded = json_decode($r['image_paths'], true);
+        if (is_array($decoded)) {
+            foreach ($decoded as $img) {
+                $out[] = (string)$img;
+            }
+        }
     }
     return $out;
 }
@@ -83,9 +88,9 @@ try {
     }
 
     // Capture image path before delete (so we can cleanup if unused)
-    $stmt = $pdo->prepare('SELECT image_path FROM news_posts WHERE id = :id');
+    $stmt = $pdo->prepare('SELECT image_paths FROM news_posts WHERE id = :id');
     $stmt->execute([':id' => $postId]);
-    $imagePath = (string)($stmt->fetchColumn() ?: '');
+    $imagePaths = (string)($stmt->fetchColumn() ?: '');
 
     $pdo->beginTransaction();
 
@@ -114,18 +119,23 @@ try {
 
     // Cleanup images: delete the deleted post image if no longer used by any post.
     $deletedFiles = [];
-    if ($imagePath !== '') {
-        $stillUsed = false;
-        $chk = $pdo->prepare('SELECT COUNT(*) FROM news_posts WHERE image_path = :p');
-        $chk->execute([':p' => $imagePath]);
-        $stillUsed = ((int)$chk->fetchColumn()) > 0;
+    if ($imagePaths !== '') {
+        $paths = json_decode($imagePaths, true);
+        if (is_array($paths)) {
+            foreach ($paths as $imagePath) {
+                $stillUsed = false;
+                $chk = $pdo->prepare('SELECT COUNT(*) FROM news_posts WHERE image_paths LIKE :p');
+                $chk->execute([':p' => '%"' . $imagePath . '"%']);
+                $stillUsed = ((int)$chk->fetchColumn()) > 0;
 
-        if (!$stillUsed) {
-            $fs = news_image_public_to_fs($imagePath);
-            if ($fs && is_file($fs)) {
-                @unlink($fs);
-                if (!is_file($fs)) {
-                    $deletedFiles[] = $imagePath;
+                if (!$stillUsed) {
+                    $fs = news_image_public_to_fs($imagePath);
+                    if ($fs && is_file($fs)) {
+                        @unlink($fs);
+                        if (!is_file($fs)) {
+                            $deletedFiles[] = $imagePath;
+                        }
+                    }
                 }
             }
         }

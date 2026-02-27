@@ -26,6 +26,8 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
 require_once __DIR__ . '/../content/news_posts.php';
+require_once __DIR__ . '/../db.php';
+$pdo = $pdo ?? null;
 
 ensure_news_tables($pdo);
 
@@ -47,7 +49,8 @@ try {
     $badge = isset($data['badge']) ? (string)$data['badge'] : null;
     $image = isset($data['image']) ? (string)$data['image'] : null;
     $displayDate = isset($data['date']) ? (string)$data['date'] : null;
-
+    $imagePaths = (isset($data['image_paths']) && is_array($data['image_paths'])) ? $data['image_paths'] : [];
+    $imagePaths = array_values(array_unique(array_filter($imagePaths, fn($v)=>!!$v)));
     $titleCs = trim((string)($data['title_cs'] ?? ''));
     $titleEn = trim((string)($data['title_en'] ?? $titleCs));
     $perexCs = (string)($data['perex_cs'] ?? '');
@@ -63,10 +66,10 @@ try {
 
     $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare('INSERT INTO news_posts (slot, sort_order, badge, image_path, display_date) VALUES (NULL, 0, :badge, :image, :display_date)');
+    $stmt = $pdo->prepare('INSERT INTO news_posts (slot, sort_order, badge, image_paths, display_date) VALUES (NULL, 0, :badge, :image_paths, :display_date)');
     $stmt->execute([
         ':badge' => $badge,
-        ':image' => $image,
+        ':image_paths' => json_encode($imagePaths, JSON_UNESCAPED_UNICODE),
         ':display_date' => $displayDate,
     ]);
 

@@ -21,6 +21,8 @@ register_shutdown_function(static function () {
 
 require_once __DIR__ . '/../auth/bootstrap.php';
 require_login();
+require_once __DIR__ . '/../db.php';
+$pdo = $pdo ?? null;
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -52,7 +54,6 @@ try {
     }
 
     $badge = array_key_exists('badge', $data) ? (string)$data['badge'] : null;
-    $image = array_key_exists('image', $data) ? (string)$data['image'] : null;
     $displayDate = array_key_exists('date', $data) ? (string)$data['date'] : null;
 
     $titleCs = trim((string)($data['title_cs'] ?? ''));
@@ -77,12 +78,13 @@ try {
         exit;
     }
 
+    $imagePaths = array_key_exists('image_paths', $data) && is_array($data['image_paths']) ? $data['image_paths'] : [];
+    $imagePaths = array_values(array_unique(array_filter($imagePaths, fn($v)=>!!$v)));
     $pdo->beginTransaction();
-
-    $stmt = $pdo->prepare('UPDATE news_posts SET badge = :badge, image_path = :image, display_date = :display_date WHERE id = :id');
+    $stmt = $pdo->prepare('UPDATE news_posts SET badge = :badge, image_paths = :image_paths, display_date = :display_date WHERE id = :id');
     $stmt->execute([
         ':badge' => $badge,
-        ':image' => $image,
+        ':image_paths' => json_encode($imagePaths, JSON_UNESCAPED_UNICODE),
         ':display_date' => $displayDate,
         ':id' => $id,
     ]);

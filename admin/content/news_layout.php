@@ -202,7 +202,7 @@ function load_news_layout(PDO $pdo, string $lang, string $layoutKey = 'aktuality
             li.post_id,
             li.x, li.y, li.w, li.h,
             p.badge,
-            p.image_path,
+            p.image_paths,
             COALESCE(p.display_date, DATE_FORMAT(p.published_at, '%m/%Y')) AS display_date,
             t.title, t.perex, t.body_html
         FROM news_layout_items li
@@ -220,6 +220,27 @@ function load_news_layout(PDO $pdo, string $lang, string $layoutKey = 'aktuality
     $outItems = [];
     foreach ($items as $r) {
         if (!is_array($r)) continue;
+        // Nově: pole obrázků
+        $images = [];
+        /* 1) nové řešení (JSON pole) */
+        if (!empty($r['image_paths'])) {
+            $decoded = json_decode($r['image_paths'], true);
+
+            if (is_array($decoded)) {
+                // Normalizuj každou cestu na root-relative/absolute URL — použijeme shared funkci
+                $normalized = [];
+                foreach ($decoded as $img) {
+                    if (!is_string($img)) continue;
+                    if (function_exists('normalize_image_url')) {
+                        $normalized[] = normalize_image_url($img);
+                    } else {
+                        // fallback: leave as-is
+                        $normalized[] = $img;
+                    }
+                }
+                $images = $normalized;
+            }
+        }
         $outItems[] = [
             'post_id' => (int)($r['post_id'] ?? 0),
             'x' => (int)($r['x'] ?? 0),
@@ -227,7 +248,7 @@ function load_news_layout(PDO $pdo, string $lang, string $layoutKey = 'aktuality
             'w' => (int)($r['w'] ?? 1),
             'h' => (int)($r['h'] ?? 1),
             'badge' => (string)($r['badge'] ?? ''),
-            'image' => (string)($r['image_path'] ?? ''),
+            'images' => $images,
             'date' => (string)($r['display_date'] ?? ''),
             'title' => (string)($r['title'] ?? ''),
             'perex' => (string)($r['perex'] ?? ''),

@@ -1017,7 +1017,9 @@
     state.posts = (posts.items || []).map(p => ({
       post_id: p.id,
       badge: p.badge,
-      image: p.image,
+      // Keep both a primary image and the images array (if provided by API)
+      image: p.image || (Array.isArray(p.images) ? (p.images[0] || '') : ''),
+      images: Array.isArray(p.images) ? p.images.slice() : (p.images ? [p.images] : []),
       date: p.date,
       title_cs: p.title_cs,
       title_en: p.title_en,
@@ -1294,24 +1296,28 @@
     let dlg = document.getElementById('ngPostEditorPanel');
     if(dlg) return dlg;
 
-    // Editor panel without fullscreen modal/backdrop
+    // Use public modal classes so editor inherits the same cascading visual style.
     dlg = document.createElement('div');
     dlg.id = 'ngPostEditorPanel';
-    dlg.className = 'ng-editor-panel';
+    dlg.className = 'modal';
     dlg.setAttribute('aria-hidden', 'true');
 
     dlg.innerHTML = `
-      <div class="ng-editor-panel__inner" role="dialog" aria-modal="true" aria-labelledby="ngPostEditorTitle">
-        <button class="ng-editor-panel__close" type="button" aria-label="${lang === 'en' ? 'Close' : 'Zavřít'}" data-close="true">✕</button>
-
-        <form class="ng-editor-panel__grid" autocomplete="off">
-          <div class="ng-editor-panel__media">
+      <div class="modal__backdrop" aria-hidden="true"></div>
+      <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="ngPostEditorTitle">
+        <button class="modal__close" type="button" aria-label="${lang === 'en' ? 'Close' : 'Zavřít'}" data-close="true">✕</button>
+        <form class="modal__grid" autocomplete="off">
+          <div class="modal__media">
+            <button type="button" class="modal__nav-arrow modal__nav-prev" data-action="img-prev" aria-label="Předchozí">◀</button>
             <img id="ngPostEditorPreview" src="" alt="" />
+            <div class="ng-preview-counter" aria-hidden="true"><span id="ngPostEditorPreviewCounter"></span></div>
+            <button type="button" class="modal__nav-delete" data-action="img-delete" aria-label="Smazat obrázek">🗑</button>
+            <button type="button" class="modal__nav-arrow modal__nav-next" data-action="img-next" aria-label="Další">▶</button>
           </div>
 
-          <div class="ng-editor-panel__content">
-            <div class="ng-editor-panel__topline">
-              <h2 class="ng-editor-panel__title" id="ngPostEditorTitle">${lang === 'en' ? 'Edit post' : 'Upravit příspěvek'}</h2>
+          <div class="modal__content">
+            <div class="modal__topline">
+              <h2 class="modal__title" id="ngPostEditorTitle">${lang === 'en' ? 'Edit post' : 'Upravit příspěvek'}</h2>
             </div>
 
             <div class="ng-editorform">
@@ -1387,14 +1393,35 @@
     dlg.addEventListener('click', (e)=>{
       const t = e.target;
       const closeHit = t && t.closest ? t.closest('[data-close="true"]') : null;
-      if(closeHit) closePostEditor();
+      if(closeHit) return closePostEditor();
 
+      // language tab switch
       const tab = t && t.closest ? t.closest('[data-langtab]') : null;
       if(tab){
         e.preventDefault();
         const langKey = tab.getAttribute('data-langtab');
         dlg.querySelectorAll('[data-langtab]').forEach(b=>b.classList.toggle('is-active', b.getAttribute('data-langtab')===langKey));
         dlg.querySelectorAll('[data-langpane]').forEach(p=>p.classList.toggle('is-active', p.getAttribute('data-langpane')===langKey));
+        return;
+      }
+
+      // image navigation buttons (prev/next)
+      const nav = t && t.closest ? t.closest('[data-action]') : null;
+      if(nav){
+        const action = nav.getAttribute('data-action');
+        if(action === 'img-prev' || action === 'img-next'){
+          e.preventDefault();
+          try{
+            const imgs = getEditorImages(dlg);
+            if(!imgs || imgs.length === 0) return;
+            let idx = parseInt(dlg.dataset.galleryIndex || '0', 10) || 0;
+            if(action === 'img-prev') idx = Math.max(0, idx - 1);
+            else idx = Math.min(imgs.length - 1, idx + 1);
+            dlg.dataset.galleryIndex = String(idx);
+            updateEditorPreview(dlg);
+          }catch(err){ console.debug('[ng-editor] img-nav failed', err); }
+          return;
+        }
       }
     });
 
@@ -1431,10 +1458,15 @@
     const f = dlg.querySelector('form');
     const fd = new FormData(f);
     const get = (k)=> String(fd.get(k) ?? '');
+    // Also include image_paths array (parsed from dlg.dataset.images) so backend can persist gallery
+    let imgs = [];
+    try{ imgs = JSON.parse(dlg.dataset.images || '[]') || []; }catch(e){ imgs = []; }
+    imgs = Array.isArray(imgs) ? imgs.map(i=>String(i || '')) .filter(Boolean) : [];
     return {
       badge: get('badge').trim(),
       date: get('date').trim(),
       image: String(dlg.dataset.uploadedImage || '').trim(),
+      image_paths: imgs,
       title_cs: get('title_cs').trim(),
       perex_cs: get('perex_cs'),
       body_cs: get('body_cs'),
@@ -1442,6 +1474,42 @@
       perex_en: get('perex_en'),
       body_en: get('body_en'),
     };
+  }
+
+  // Gallery helpers for editor modal
+  function getEditorImages(dlg){
+    try{ return JSON.parse(dlg.dataset.images || '[]'); }catch(e){ return []; }
+  }
+
+  function updateEditorPreview(dlg){
+    if(!dlg) return;
+    const prev = dlg.querySelector('#ngPostEditorPreview');
+    const imgs = getEditorImages(dlg);
+    let idx = parseInt(dlg.dataset.galleryIndex || '0', 10) || 0;
+    if(idx < 0) idx = 0; if(idx > Math.max(0, imgs.length - 1)) idx = Math.max(0, imgs.length - 1);
+    dlg.dataset.galleryIndex = String(idx);
+    if(prev){
+      if(imgs.length && imgs[idx]){ prev.src = resolveAssetPath(imgs[idx]); prev.style.display = ''; prev.alt = dlg.querySelector('[name="title_cs"]') ? dlg.querySelector('[name="title_cs"]').value : '';
+      } else {
+        // fallback to uploadedImage single
+        const up = String(dlg.dataset.uploadedImage || '').trim();
+        if(up){ prev.src = resolveAssetPath(up); prev.style.display = ''; } else { prev.src = ''; prev.style.display = 'none'; }
+      }
+    }
+    // update counter under preview
+    try{
+      const counterEl = dlg.querySelector('#ngPostEditorPreviewCounter');
+      const total = (imgs && imgs.length) ? imgs.length : (String(dlg.dataset.uploadedImage || '').trim() ? 1 : 0);
+      if(counterEl){
+        if(total <= 0){ counterEl.parentElement.style.display = 'none'; }
+        else { counterEl.parentElement.style.display = ''; counterEl.textContent = `${Math.max(1, idx + 1)} / ${total}`; }
+      }
+    }catch(e){}
+    // toggle nav disabled states
+    const prevBtn = dlg.querySelector('[data-action="img-prev"]');
+    const nextBtn = dlg.querySelector('[data-action="img-next"]');
+    if(prevBtn) prevBtn.disabled = imgs.length <= 1;
+    if(nextBtn) nextBtn.disabled = imgs.length <= 1;
   }
 
   function fillEditorForm(dlg, post){
@@ -1458,6 +1526,15 @@
     set('title_en', p.title_en || '');
     set('perex_en', p.perex_en || '');
     set('body_en', p.body_en || '');
+
+    // populate gallery image list (prefers explicit images array, falls back to single image)
+    let images = [];
+    try{
+      if(p.images && Array.isArray(p.images) && p.images.length) images = p.images.slice();
+      else if(p.image) images = [p.image];
+    }catch(e){ images = [] }
+    try{ dlg.dataset.images = JSON.stringify(images || []); }catch(e){ dlg.dataset.images = '[]'; }
+    if(typeof dlg.dataset.galleryIndex === 'undefined') dlg.dataset.galleryIndex = '0';
   }
 
   async function apiCreateEmptyPost(){
@@ -1522,14 +1599,8 @@
     dlg.querySelectorAll('[data-langtab]').forEach(b=>b.classList.toggle('is-active', b.getAttribute('data-langtab')===defaultTab));
     dlg.querySelectorAll('[data-langpane]').forEach(p=>p.classList.toggle('is-active', p.getAttribute('data-langpane')===defaultTab));
 
-    // preview image
-    const prev = dlg.querySelector('#ngPostEditorPreview');
-    if(prev){
-      const img = dlg.dataset.uploadedImage ? resolveAssetPath(dlg.dataset.uploadedImage) : '';
-      prev.src = img || '';
-      prev.alt = post ? tileTitle(post) : '';
-      prev.style.display = img ? '' : 'none';
-    }
+    // preview image - use gallery-aware helper
+    try{ updateEditorPreview(dlg); }catch(e){ console.debug('[ng-editor] preview update failed', e); }
 
     // (upload handler is bound after form cloning)
 
@@ -1562,20 +1633,93 @@
             setStatus((lang === 'en') ? `Uploading image… (${f.name})` : `Nahrávám obrázek… (${f.name})`);
             const path = await apiUploadNewsImage(f);
             dlg.dataset.uploadedImage = path;
-            if(prev2){
-              prev2.src = resolveAssetPath(path);
-              prev2.style.display = '';
+            // If editing an existing post, attach this image on server side so it's stored in image_paths
+            try{
+              const imgs = getEditorImages(dlg) || [];
+              // If we have a postId (editing), call attach API to persist
+              if(postId && postId > 0){
+                const attachRes = await fetch('/admin/api/news_image_attach.php', {
+                  method: 'POST',
+                  credentials: 'same-origin',
+                  headers: {'Content-Type':'application/json','Accept':'application/json'},
+                  body: JSON.stringify({post_id: postId, img_path: path})
+                });
+                const txt = await attachRes.text();
+                let data;
+                try{ data = JSON.parse(txt); }catch(e){ throw new Error('news_image_attach.php nevrátil JSON:\n' + txt.slice(0,800)); }
+                if(!attachRes.ok || !data.ok) throw new Error((data && data.errors ? data.errors.join(' | ') : '') || 'Attach failed');
+                // server returns normalized images array
+                const newImgs = Array.isArray(data.images) ? data.images : imgs.concat([path]);
+                dlg.dataset.images = JSON.stringify(newImgs);
+                dlg.dataset.galleryIndex = String(Math.max(0, newImgs.length - 1));
+                // update local cache
+                try{ const sp = getPost(postId); if(sp){ sp.images = newImgs.slice(); sp.image = sp.images.length ? sp.images[0] : ''; } }catch(e){}
+               } else {
+                 // local-only until post is created/saved
+                 imgs.push(path);
+                 dlg.dataset.images = JSON.stringify(imgs);
+                 dlg.dataset.galleryIndex = String(Math.max(0, imgs.length - 1));
+               }
+            }catch(e){
+              // fallback: keep local-only
+              try{ const imgs = getEditorImages(dlg) || []; imgs.push(path); dlg.dataset.images = JSON.stringify(imgs); dlg.dataset.galleryIndex = '0'; }catch(_){}
             }
-            setStatus((lang === 'en') ? 'Image uploaded.' : 'Obrázek nahrán.');
-            showToastOk((lang === 'en') ? 'Image uploaded.' : 'Obrázek nahrán.');
-          } catch(e){
-            setStatus(e && e.message ? e.message : String(e), true);
-          }
-        };
+            if(prev2) updateEditorPreview(dlg);
+             setStatus((lang === 'en') ? 'Image uploaded.' : 'Obrázek nahrán.');
+             showToastOk((lang === 'en') ? 'Image uploaded.' : 'Obrázek nahrán.');
+           } catch(e){
+             setStatus(e && e.message ? e.message : String(e), true);
+           }
+         };
 
         fileInput2.onchange = handleFile;
         fileInput2.oninput = handleFile;
       }
+    }
+
+    // Re-bind delete button handler (needs postId available) - runs after cloning too
+    const deleteBtn = dlg.querySelector('[data-action="img-delete"]');
+    if(deleteBtn){
+      deleteBtn.onclick = async (ev)=>{
+        ev && ev.preventDefault && ev.preventDefault();
+        const imgs = getEditorImages(dlg) || [];
+        let idx = parseInt(dlg.dataset.galleryIndex || '0', 10) || 0;
+        if(!imgs || imgs.length === 0) return;
+        idx = Math.max(0, Math.min(imgs.length-1, idx));
+        const imgPath = imgs[idx];
+        if(!imgPath) return;
+        const conf = window.confirm(lang === 'en' ? 'Delete this image from post and server?' : 'Smazat tento obrázek z příspěvku a serveru?');
+        if(!conf) return;
+        try{
+          if(postId && postId > 0){
+            const res = await fetch('/admin/api/news_image_delete.php', {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: {'Content-Type':'application/json','Accept':'application/json'},
+              body: JSON.stringify({post_id: postId, img_path: imgPath})
+            });
+            const txt = await res.text();
+            let data;
+            try{ data = JSON.parse(txt); }catch(e){ throw new Error('news_image_delete.php nevrátil JSON:\n' + txt.slice(0,800)); }
+            if(!res.ok || !data.ok) throw new Error((data && data.errors ? data.errors.join(' | ') : '') || 'Delete failed');
+            const remaining = Array.isArray(data.images) ? data.images : [];
+            dlg.dataset.images = JSON.stringify(remaining);
+            dlg.dataset.galleryIndex = '0';
+            // update local cache
+            try{ const sp = getPost(postId); if(sp){ sp.images = remaining.slice(); sp.image = sp.images.length ? sp.images[0] : ''; } }catch(e){}
+             updateEditorPreview(dlg);
+             setStatus((lang === 'en') ? 'Image deleted.' : 'Obrázek smazán.');
+             showToastOk((lang === 'en') ? 'Image deleted.' : 'Obrázek smazán.');
+          } else {
+            // local-only: remove from dlg.dataset.images
+            imgs.splice(idx,1);
+            dlg.dataset.images = JSON.stringify(imgs);
+            dlg.dataset.galleryIndex = String(Math.max(0, Math.min(imgs.length-1, idx)));
+            updateEditorPreview(dlg);
+            setStatus((lang === 'en') ? 'Image removed.' : 'Obrázek odstraněn.');
+          }
+        }catch(e){ setStatus(e && e.message ? e.message : String(e), true); }
+      };
     }
 
     formClone.addEventListener('submit', async (ev)=>{
@@ -1621,7 +1765,22 @@
         // Update local cache
         const p = getPost(id);
         if(p){
-          Object.assign(p, payload);
+          // copy simple fields
+          p.badge = payload.badge ?? p.badge;
+          p.date = payload.date ?? p.date;
+          p.title_cs = payload.title_cs ?? p.title_cs;
+          p.title_en = payload.title_en ?? p.title_en;
+          p.perex_cs = payload.perex_cs ?? p.perex_cs;
+          p.perex_en = payload.perex_en ?? p.perex_en;
+          p.body_cs = payload.body_cs ?? p.body_cs;
+          p.body_en = payload.body_en ?? p.body_en;
+          // persist image_paths -> images
+          if(Array.isArray(payload.image_paths)){
+            p.images = payload.image_paths.slice();
+            p.image = p.images.length ? p.images[0] : '';
+          } else if(payload.image){
+            p.image = payload.image;
+          }
         }
 
         render();
@@ -1641,14 +1800,16 @@
     const dlg = ensurePostEditorDialog();
     dlg.classList.add('is-open');
     dlg.setAttribute('aria-hidden', 'false');
-  }
+    try{ document.body.classList.add('modal-open'); }catch(e){}
+   }
 
-  function closePostEditor(){
-    const dlg = document.getElementById('ngPostEditorPanel');
-    if(!dlg) return;
-    dlg.classList.remove('is-open');
-    dlg.setAttribute('aria-hidden', 'true');
-  }
+   function closePostEditor(){
+     const dlg = document.getElementById('ngPostEditorPanel');
+     if(!dlg) return;
+     dlg.classList.remove('is-open');
+     dlg.setAttribute('aria-hidden', 'true');
+     try{ document.body.classList.remove('modal-open'); }catch(e){}
+   }
 
   const cssEscape = (typeof CSS !== 'undefined' && CSS && typeof CSS.escape === 'function')
     ? CSS.escape.bind(CSS)
@@ -1692,3 +1853,4 @@
   }catch(e){}
 
 })();
+
