@@ -221,6 +221,23 @@ a { color: inherit; }
   pointer-events: none;
 }
 
+/* Editor preview counter (admin) */
+.ng-preview-counter {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.92);
+  color: #111;
+  padding: 6px 10px;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(3,6,12,0.12);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.96;
+  pointer-events: none;
+}
+
 @media (max-width: 1140px){
   /* Fit into viewport while keeping 2-column layout as long as possible */
   .news-grid-layout{
@@ -266,14 +283,14 @@ a { color: inherit; }
 .modal.is-open .modal__panel { transform: translateY(0) scale(1); opacity: 1; }
 
 .modal__close { position:absolute; top:14px; right:14px; border:0; background: rgba(17,17,17,0.06); width:38px; height:38px; border-radius:10px; cursor:pointer; }
-.modal__grid { display:grid; grid-template-columns: 46% 54%; gap:1.25rem; height: 100%; }
+.modal__grid { display:grid; grid-template-columns: 60% 40%; gap:1.25rem; height: 100%; }
 
 /* Left: media column (fixed area) */
 .modal__media {
   display:flex;
   align-items:center;
   justify-content:center;
-  flex-direction: column;
+  flex-direction: column-reverse;
   padding:1.25rem;
   background-color: #08d6d0;
   border-radius: 20px;
@@ -284,8 +301,8 @@ a { color: inherit; }
 .modal__media img {
   width: 100%;
   max-width: 520px;
-  max-height: calc(80vh - 120px); /* keep image inside panel with some padding */
-  height: auto;
+  max-height: calc(80vh - 250px); /* keep image inside panel with some padding */
+  height: 100%;
   object-fit: contain;
   display:block;
   transition: opacity 280ms ease, transform 280ms ease;
@@ -309,17 +326,48 @@ a { color: inherit; }
   color: rgba(17,17,17,0.9);
   font-size: 18px;
   cursor: pointer;
-  z-index: 30;
-  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  /* výrazně vyšší z-index, aby šipky byly nad obrázky i při animaci */
+  z-index: 1200;
+  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease, opacity 180ms ease, visibility 180ms ease;
+  /* start hidden — become visible only on hover/focus of the media area */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
 }
-.modal__nav-arrow:hover { background: rgba(17,17,17,0.12); transform: translateY(-50%) scale(1.04); }
-.modal__nav-arrow:focus { outline: 3px solid rgba(140,130,92,0.14); outline-offset: 3px; }
-.modal__nav-prev { left: 12px; }
-.modal__nav-next { right: 12px; }
 
-@media (max-width: 760px) {
-  .modal__nav-arrow { width: 36px; height: 36px; font-size: 16px; }
+/* Remove focus outline specifically for modal nav arrows (keep global focus styling elsewhere) */
+.modal__nav-arrow:focus,
+.modal__nav-arrow:active,
+.modal__nav-arrow:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
+
+/* Show arrows when hovering or focusing the media area (and on touch when the media receives focus) */
+.modal__media:hover .modal__nav-arrow,
+.modal__media:focus-within .modal__nav-arrow,
+.slide-wrap:hover ~ .modal__nav-arrow,
+.slide-wrap:focus-within ~ .modal__nav-arrow,
+#newsModalImage:hover ~ .modal__nav-arrow,
+#newsModalImage:focus ~ .modal__nav-arrow {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) scale(1);
+}
+
+/* Ensure arrows are positioned relative to the media container (not the slide-wrap) */
+.modal__media > .modal__nav-arrow {
+  position: absolute;
+}
+
+/* Position left/right for nav arrows so they sit at media sides */
+.modal__media > .modal__nav-prev { left: 12px; }
+.modal__media > .modal__nav-next { right: 10px; }
+
+/* Remove/override previous rule that targeted slide-wrap children so arrows don't get centered there */
+.slide-wrap .modal__nav-arrow { position: static; }
 
 /* Right: content column scrolls if overflow */
 .modal__content { color:#111; padding:1.25rem; overflow:auto; height: 100%; }
@@ -360,7 +408,6 @@ a { color: inherit; }
   transition: background 160ms ease, transform 160ms ease;
 }
 .modal-gallery-nav button:hover { background: rgba(17,17,17,0.09); transform: translateY(-2px); }
-.modal-gallery-nav button:focus { outline: 3px solid rgba(140,130,92,0.18); outline-offset: 3px; }
 .modal-gallery-count {
   font-weight:600;
   color: rgba(17,17,17,0.85);
@@ -373,7 +420,7 @@ a { color: inherit; }
   display:flex;
   gap:0.5rem;
   align-items:center;
-  margin-top:0.6rem;
+  margin-top:32rem;
   overflow: hidden; /* clip sliding tracks */
 }
 .modal-gallery-thumbs .thumbs-track {
@@ -391,18 +438,15 @@ a { color: inherit; }
   height: 68px;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 6px 18px rgba(3,6,12,0.08);
   cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease, outline 120ms ease;
+  transition: transform 180ms ease;
 }
-.modal-gallery-thumbs .modal-thumb:focus { outline: 3px solid rgba(140,130,92,0.12); }
-.modal-gallery-thumbs .modal-thumb.is-active { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(3,6,12,0.16); }
+
 .modal-gallery-thumbs .modal-thumb .modal-thumb-img {
   width: 100%;
   height: 100%;
   object-position: center center;
   display:block;
-  object-fit: fill;
   padding: 0; /* remove inner padding so image fills the thumbnail */
   background: transparent; /* no letterboxing; image fills the box */
   filter: saturate(0.95) contrast(0.98);
@@ -472,5 +516,51 @@ a { color: inherit; }
 /* Small visual polish for focus states */
 a:focus { outline: 3px solid rgba(140,130,92,0.18); outline-offset: 3px; }
 button:focus { outline: 3px solid rgba(140,130,92,0.18); outline-offset: 3px; }
+
+/* Slide wrapper used by modal to animate between images */
+.slide-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slide-wrap img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  will-change: transform, opacity;
+  transition: transform 420ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease;
+  opacity: 1;
+}
+
+/* Ensure the original #newsModalImage (non-animated fallback) still fits inside */
+#newsModalImage {
+  position: absolute;
+  top: 30px;
+  left: 35px;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Keep compatibility: existing modal__media img fallback (non-sliding) */
+.modal__media img:not(.slide) {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(80vh - 250px);
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: opacity 280ms ease, transform 280ms ease;
+}
 
 /* End of file */
