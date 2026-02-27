@@ -1,36 +1,142 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ================= SLIDESHOW ================= */
-    const images = document.querySelectorAll('.image-slide');
-    const texts = document.querySelectorAll('.text-slide');
-    let index = 0;
-    const total = images.length;
+    /* ================= HERO BACKGROUND ROTATOR (diskphoto) ================= */
+    const heroBg = document.querySelector(".hero-bg");
 
-    function updateSlides() {
-        if (total <= 0) return;
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        images.forEach((img, i) => {
-            img.className = 'image-slide';
-            if (i === index) img.classList.add('active');
-            else if (i === (index + 1) % total) img.classList.add('next');
-            else if (i === (index - 1 + total) % total) img.classList.add('prev');
-        });
+    // Používáme URL-encoded názvy (mezery, závorky) – odpovídá tomu, co je v CSS.
+    const heroPhotos = [
+        // Odebráno: 'Images/diskphoto/La%20torre%20(10).jpg', // (první – "fialové zrno")
+        'Images/diskphoto/DJI_0973.jpg',
+        'Images/diskphoto/dji_fly_20230422_115722_10_1682166139791_pano%20(1).jpg',
+        'Images/diskphoto/P1000081-HDR.jpg'
+    ];
 
-        texts.forEach((txt, i) => {
-            txt.className = 'text-slide';
-            if (i === index) txt.classList.add('active');
-            else txt.classList.add('out');
-        });
+    let heroPhotoIndex = 0;
+
+    function setHeroBg(url) {
+        if (!heroBg) return;
+        heroBg.style.setProperty('--hero-photo', `url("${url}")`);
+        heroBg.style.setProperty('--hero-photo-next', `url("${url}")`);
+        heroBg.style.setProperty('--hero-photo-blend', '0');
     }
 
-    if (total > 0) {
-        updateSlides(); // <-- PŘIDEJ TOTO
+    function rotateHeroBg() {
+        if (!heroBg || heroPhotos.length < 2 || prefersReducedMotion) return;
 
-        setInterval(() => {
-            index = (index + 1) % total;
-            updateSlides();
-        }, 3000);
+        const next = heroPhotos[(heroPhotoIndex + 1) % heroPhotos.length];
+
+        // preload další fotku, ať crossfade necukne
+        const img = new Image();
+        img.onload = () => {
+            heroBg.style.setProperty('--hero-photo-next', `url("${next}")`);
+            // další tick -> zapnout blend
+            requestAnimationFrame(() => heroBg.style.setProperty('--hero-photo-blend', '1'));
+
+            // po doběhnutí přechodu nastavíme next jako current
+            window.setTimeout(() => {
+                heroBg.style.setProperty('--hero-photo', `url("${next}")`);
+                heroBg.style.setProperty('--hero-photo-blend', '0');
+                heroPhotoIndex = (heroPhotoIndex + 1) % heroPhotos.length;
+            }, 1300);
+        };
+        img.src = next;
     }
+
+    if (heroBg) {
+        // úvodní fotka
+        setHeroBg(heroPhotos[0]);
+        // rotace cca každých 7s (dost dlouho, ať je to luxusní)
+        window.setInterval(rotateHeroBg, 7000);
+    }
+
+    /* ================= HERO WINES (Top 3 showcase) ================= */
+    // Nová varianta: fixní 3-kusový "showcase" bez drag/scroll.
+    // (záměrně bez JS animací, aby to působilo prémiově a stabilně)
+    // Pokud by někdy přibylo víc lahví, dá se sem doplnit logika.
+
+    /* ================= WINE CAROUSEL (manual) ================= */
+    const wineViewport = document.querySelector('.wine-carousel__viewport');
+    const wineTrack = document.querySelector('.wine-carousel__track');
+
+    function setActiveWineCard() {
+        if (!wineViewport || !wineTrack) return;
+        const items = Array.from(wineTrack.querySelectorAll('.wine-carousel__item'));
+        if (!items.length) return;
+
+        const vpRect = wineViewport.getBoundingClientRect();
+        const vpCenter = vpRect.left + vpRect.width / 2;
+
+        let best = null;
+        let bestDist = Infinity;
+
+        for (const it of items) {
+            const r = it.getBoundingClientRect();
+            const c = r.left + r.width / 2;
+            const d = Math.abs(c - vpCenter);
+            if (d < bestDist) {
+                bestDist = d;
+                best = it;
+            }
+        }
+
+        items.forEach(it => it.classList.toggle('is-active', it === best));
+    }
+
+    function getWineItemWidth() {
+        if (!wineTrack) return 0;
+        const item = wineTrack.querySelector('.wine-carousel__item');
+        if (!item) return 0;
+        const styles = window.getComputedStyle(wineTrack);
+        const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+        return item.getBoundingClientRect().width + gap;
+    }
+
+    function scrollWineBy(dir) {
+        if (!wineViewport) return;
+        const delta = getWineItemWidth() || 240;
+        wineViewport.scrollBy({ left: dir * delta, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.wine-carousel__btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const dir = btn.getAttribute('data-dir') === 'prev' ? -1 : 1;
+            scrollWineBy(dir);
+        });
+    });
+
+    if (wineViewport) {
+        // klávesnice (←/→) když je viewport fokusovaný
+        wineViewport.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                scrollWineBy(-1);
+            }
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                scrollWineBy(1);
+            }
+        });
+
+        // při scrollu zvýrazni kartu nejblíž středu
+        let wineTick = false;
+        const onWineScroll = () => {
+            if (wineTick) return;
+            wineTick = true;
+            requestAnimationFrame(() => {
+                setActiveWineCard();
+                wineTick = false;
+            });
+        };
+
+        wineViewport.addEventListener('scroll', onWineScroll, { passive: true });
+        window.addEventListener('resize', () => requestAnimationFrame(setActiveWineCard));
+
+        // inicializace
+        requestAnimationFrame(setActiveWineCard);
+    }
+
     /* ================= STICKY NAV ================= */
     const nav = document.querySelector('.hero-nav');
 
@@ -41,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ================= SCROLL CROSSFADE (hero background) ================= */
-    const heroBg = document.querySelector(".hero-bg");
+    const heroBgScroll = document.querySelector(".hero-bg");
 
     function clamp01(v) {
         return Math.max(0, Math.min(1, v));
@@ -56,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const range = 520; // kolik px scrollu = plné prolnutí
             const t = clamp01(window.scrollY / range);
 
-            if (heroBg) heroBg.style.setProperty("--blend", t);
+            if (heroBgScroll) heroBgScroll.style.setProperty("--blend", t);
 
             ticking = false;
         });
@@ -74,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (lang === currentLang) btn.classList.add('active');
 
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', () => {
             try {
                 localStorage.setItem('lang', lang);
                 document.cookie = `lang=${lang}; path=/; max-age=${60 * 60 * 24 * 365}`;
@@ -165,3 +271,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
+

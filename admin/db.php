@@ -14,6 +14,7 @@ $options = [
 ];
 
 try {
+    /** @var PDO $pdo */
     $pdo = new PDO($dsn, $user, $pass, $options);
     // echo "Připojeno k databázi!";
 } catch (PDOException $e) {
