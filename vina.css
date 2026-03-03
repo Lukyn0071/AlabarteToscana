@@ -670,7 +670,6 @@ body{
     font-family: var(--font-display);
     font-size: 1.1rem;
     color: #c6a85c;
-    display: none !important;
 }
 
 /* vyhledávání/filtr umí schovat karty */

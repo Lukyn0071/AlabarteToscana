@@ -32,28 +32,27 @@
 
                 <!-- LANG SWITCHER -->
                 <div class="lang-switcher" aria-label="Přepínač jazyka">
-                    <button type="button" class="lang-btn" data-lang="cs">CS</button>
-                    <button type="button" class="lang-btn" data-lang="en">EN</button>
+                    <button type="button" class="lang-btn active" data-lang="cs" aria-pressed="true">CZ</button>
+                    <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
                 </div>
 
                 <!-- NAV -->
                 <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
                     <a href="index.php" data-key="home">Domů</a>
-                    <a href="kontakt.php" data-key="contact">Kontakt</a>
                     <a href="aktuality.php" data-key="aktuality">Aktuality</a>
                     <a href="https://www.alabarte.cz/vino/" data-key="eshop" target="_blank" rel="noopener">E-shop</a>
                 </nav>
 
             </div>
 
-            <!-- ===== TITLE + LOGA (✅ VŠE UVNITŘ HEADERU) ===== -->
+            <!-- ===== TITLE + LOGA ===== -->
             <header class="vina-header" aria-label="Nadpis sekce Vína">
                 <h1 class="vina-title typo-h1" data-key="vina_title">
                     <span class="vina-title__small">Naše</span>
                     <span class="vina-title__big">vína</span>
                 </h1>
 
-                <!-- ✅ LOGA JSOU TADY (už ne pod headerem) -->
+                <!-- ✅ LOGA -->
                 <div class="vina-brands" aria-label="Loga značek">
                     <div class="vina-brand vina-brand--left">
                         <img src="Images/Alabarte-logo.webp" alt="Alabarte logo">
@@ -160,7 +159,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">IGT TOSCANA</p>
-                <p class="wine-price">€—</p>
+                <p class="wine-price">287 Kč</p>
 
                 <span class="wine-meta sr-only">2023 • suché bílé • Itálie</span>
                 <span class="wine-story sr-only">citrusy, bylinky, mineralita</span>
@@ -183,7 +182,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">CHIANTI COLLI SENESI DOCG</p>
-                <p class="wine-price">€—</p>
+                <p class="wine-price">459 Kč</p>
 
                 <span class="wine-meta sr-only">2023 • suché červené • Itálie</span>
                 <span class="wine-story sr-only">červené ovoce, koření, jemné třísloviny</span>
@@ -206,7 +205,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">IGT TOSCANA</p>
-                <p class="wine-price">€—</p>
+                <p class="wine-price">332 Kč</p>
 
                 <span class="wine-meta sr-only">2023 • růžové • Itálie</span>
                 <span class="wine-story sr-only">červené ovoce, svěžest, lehkost</span>
@@ -229,7 +228,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">VERNACCIA DI SAN GIMIGNANO DOCG</p>
-                <p class="wine-price">€—</p>
+                <p class="wine-price">249 Kč</p>
 
                 <span class="wine-meta sr-only">2024 • suché bílé • Itálie</span>
                 <span class="wine-story sr-only">citrusy, zelené jablko, mineralita</span>
@@ -252,7 +251,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">SAN GIMIGNANO ROSSO DOC</p>
-                <p class="wine-price">€—</p>
+                <p class="wine-price">418 Kč</p>
 
                 <span class="wine-meta sr-only">2022 • suché červené • Itálie</span>
                 <span class="wine-story sr-only">zralé červené ovoce, jemné dřevo</span>
@@ -275,7 +274,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">VERNACCIA DI SAN GIMIGNANO RISERVA DOCG</p>
-                <p class="wine-price">€—</p>
+                <p class="wine-price">379 Kč</p>
 
                 <span class="wine-meta sr-only">2022 • suché bílé • Itálie</span>
                 <span class="wine-story sr-only">mineralita, citrusová kůra, jemná krémovost</span>
