@@ -357,7 +357,7 @@ $toastUndo = isset($_GET['u']) && (string)$_GET['u'] === '1';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="../style.css?v=<?= filemtime(__DIR__ . '../style.css') ?>">
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="admin.css">
     <script src="../index.js?v=<?= filemtime(__DIR__ . '../index.js') ?>" defer></script>
     <script src="index_drag&drop.js" defer></script>
