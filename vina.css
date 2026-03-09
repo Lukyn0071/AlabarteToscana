@@ -229,15 +229,13 @@ body{
     gap: 2rem;                 /* mezera mezi logy */
 }
 
-.vina-brands img{
-    height: 100px;
-    width: auto;
-    object-fit: contain;
-
-    opacity: 0.85;
-    transition: transform 0.25s ease, opacity 0.25s ease;
+.vina-brand--left img{
+    height: 220px;
 }
 
+.vina-brand--right img{
+    height: 110px;
+}
 .vina-brands img:hover{
     transform: scale(1.05);
     opacity: 1;
@@ -253,6 +251,28 @@ body{
     .vina-brands img{
         height: 55px;
     }
+}
+.wine-shop-btn{
+    display:inline-block;
+    margin-top:1.2rem;
+    padding:0.65rem 1.4rem;
+
+    font-family: var(--font-sans);
+    font-size:0.85rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+
+    background:#7a0f1d;
+    color:#fff;
+    text-decoration:none;
+
+    border-radius:999px;
+    transition:transform .15s ease, background .15s ease;
+}
+
+.wine-shop-btn:hover{
+    transform:translateY(-1px);
+    background:#8f1323;
 }
 
 /* =========================================================
@@ -430,11 +450,6 @@ body{
     transform: translate(0px, 0px); /* ✅ centrované */
 }
 
-.wine-search-toggle--icon:hover{
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
-}
-
 .wine-search-toggle--icon:active{
     transform: translateY(-1px) scale(0.98);
 }
@@ -457,7 +472,6 @@ body{
     padding: 0.9rem 1rem;
 
     backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
 }
 
 .wine-search--panel{
@@ -669,7 +683,7 @@ body{
     margin: 0.85rem 0 0;
     font-family: var(--font-display);
     font-size: 1.1rem;
-    color: #c6a85c;
+    color: #7A0F1D;
 }
 
 /* vyhledávání/filtr umí schovat karty */
@@ -845,27 +859,21 @@ body{
 }
 
 .modal__topline{
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
+    display: block;
 }
 
 .modal__title{
     margin: 0;
-    letter-spacing: 0.06em;
-    min-width: 0;
-    max-width: 32ch;
+    max-width: 100%;
+    width: 100%;
+    padding-right: 48px; /* aby nelezl pod křížek */
     text-align: left;
     white-space: normal;
     overflow-wrap: anywhere;
 }
 
 .modal__meta{
-    opacity: 0.75;
-    white-space: nowrap;
-    margin-right: 48px;
-    text-align: right;
+    display: none;
 }
 
 .modal__story{

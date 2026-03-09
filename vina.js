@@ -18,22 +18,17 @@
             const DURATION = 2000;
             const INTERVAL = 7000;
 
-            let current = slides.findIndex(s => s.classList.contains("is-active"));
+            let current = slides.findIndex((s) => s.classList.contains("is-active"));
             if (current < 0) current = 0;
 
             let isAnimating = false;
             let timer = null;
 
             const resetClasses = (el) => {
-                el.classList.remove(
-                    "is-enter",
-                    "is-exit",
-                    "is-animating",
-                    "is-active"
-                );
+                el.classList.remove("is-enter", "is-exit", "is-animating", "is-active");
             };
 
-            const goTo = (nextIndex, direction = "right") => {
+            const goTo = (nextIndex) => {
                 if (isAnimating || nextIndex === current) return;
 
                 isAnimating = true;
@@ -52,7 +47,7 @@
                     nextEl.classList.add("is-active");
                 });
 
-                setTimeout(() => {
+                window.setTimeout(() => {
                     resetClasses(currentEl);
                     current = nextIndex;
                     isAnimating = false;
@@ -60,12 +55,12 @@
             };
 
             const goNext = (fromAuto = false) => {
-                goTo((current + 1) % slides.length, "right");
+                goTo((current + 1) % slides.length);
                 if (!fromAuto) startAuto();
             };
 
             const goPrev = () => {
-                goTo((current - 1 + slides.length) % slides.length, "left");
+                goTo((current - 1 + slides.length) % slides.length);
                 startAuto();
             };
 
@@ -89,25 +84,38 @@
         }
 
         /* =========================================================
-           2) MODAL – detail vína + šipky v modalu
+           2) MODAL – detail vína + šipky v modalu + e-shop tlačítko
            ========================================================= */
         const modal = document.getElementById("wineModal");
         const panel = modal ? modal.querySelector(".modal__panel") : null;
 
         const modalImage = document.getElementById("modalImage");
         const modalTitle = document.getElementById("modalTitle");
-        const modalMeta  = document.getElementById("modalMeta");
+        const modalMeta = document.getElementById("modalMeta");
         const modalStory = document.getElementById("modalStory");
         const modalSpecs = document.getElementById("modalSpecs");
         const modalPairing = document.getElementById("modalPairing");
+        const modalShopBtn = document.getElementById("wineShopBtn");
 
-        // Pokud modal markup chybí, nebudeme nic lámat
-        const modalReady = !!(modal && panel && modalImage && modalTitle && modalMeta && modalStory && modalSpecs && modalPairing);
+        const modalReady = !!(
+            modal &&
+            panel &&
+            modalImage &&
+            modalTitle &&
+            modalMeta &&
+            modalStory &&
+            modalSpecs &&
+            modalPairing
+        );
 
+        /* =========================================================
+           DATA – WINES
+           ========================================================= */
         const WINES = {
             vermentino: {
                 title: "Vermentino IGT Toscana 2023 BAGIOGIE",
                 meta: "Suché bílé víno • Itálie • Toskánsko",
+                price: 350,
                 image: "Images/Vína/vermetinoigt23.png",
                 story:
                     "Svěží, minerální a chuťově výrazné bílé víno z Toskánska vyrobené z odrůdy Vermentino. " +
@@ -123,16 +131,12 @@
                     "Region: Toskánsko",
                     "Objem: 0,75 l",
                     "Alkohol: 13 %"
-                ],
-                pairing: [
-                    "Profil: citrusy, bylinky, mineralita",
-                    "Párování: ryby, mořské plody, lehké těstoviny",
-                    "Charakter: svěží a elegantní víno"
                 ]
             },
             chianti: {
                 title: "Chianti Colli Senesi DOCG 2023 La Villa",
                 meta: "Suché červené víno • Itálie • Toskánsko",
+                price: 375,
                 image: "Images/Vína/chiantisenesi23.png",
                 story:
                     "Klasické červené víno Chianti z oblasti Colli Senesi pocházející z vinařství Fattoria La Torre. " +
@@ -148,16 +152,12 @@
                     "Region: Toskánsko",
                     "Objem: 0,75 l",
                     "Alkohol: 13,5 %"
-                ],
-                pairing: [
-                    "Profil: červené ovoce, koření, jemné třísloviny",
-                    "Párování: těstoviny, uzeniny, vyzrálé sýry",
-                    "Charakter: tradiční a vyvážené víno"
                 ]
             },
             rosato: {
                 title: "Rosato IGT Toscana 2023 Badalui",
                 meta: "Růžové víno • Itálie • Toskánsko",
+                price: 350,
                 image: "Images/Vína/rosatoigt23.png",
                 story:
                     "Svěží růžové víno z oblasti Toskánska vyrobené z odrůdy Sangiovese z mladých vinic. " +
@@ -172,16 +172,12 @@
                     "Region: Toskánsko",
                     "Objem: 0,75 l",
                     "Alkohol: 13 %"
-                ],
-                pairing: [
-                    "Profil: červené ovoce, svěžest, lehkost",
-                    "Párování: těstoviny, pizza, čerstvé sýry",
-                    "Charakter: svěží a elegantní rosé"
                 ]
             },
             vernaccia: {
                 title: "Vernaccia di San Gimignano DOCG 2024",
                 meta: "Suché bílé víno • Itálie • Toskánsko",
+                price: 375,
                 image: "Images/Vína/vernaccia24.png",
                 story:
                     "Klasické bílé víno z oblasti San Gimignano vyráběné z odrůdy Vernaccia. " +
@@ -197,16 +193,12 @@
                     "Region: Toskánsko",
                     "Objem: 0,75 l",
                     "Alkohol: 12,5 %"
-                ],
-                pairing: [
-                    "Profil: citrusy, zelené jablko, mineralita",
-                    "Párování: ryby, mořské plody, lehká středomořská kuchyně",
-                    "Charakter: svěží, elegantní a minerální víno"
                 ]
             },
             guinzano: {
                 title: "San Gimignano Rosso DOC 2022 GUINZANO",
                 meta: "Suché červené víno • Itálie • Toskánsko",
+                price: 700,
                 image: "Images/Vína/rossodoc22.png",
                 story:
                     "Víno vzniká z odrůd Sangiovese, Merlot a Cabernet Sauvignon, které se vinifikují samostatně " +
@@ -222,16 +214,12 @@
                     "Region: Toskánsko",
                     "Objem: 0,75 l",
                     "Alkohol: 14 %"
-                ],
-                pairing: [
-                    "Profil: zralé červené ovoce, jemné dřevo, struktura",
-                    "Párování: maso, těstoviny, vyzrálé sýry",
-                    "Charakter: elegantní, středně plné, dlouhý závěr"
                 ]
             },
             sciallebiancho: {
                 title: "Vernaccia di San Gimignano Riserva DOCG 2022 Sciallebiancho",
                 meta: "Suché bílé víno • Itálie • Toskánsko",
+                price: 700,
                 image: "Images/Vína/vernacciadocg22.png",
                 story:
                     "Prémiová Vernaccia di San Gimignano Riserva z vinařství Fattoria La Torre. " +
@@ -247,37 +235,79 @@
                     "Region: Toskánsko",
                     "Objem: 0,75 l",
                     "Alkohol: 13,5 %"
-                ],
-                pairing: [
-                    "Profil: mineralita, citrusová kůra, jemná krémovost",
-                    "Párování: ryby, bílé maso, vyzrálé sýry",
-                    "Charakter: komplexní, elegantní, dlouhý závěr"
                 ]
             }
         };
 
+        /* =========================================================
+           CENY – doplnění do karet z const WINES
+           ========================================================= */
+        const formatPrice = (value) => {
+            const n = Number(value);
+            if (!Number.isFinite(n)) return "";
+            return `${Math.round(n)} Kč`;
+        };
+
+        document.querySelectorAll(".wine-card[data-wine]").forEach((card) => {
+            const key = card.dataset.wine;
+            const data = key ? WINES[key] : null;
+            if (!data) return;
+
+            const priceEl = card.querySelector(".wine-price");
+            if (priceEl) {
+                priceEl.textContent = formatPrice(data.price);
+            }
+        });
+
+        const cards = Array.from(document.querySelectorAll(".wine-card[data-wine]"));
+        const cardByWineKey = new Map(
+            cards.map((card) => [card.dataset.wine, card])
+        );
+
         const wineKeys = Object.keys(WINES);
         let currentIndex = 0;
+
+        const updateShopButton = (wineKey) => {
+            if (!modalShopBtn) return;
+
+            const card = cardByWineKey.get(wineKey);
+            const shopUrl = card?.dataset.shop?.trim() || "";
+
+            if (shopUrl) {
+                modalShopBtn.href = shopUrl;
+                modalShopBtn.hidden = false;
+                modalShopBtn.setAttribute("aria-hidden", "false");
+            } else {
+                modalShopBtn.href = "#";
+                modalShopBtn.hidden = true;
+                modalShopBtn.setAttribute("aria-hidden", "true");
+            }
+        };
 
         const openModal = (wineKey) => {
             if (!modalReady) return;
 
             currentIndex = wineKeys.indexOf(wineKey);
+            if (currentIndex < 0) return;
+
             const data = WINES[wineKey];
             if (!data) return;
 
             modal.classList.remove("is-closing");
 
             modalTitle.textContent = data.title;
-            modalMeta.textContent = data.meta;
+
+            const priceText = formatPrice(data.price);
+            modalMeta.textContent = priceText ? `${data.meta} • ${priceText}` : data.meta;
 
             modalImage.src = data.image;
             modalImage.alt = data.title;
 
             modalStory.textContent = data.story;
+            modalSpecs.innerHTML = (data.specs ?? []).map((item) => `<li>${item}</li>`).join("");
+            modalPairing.innerHTML = (data.pairing ?? []).map((item) => `<li>${item}</li>`).join("");
 
-            modalSpecs.innerHTML = data.specs.map(item => `<li>${item}</li>`).join("");
-            modalPairing.innerHTML = data.pairing.map(item => `<li>${item}</li>`).join("");
+            updateShopButton(wineKey);
 
             modal.classList.add("is-open");
             modal.setAttribute("aria-hidden", "false");
@@ -290,11 +320,15 @@
 
             modal.classList.add("is-closing");
 
-            setTimeout(() => {
+            window.setTimeout(() => {
                 modal.classList.remove("is-open", "is-closing");
                 modal.setAttribute("aria-hidden", "true");
                 document.body.classList.remove("modal-open");
                 modalImage.src = "";
+
+                if (modalShopBtn) {
+                    modalShopBtn.href = "#";
+                }
             }, 250);
         };
 
@@ -306,7 +340,7 @@
             panel.classList.remove("is-switching-left", "is-switching-right");
             panel.classList.add(cls);
 
-            setTimeout(() => {
+            window.setTimeout(() => {
                 openModal(nextKey);
                 panel.scrollTop = 0;
 
@@ -327,8 +361,9 @@
         };
 
         // Klik/Enter/Space na kartu
-        document.querySelectorAll(".wine-card[data-wine]").forEach(card => {
+        cards.forEach((card) => {
             card.addEventListener("click", () => openModal(card.dataset.wine));
+
             card.addEventListener("keydown", (e) => {
                 if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
@@ -339,7 +374,7 @@
 
         // Zavírání (křížek + backdrop)
         if (modalReady) {
-            modal.querySelectorAll("[data-close='true']").forEach(btn => {
+            modal.querySelectorAll("[data-close='true']").forEach((btn) => {
                 btn.addEventListener("click", (e) => {
                     e.preventDefault();
                     closeModal();
@@ -352,7 +387,9 @@
             });
 
             window.addEventListener("keydown", (e) => {
-                if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+                if (e.key === "Escape" && modal.classList.contains("is-open")) {
+                    closeModal();
+                }
             });
 
             modal.querySelector(".modal__nav--next")?.addEventListener("click", showNextWine);
@@ -366,7 +403,7 @@
         const clearBtn = document.getElementById("wineSearchClear");
         const statusEl = document.getElementById("wineSearchStatus");
         const noResultsEl = document.getElementById("wineNoResults");
-        // Toggle UI pro vyhledávání (tlačítko -> rozbalí panel)
+
         const searchWrap = document.getElementById("wineSearchWrap");
         const searchToggle = document.getElementById("wineSearchToggle");
         const searchPanel = document.getElementById("wineSearchPanel");
@@ -391,7 +428,6 @@
                 else openSearch();
             });
 
-            // klik mimo zavře
             document.addEventListener("click", (e) => {
                 if (!searchWrap) return;
                 if (searchPanel.hidden) return;
@@ -400,7 +436,6 @@
                 }
             });
 
-            // ESC zavře
             window.addEventListener("keydown", (e) => {
                 if (e.key === "Escape" && !searchPanel.hidden) {
                     closeSearch();
@@ -411,8 +446,6 @@
 
         const filterButtons = Array.from(document.querySelectorAll(".wine-filter-btn[data-filter]"));
         let activeCategoryFilter = "all";
-
-        const cards = Array.from(document.querySelectorAll(".wine-card[data-wine]"));
 
         const normalizeText = (value) => {
             return String(value ?? "")
@@ -480,6 +513,7 @@
             const query = normalizeText(queryRaw);
 
             let shownCount = 0;
+
             for (const item of cardIndex) {
                 const matchText = !query || item.haystack.includes(query);
                 const matchCat = activeCategoryFilter === "all" || item.category === activeCategoryFilter;
@@ -496,13 +530,15 @@
             filterButtons.forEach((btn) => {
                 btn.addEventListener("click", () => {
                     activeCategoryFilter = btn.dataset.filter || "all";
-                    filterButtons.forEach(b => b.classList.toggle("is-active", b === btn));
+                    filterButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
                     applyFilter();
                 });
             });
         }
 
-        if (searchInput) searchInput.addEventListener("input", applyFilter);
+        if (searchInput) {
+            searchInput.addEventListener("input", applyFilter);
+        }
 
         if (clearBtn && searchInput) {
             clearBtn.addEventListener("click", () => {
@@ -512,7 +548,7 @@
             });
         }
 
-        applyFilter(); // init
+        applyFilter();
     });
 
     /* =========================================================
