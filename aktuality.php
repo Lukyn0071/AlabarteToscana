@@ -68,11 +68,6 @@ $assetV = (string)max(
         </nav>
       </div>
 
-      <header class="page-head">
-        <h1 class="page-title" data-key="aktuality_title"><?php echo htmlspecialchars((string)($ui['aktuality_title'] ?? 'Toskánský deník'), ENT_QUOTES, 'UTF-8'); ?></h1>
-        <p class="page-lead" data-key="aktuality_lead"><?php echo htmlspecialchars((string)($ui['aktuality_lead'] ?? 'Novinky z našeho vinařství a život z Toskánska'), ENT_QUOTES, 'UTF-8'); ?></p>
-      </header>
-
         <main class="wrap" aria-label="Obsah aktualit">
             <!-- Preview veřejné mřížky jako na /aktuality.php -->
             <section class="mag" aria-label="Seznam aktualit">
@@ -153,12 +148,23 @@ $assetV = (string)max(
           <p class="modal__story" id="newsModalPerex"></p>
 
           <div class="modal__section">
-            <h3 class="modal__h3"><?php echo htmlspecialchars((string)($ui['modal_detail_h3'] ?? 'Detail'), ENT_QUOTES, 'UTF-8'); ?></h3>
             <div class="modal__body" id="newsModalBody"></div>
+          </div>
+
+          <div class="modal__footer">
+            <a class="modal__link-btn" id="newsModalLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Otevřít odkaz</a>
           </div>
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <div class="image-lightbox" id="newsImageLightbox" aria-hidden="true">
+    <div class="image-lightbox__backdrop" data-lightbox-close="true" aria-hidden="true"></div>
+    <div class="image-lightbox__dialog" role="dialog" aria-modal="true" aria-label="Zvětšený obrázek">
+      <button class="image-lightbox__close" type="button" aria-label="Zavřít zvětšený obrázek" data-lightbox-close="true">✕</button>
+      <img class="image-lightbox__img" id="newsImageLightboxImg" src="" alt="" />
     </div>
   </div>
 </body>

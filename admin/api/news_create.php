@@ -51,12 +51,24 @@ try {
     $displayDate = isset($data['date']) ? (string)$data['date'] : null;
     $imagePaths = (isset($data['image_paths']) && is_array($data['image_paths'])) ? $data['image_paths'] : [];
     $imagePaths = array_values(array_unique(array_filter($imagePaths, fn($v)=>!!$v)));
+    $hasLink = !empty($data['has_link']) ? 1 : 0;
+    $linkUrl = trim((string)($data['link_url'] ?? ''));
+    if ($hasLink && $linkUrl !== '' && filter_var($linkUrl, FILTER_VALIDATE_URL) === false) {
+        http_response_code(422);
+        echo json_encode(['ok' => false, 'errors' => ['link_url must be a valid URL']], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (!$hasLink) {
+        $linkUrl = '';
+    }
     $titleCs = trim((string)($data['title_cs'] ?? ''));
     $titleEn = trim((string)($data['title_en'] ?? $titleCs));
     $perexCs = (string)($data['perex_cs'] ?? '');
     $perexEn = (string)($data['perex_en'] ?? $perexCs);
     $bodyCs = (string)($data['body_cs'] ?? '');
     $bodyEn = (string)($data['body_en'] ?? $bodyCs);
+    $linkLabelCs = trim((string)($data['link_label_cs'] ?? ''));
+    $linkLabelEn = trim((string)($data['link_label_en'] ?? $linkLabelCs));
 
     if ($titleCs === '') {
         http_response_code(422);
@@ -66,18 +78,20 @@ try {
 
     $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare('INSERT INTO news_posts (slot, sort_order, badge, image_paths, display_date) VALUES (NULL, 0, :badge, :image_paths, :display_date)');
+    $stmt = $pdo->prepare('INSERT INTO news_posts (slot, sort_order, badge, image_paths, display_date, has_link, link_url) VALUES (NULL, 0, :badge, :image_paths, :display_date, :has_link, :link_url)');
     $stmt->execute([
         ':badge' => $badge,
         ':image_paths' => json_encode($imagePaths, JSON_UNESCAPED_UNICODE),
         ':display_date' => $displayDate,
+        ':has_link' => $hasLink,
+        ':link_url' => $linkUrl !== '' ? $linkUrl : null,
     ]);
 
     $postId = (int)$pdo->lastInsertId();
 
-    $tr = $pdo->prepare('INSERT INTO news_post_translations (post_id, lang, title, perex, body_html) VALUES (:post_id, :lang, :title, :perex, :body_html)');
-    $tr->execute([':post_id' => $postId, ':lang' => 'cs', ':title' => $titleCs, ':perex' => $perexCs, ':body_html' => $bodyCs]);
-    $tr->execute([':post_id' => $postId, ':lang' => 'en', ':title' => $titleEn, ':perex' => $perexEn, ':body_html' => $bodyEn]);
+    $tr = $pdo->prepare('INSERT INTO news_post_translations (post_id, lang, title, perex, body_html, link_label) VALUES (:post_id, :lang, :title, :perex, :body_html, :link_label)');
+    $tr->execute([':post_id' => $postId, ':lang' => 'cs', ':title' => $titleCs, ':perex' => $perexCs, ':body_html' => $bodyCs, ':link_label' => $linkLabelCs !== '' ? $linkLabelCs : null]);
+    $tr->execute([':post_id' => $postId, ':lang' => 'en', ':title' => $titleEn, ':perex' => $perexEn, ':body_html' => $bodyEn, ':link_label' => $linkLabelEn !== '' ? $linkLabelEn : null]);
 
     $pdo->commit();
 

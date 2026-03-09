@@ -1332,6 +1332,29 @@
                 </label>
               </div>
 
+              <div class="ng-editorrow ng-editorrow--link">
+                <label class="ng-check">
+                  <input name="has_link" type="checkbox" value="1" />
+                  <span>${lang === 'en' ? 'Show link button' : 'Zobrazit tlačítko odkazu'}</span>
+                </label>
+                <div class="ng-linkgroup" data-link-fields hidden>
+                  <label class="ng-field ng-field--link ng-field--full">
+                    <span>${lang === 'en' ? 'Link URL' : 'Odkaz URL'}</span>
+                    <input name="link_url" type="url" inputmode="url" maxlength="2048" placeholder="https://example.com" />
+                  </label>
+                  <div class="ng-linkgroup__labels">
+                    <label class="ng-field ng-field--full">
+                      <span>${lang === 'en' ? 'Button text (CS)' : 'Text tlačítka (CS)'}</span>
+                      <input name="link_label_cs" type="text" maxlength="120" placeholder="${lang === 'en' ? 'Read more' : 'Zjistit více'}" />
+                    </label>
+                    <label class="ng-field ng-field--full">
+                      <span>${lang === 'en' ? 'Button text (EN)' : 'Text tlačítka (EN)'}</span>
+                      <input name="link_label_en" type="text" maxlength="120" placeholder="Read more" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
               <div class="ng-upload">
                 <div class="ng-upload__title">${lang === 'en' ? 'Change image' : 'Změnit obrázek'}</div>
                 <label class="ng-upload__btn">
@@ -1389,6 +1412,25 @@
 
     document.body.appendChild(dlg);
 
+    const syncLinkFields = ()=>{
+      const enabled = !!dlg.querySelector('[name="has_link"]')?.checked;
+      const fieldsWrap = dlg.querySelector('[data-link-fields]');
+      const urlInput = dlg.querySelector('[name="link_url"]');
+      const labelInputs = [
+        dlg.querySelector('[name="link_label_cs"]'),
+        dlg.querySelector('[name="link_label_en"]'),
+      ].filter(Boolean);
+      if(fieldsWrap) fieldsWrap.hidden = !enabled;
+      if(urlInput){
+        urlInput.disabled = !enabled;
+        urlInput.required = enabled;
+        if(!enabled) urlInput.value = '';
+      }
+      labelInputs.forEach((input)=>{
+        input.disabled = !enabled;
+      });
+    };
+
     // Close bindings + language tabs
     dlg.addEventListener('click', (e)=>{
       const t = e.target;
@@ -1425,12 +1467,20 @@
       }
     });
 
+    dlg.addEventListener('change', (e)=>{
+      const t = e.target;
+      if(t && t.matches && t.matches('[name="has_link"]')){
+        syncLinkFields();
+      }
+    });
+
     document.addEventListener('keydown', (e)=>{
       if(e.key === 'Escape' && dlg.classList.contains('is-open')){
         closePostEditor();
       }
     });
 
+    dlg.__syncLinkFields = syncLinkFields;
     return dlg;
   }
 
@@ -1458,6 +1508,7 @@
     const f = dlg.querySelector('form');
     const fd = new FormData(f);
     const get = (k)=> String(fd.get(k) ?? '');
+    const hasLink = !!fd.get('has_link');
     // Also include image_paths array (parsed from dlg.dataset.images) so backend can persist gallery
     let imgs = [];
     try{ imgs = JSON.parse(dlg.dataset.images || '[]') || []; }catch(e){ imgs = []; }
@@ -1467,12 +1518,16 @@
       date: get('date').trim(),
       image: String(dlg.dataset.uploadedImage || '').trim(),
       image_paths: imgs,
+      has_link: hasLink,
+      link_url: hasLink ? get('link_url').trim() : '',
       title_cs: get('title_cs').trim(),
       perex_cs: get('perex_cs'),
       body_cs: get('body_cs'),
       title_en: get('title_en').trim(),
       perex_en: get('perex_en'),
       body_en: get('body_en'),
+      link_label_cs: get('link_label_cs').trim(),
+      link_label_en: get('link_label_en').trim(),
     };
   }
 
@@ -1518,14 +1573,22 @@
       const el = dlg.querySelector(`[name="${cssEscape(name)}"]`);
       if(el) el.value = String(val ?? '');
     };
+    const setChecked = (name, val)=>{
+      const el = dlg.querySelector(`[name="${cssEscape(name)}"]`);
+      if(el) el.checked = !!val;
+    };
     set('badge', p.badge || '');
     set('date', p.date || '');
+    setChecked('has_link', !!p.has_link);
+    set('link_url', p.link_url || '');
     set('title_cs', p.title_cs || '');
     set('perex_cs', p.perex_cs || '');
     set('body_cs', p.body_cs || '');
     set('title_en', p.title_en || '');
     set('perex_en', p.perex_en || '');
     set('body_en', p.body_en || '');
+    set('link_label_cs', p.link_label_cs || '');
+    set('link_label_en', p.link_label_en || '');
 
     // populate gallery image list (prefers explicit images array, falls back to single image)
     let images = [];
@@ -1535,6 +1598,7 @@
     }catch(e){ images = [] }
     try{ dlg.dataset.images = JSON.stringify(images || []); }catch(e){ dlg.dataset.images = '[]'; }
     if(typeof dlg.dataset.galleryIndex === 'undefined') dlg.dataset.galleryIndex = '0';
+    if(typeof dlg.__syncLinkFields === 'function') dlg.__syncLinkFields();
   }
 
   async function apiCreateEmptyPost(){
@@ -1552,6 +1616,10 @@
         badge: '',
         image: '',
         date: '',
+        has_link: false,
+        link_url: '',
+        link_label_cs: '',
+        link_label_en: '',
       })
     });
     const txt = await res.text();
@@ -1747,6 +1815,10 @@
             perex_en: '',
             body_cs: '',
             body_en: '',
+            has_link: false,
+            link_url: '',
+            link_label_cs: '',
+            link_label_en: '',
           });
 
           const x = intOrZero(opts && opts.x);
@@ -1774,7 +1846,10 @@
           p.perex_en = payload.perex_en ?? p.perex_en;
           p.body_cs = payload.body_cs ?? p.body_cs;
           p.body_en = payload.body_en ?? p.body_en;
-          // persist image_paths -> images
+          p.has_link = !!payload.has_link;
+          p.link_url = payload.link_url ?? '';
+          p.link_label_cs = payload.link_label_cs ?? p.link_label_cs;
+          p.link_label_en = payload.link_label_en ?? p.link_label_en;
           if(Array.isArray(payload.image_paths)){
             p.images = payload.image_paths.slice();
             p.image = p.images.length ? p.images[0] : '';

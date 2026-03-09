@@ -283,7 +283,7 @@ a { color: inherit; }
 .modal.is-open .modal__panel { transform: translateY(0) scale(1); opacity: 1; }
 
 .modal__close { position:absolute; top:14px; right:14px; border:0; background: rgba(17,17,17,0.06); width:38px; height:38px; border-radius:10px; cursor:pointer; }
-.modal__grid { display:grid; grid-template-columns: 60% 40%; gap:1.25rem; height: 100%; }
+.modal__grid { display:grid; grid-template-columns: 58% 42%; gap:1.25rem; height: 100%; }
 
 /* Left: media column (fixed area) */
 .modal__media {
@@ -291,7 +291,7 @@ a { color: inherit; }
   align-items:center;
   justify-content:center;
   flex-direction: column-reverse;
-  padding:1.25rem;
+  padding:1.25rem 4.5rem;
   background-image: url("Images/RedM.jpg");
   border-radius: 20px;
   border-right: 1px solid rgba(0,0,0,0.04);
@@ -300,40 +300,45 @@ a { color: inherit; }
 
 .modal__media img {
   width: 100%;
-  max-width: 520px;
-  max-height: calc(80vh - 250px); /* keep image inside panel with some padding */
+  max-width: 420px;
+  max-height: calc(80vh - 270px); /* keep image inside panel with some padding */
   height: 100%;
   object-fit: contain;
   display:block;
   transition: opacity 280ms ease, transform 280ms ease;
   opacity: 1;
+  cursor: zoom-in;
 }
-.modal__media img.is-loading { opacity: 0; transform: scale(0.995); }
-
 /* Prev/Next arrows overlaying media in modal */
 .modal__nav-arrow {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) scale(.96);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  border: 0;
-  background: rgba(17,17,17,0.06);
-  color: rgba(17,17,17,0.9);
-  font-size: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.34);
+  background: rgba(12,12,12,0.62);
+  color: rgba(255,255,255,0.98);
+  font-size: 24px;
+  font-weight: 800;
   cursor: pointer;
-  /* výrazně vyšší z-index, aby šipky byly nad obrázky i při animaci */
   z-index: 1200;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+  backdrop-filter: blur(8px);
   transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease, opacity 180ms ease, visibility 180ms ease;
-  /* start hidden — become visible only on hover/focus of the media area */
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.modal__nav-arrow:hover {
+  background: rgba(12,12,12,0.76);
+  box-shadow: 0 16px 34px rgba(0,0,0,0.34);
 }
 
 /* Remove focus outline specifically for modal nav arrows (keep global focus styling elsewhere) */
@@ -344,13 +349,9 @@ a { color: inherit; }
   box-shadow: none;
 }
 
-/* Show arrows when hovering or focusing the media area (and on touch when the media receives focus) */
+/* Show arrows only when hovering/focusing the media area */
 .modal__media:hover .modal__nav-arrow,
-.modal__media:focus-within .modal__nav-arrow,
-.slide-wrap:hover ~ .modal__nav-arrow,
-.slide-wrap:focus-within ~ .modal__nav-arrow,
-#newsModalImage:hover ~ .modal__nav-arrow,
-#newsModalImage:focus ~ .modal__nav-arrow {
+.modal__media:focus-within .modal__nav-arrow {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -363,14 +364,14 @@ a { color: inherit; }
 }
 
 /* Position left/right for nav arrows so they sit at media sides */
-.modal__media > .modal__nav-prev { left: 12px; }
-.modal__media > .modal__nav-next { right: 10px; }
+.modal__media > .modal__nav-prev { left: 22px; }
+.modal__media > .modal__nav-next { right: 22px; }
 
 /* Remove/override previous rule that targeted slide-wrap children so arrows don't get centered there */
 .slide-wrap .modal__nav-arrow { position: static; }
 
 /* Right: content column scrolls if overflow */
-.modal__content { color:#111; padding:1.25rem; overflow:auto; height: 100%; }
+.modal__content { color:#111; padding:1.25rem; overflow:auto; height: 100%; display:flex; flex-direction:column; }
 .modal__title { margin:0 0 0.4rem 0; font-size:1.5rem; }
 .modal__meta { font-size:0.9rem; opacity:0.75; text-align:right; margin-bottom: 0.6rem; }
 .modal__perex { margin: 0 0 0.8rem 0; color: rgba(17,17,17,0.8); }
@@ -385,6 +386,29 @@ a { color: inherit; }
 .modal__section { margin-top: 0.6rem; }
 .modal__section .modal__h3 { margin: 0 0 0.6rem 0; font-size:1.05rem; }
 .modal__body { color: rgba(17,17,17,0.95); line-height:1.55; }
+.modal__footer { margin-top: auto; display:flex; justify-content:flex-end; padding-top: 1rem; }
+.modal__link-btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height: 44px;
+  padding: 0.75rem 1.1rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(140,130,92,0.96), rgba(170,150,110,0.96));
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+  transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+  margin-right: 15px;
+}
+.modal__link-btn:hover,
+.modal__link-btn:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.18);
+}
+.modal__link-btn[hidden] { display:none !important; }
 
 /* Decorative header inside content */
 .modal__header { display:flex; align-items:flex-start; justify-content:space-between; gap:0.75rem; padding-bottom:0.35rem; border-bottom: 1px solid rgba(0,0,0,0.04); }
@@ -448,7 +472,9 @@ a { color: inherit; }
   }
 
   .modal__panel { width: calc(100% - 2rem); margin: 3vh auto; }
-  .modal__media img { max-width: 100%; }
+  .modal__media { padding-left: 2.75rem; padding-right: 2.75rem; }
+  .modal__media img,
+  .slide-wrap { max-width: 100%; }
 }
 
 @media (max-width: 560px) {
@@ -466,7 +492,9 @@ button:focus { outline: 3px solid rgba(140,130,92,0.18); outline-offset: 3px; }
 .slide-wrap {
   position: relative;
   width: 100%;
+  max-width: 420px;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -475,10 +503,11 @@ button:focus { outline: 3px solid rgba(140,130,92,0.18); outline-offset: 3px; }
 
 .slide-wrap img {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   display: block;
   will-change: transform, opacity;
@@ -489,10 +518,11 @@ button:focus { outline: 3px solid rgba(140,130,92,0.18); outline-offset: 3px; }
 /* Ensure the original #newsModalImage (non-animated fallback) still fits inside */
 #newsModalImage {
   position: absolute;
-  top: 30px;
-  left: 50px;
+  inset: 0;
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
 }
 
@@ -500,12 +530,72 @@ button:focus { outline: 3px solid rgba(140,130,92,0.18); outline-offset: 3px; }
 .modal__media img:not(.slide) {
   position: relative;
   width: 100%;
-  max-width: 520px;
-  max-height: calc(80vh - 250px);
+  max-width: 420px;
+  max-height: calc(80vh - 270px);
   height: 100%;
   object-fit: contain;
   display: block;
   transition: opacity 280ms ease, transform 280ms ease;
+}
+
+/* Lightbox for enlarged image */
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 4000;
+}
+
+.image-lightbox[aria-hidden="false"] {
+  display: block;
+}
+
+.image-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.78);
+  backdrop-filter: blur(10px);
+}
+
+.image-lightbox__dialog {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+}
+
+.image-lightbox__img {
+  max-width: min(92vw, 1500px);
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+}
+
+.image-lightbox__close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  z-index: 2;
+  backdrop-filter: blur(8px);
+}
+
+.image-lightbox__close:hover,
+.image-lightbox__close:focus-visible {
+  background: rgba(255,255,255,0.18);
 }
 
 /* End of file */

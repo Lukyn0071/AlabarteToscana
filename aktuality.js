@@ -100,6 +100,9 @@
                     images: Array.isArray(it.images) ? it.images : (it.images ? [it.images] : []),
                     image: it.image || (Array.isArray(it.images) && it.images.length ? it.images[0] : ''),
                     bodyHtml: it.bodyHtml,
+                    has_link: !!it.has_link,
+                    link_url: it.link_url || '',
+                    link_label: it.link_label || '',
                 }));
 
                 return;
@@ -123,6 +126,10 @@
     let modalMeta = document.getElementById("newsModalMeta");
     let modalPerex = document.getElementById("newsModalPerex");
     let modalBody = document.getElementById("newsModalBody");
+    let modalLink = document.getElementById("newsModalLink");
+    let lightbox = document.getElementById("newsImageLightbox");
+    let lightboxImg = document.getElementById("newsImageLightboxImg");
+    let lightboxLastFocusEl = null;
 
     // If the page doesn't include the modal markup, create a minimal fallback so gallery still works.
     function ensureModalMarkup() {
@@ -186,11 +193,16 @@
         modalMeta = document.createElement('div'); modalMeta.id = 'newsModalMeta'; modalMeta.className = 'modal__meta';
         modalPerex = document.createElement('p'); modalPerex.id = 'newsModalPerex'; modalPerex.className = 'modal__perex';
         modalBody = document.createElement('div'); modalBody.id = 'newsModalBody'; modalBody.className = 'modal__body';
+        modalLink = document.createElement('a'); modalLink.id = 'newsModalLink'; modalLink.className = 'modal__link-btn'; modalLink.href = '#'; modalLink.target = '_blank'; modalLink.rel = 'noopener noreferrer'; modalLink.hidden = true;
+        modalLink.textContent = (getLang() === 'en') ? 'Open link' : 'Otevřít odkaz';
+        const modalFooter = document.createElement('div'); modalFooter.className = 'modal__footer';
 
         content.appendChild(modalTitle);
         content.appendChild(modalMeta);
         content.appendChild(modalPerex);
         content.appendChild(modalBody);
+        modalFooter.appendChild(modalLink);
+        content.appendChild(modalFooter);
 
         grid.appendChild(media);
         grid.appendChild(content);
@@ -198,6 +210,57 @@
         modal.appendChild(panel);
 
         document.body.appendChild(modal);
+    }
+
+    function ensureLightboxMarkup() {
+        lightbox = document.getElementById('newsImageLightbox');
+        lightboxImg = document.getElementById('newsImageLightboxImg');
+        if (lightbox && lightboxImg) return;
+
+        lightbox = document.createElement('div');
+        lightbox.id = 'newsImageLightbox';
+        lightbox.className = 'image-lightbox';
+        lightbox.setAttribute('aria-hidden', 'true');
+        lightbox.innerHTML = `
+            <div class="image-lightbox__backdrop" data-lightbox-close="true" aria-hidden="true"></div>
+            <div class="image-lightbox__dialog" role="dialog" aria-modal="true" aria-label="Zvětšený obrázek">
+                <button class="image-lightbox__close" type="button" aria-label="Zavřít zvětšený obrázek" data-lightbox-close="true">✕</button>
+                <img class="image-lightbox__img" id="newsImageLightboxImg" src="" alt="" />
+            </div>
+        `;
+        document.body.appendChild(lightbox);
+        lightboxImg = document.getElementById('newsImageLightboxImg');
+    }
+
+    function isLightboxOpen() {
+        return !!(lightbox && lightbox.getAttribute('aria-hidden') === 'false');
+    }
+
+    function openLightbox(src, alt, focusBackTo) {
+        ensureLightboxMarkup();
+        if (!lightbox || !lightboxImg || !src) return;
+        lightboxLastFocusEl = focusBackTo || modalImg || null;
+        lightboxImg.src = resolveAssetPath(src);
+        lightboxImg.alt = String(alt || '');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('image-lightbox-open');
+        const closeBtn = lightbox.querySelector('[data-lightbox-close="true"]');
+        if (closeBtn && typeof closeBtn.focus === 'function') {
+            setTimeout(() => closeBtn.focus(), 0);
+        }
+    }
+
+    function closeLightbox() {
+        if (!lightbox) return;
+        lightbox.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('image-lightbox-open');
+        if (lightboxImg) {
+            lightboxImg.removeAttribute('src');
+            lightboxImg.alt = '';
+        }
+        if (lightboxLastFocusEl && typeof lightboxLastFocusEl.focus === 'function') {
+            lightboxLastFocusEl.focus();
+        }
     }
 
     // basic load log
@@ -244,6 +307,8 @@
         modalMeta = document.getElementById("newsModalMeta");
         modalPerex = document.getElementById("newsModalPerex");
         modalBody = document.getElementById("newsModalBody");
+        modalLink = document.getElementById("newsModalLink");
+        ensureLightboxMarkup();
         // Ensure modalImg is wrapped in .slide-wrap so sliding animations always have a container.
         try {
             if (modalImg && modalImg.parentElement && !modalImg.parentElement.classList.contains('slide-wrap')) {
@@ -299,6 +364,8 @@
         let _slideTimeout = null;
         let _slideTokenSeq = 0;
         let _activeSlide = null;
+        let _queuedNavigation = null;
+        let _commitRaf = 0;
         const _sessionToken = Date.now() + Math.random();
         try { modal._slideSessionToken = _sessionToken; } catch (e) {}
 
@@ -325,12 +392,29 @@
                 el.style.left = '';
                 el.style.width = '';
                 el.style.height = '';
+                el.style.maxWidth = '';
+                el.style.maxHeight = '';
                 el.style.zIndex = '';
                 el.style.willChange = '';
             } catch (e) {}
         }
 
-        function cancelActiveSlide(reason) {
+        function applySlideFrame(el) {
+            if (!el) return;
+            try {
+                el.style.position = 'absolute';
+                el.style.top = '0';
+                el.style.left = '0';
+                el.style.width = '100%';
+                el.style.height = '100%';
+                el.style.maxWidth = '100%';
+                el.style.maxHeight = '100%';
+                el.style.objectFit = 'contain';
+                el.style.willChange = 'transform, opacity';
+            } catch (e) {}
+        }
+
+        function cancelActiveSlide() {
             const active = _activeSlide;
             if (!active) return;
             active.cancelled = true;
@@ -346,6 +430,15 @@
                 }
             } catch (e) {}
             _activeSlide = null;
+            _queuedNavigation = null;
+            if (_slideTimeout) {
+                try { clearTimeout(_slideTimeout); } catch (e) {}
+                _slideTimeout = null;
+            }
+            if (_commitRaf) {
+                try { cancelAnimationFrame(_commitRaf); } catch (e) {}
+                _commitRaf = 0;
+            }
         }
 
         function commitActiveSlide(active) {
@@ -356,10 +449,20 @@
             } catch (e) {}
             try { normalizeActiveImage(active.newEl); } catch (e) {}
             try { modalImg = active.newEl; } catch (e) {}
+            try { bindZoomHandler(); } catch (e) {}
             _activeSlide = null;
             if (_slideTimeout) {
                 try { clearTimeout(_slideTimeout); } catch (e) {}
                 _slideTimeout = null;
+            }
+            if (_commitRaf) {
+                try { cancelAnimationFrame(_commitRaf); } catch (e) {}
+                _commitRaf = 0;
+            }
+            if (_queuedNavigation) {
+                const queued = _queuedNavigation;
+                _queuedNavigation = null;
+                showImage(queued.idx, { dir: queued.dir, force: true });
             }
         }
 
@@ -420,6 +523,11 @@
             const media = modalImg.closest('.modal__media') || modalImg.parentElement || document.body;
             const slideWrap = getSlideWrap() || media;
 
+            if (_activeSlide) {
+                _queuedNavigation = { idx: tgt, dir: direction };
+                return;
+            }
+
             if (opts.instant) {
                 cancelActiveSlide('instant');
                 resetSlideWrap();
@@ -427,6 +535,10 @@
                     modalImg.onload = function(){ try{ modalImg.classList.remove('is-loading'); }catch(e){} modalImg.onload = null; };
                     normalizeActiveImage(modalImg);
                     modalImg.src = resolveAssetPath(images[CURRENT_IMAGE_INDEX]);
+                    if (isLightboxOpen() && lightboxImg) {
+                        lightboxImg.src = resolveAssetPath(images[CURRENT_IMAGE_INDEX]);
+                        lightboxImg.alt = modalImg.alt || '';
+                    }
                 } catch(e){}
                 return;
             }
@@ -446,10 +558,12 @@
             newImg.loading = 'eager';
             newImg.alt = oldImg.alt || '';
             newImg.style.position = 'absolute';
-            newImg.style.top = '30px';
-            newImg.style.left = '50px';
+            newImg.style.top = '0';
+            newImg.style.left = '0';
             newImg.style.width = '100%';
             newImg.style.height = '100%';
+            newImg.style.maxWidth = '100%';
+            newImg.style.maxHeight = '100%';
             newImg.style.objectFit = 'contain';
             newImg.style.willChange = 'transform, opacity';
             newImg.style.transform = (direction === 'right') ? 'translateX(100%)' : 'translateX(-100%)';
@@ -465,12 +579,7 @@
             } catch (e) {}
 
             try {
-                oldImg.style.position = 'absolute';
-                oldImg.style.top = '30px';
-                oldImg.style.left = '50px';
-                oldImg.style.width = '100%';
-                oldImg.style.height = '100%';
-                oldImg.style.objectFit = 'contain';
+                applySlideFrame(oldImg);
                 oldImg.style.zIndex = '40';
             } catch (e) {}
 
@@ -497,9 +606,14 @@
                 } catch (e) { if (DEBUG) console.warn('[aktuality] slide animate failed', e); }
             });
 
-            _slideTimeout = setTimeout(() => {
-                commitActiveSlide(active);
-            }, 460);
+            const finalize = () => commitActiveSlide(active);
+            active.newEl.addEventListener('transitionend', finalize, { once: true });
+            _commitRaf = requestAnimationFrame(() => {
+                _commitRaf = requestAnimationFrame(() => {
+                    if (_activeSlide === active && !active.cancelled) finalize();
+                });
+            });
+            _slideTimeout = setTimeout(finalize, 520);
         }
 
         // Helper to navigate to target index with direction calculated
@@ -519,6 +633,18 @@
                 } catch (e) { dir = (tgt > prev) ? 'right' : 'left'; }
             }
             showImage(tgt, { dir: dir });
+        }
+
+        function bindZoomHandler() {
+            if (!modalImg) return;
+            modalImg.alt = (localizedField(item, 'title') || '').split("\n").join(" ");
+            modalImg.style.cursor = images.length ? 'zoom-in' : '';
+            modalImg.onclick = function(ev) {
+                ev && ev.preventDefault && ev.preventDefault();
+                ev && ev.stopPropagation && ev.stopPropagation();
+                if (!images.length) return;
+                openLightbox(images[CURRENT_IMAGE_INDEX] || modalImg.src || '', modalImg.alt || '', modalImg);
+            };
         }
 
         // attach arrow handlers (if present)
@@ -551,6 +677,7 @@
         modalMeta.textContent = item && item.date ? String(item.date) : "";
         modalPerex.textContent = localizedField(item, 'perex') || "";
         modalBody.innerHTML = localizedField(item, 'bodyHtml') || localizedField(item, 'bodyHtml_en') || "";
+        bindZoomHandler();
 
         // Otevření modalu
         modal.classList.add('is-open');
@@ -586,6 +713,8 @@
     function closeModal() {
         if (!modal) return;
 
+        closeLightbox();
+
         // Remove gallery keyboard handler if present
         try { if (modal._aktKeyHandler) { document.removeEventListener('keydown', modal._aktKeyHandler); delete modal._aktKeyHandler; } } catch (e) {}
 
@@ -608,6 +737,8 @@
                             img.style.left = '';
                             img.style.width = '';
                             img.style.height = '';
+                            img.style.maxWidth = '';
+                            img.style.maxHeight = '';
                             img.style.zIndex = '';
                             img.style.willChange = '';
                         } catch (e) {}
@@ -640,6 +771,15 @@
         document.addEventListener('click', (e) => {
             const target = e.target;
 
+            if (isLightboxOpen()) {
+                const lightboxCloseHit = target && target.closest && target.closest('[data-lightbox-close="true"]');
+                if (lightboxCloseHit) {
+                    e.preventDefault();
+                    closeLightbox();
+                    return;
+                }
+            }
+
             if (modal && modal.classList.contains('is-open')) {
                 const closeHit = target && target.closest && target.closest("[data-close='true']");
                 if (closeHit) {
@@ -657,6 +797,10 @@
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                if (isLightboxOpen()) {
+                    closeLightbox();
+                    return;
+                }
                 if (modal && modal.classList.contains('is-open')) closeModal();
                 return;
             }
@@ -841,6 +985,9 @@
                 images: Array.isArray(it.images) ? it.images : (it.images ? [it.images] : []),
                 image: it.image,
                 bodyHtml: it.bodyHtml,
+                has_link: !!it.has_link,
+                link_url: it.link_url || '',
+                link_label: it.link_label || '',
             };
 
             const variant = computeVariantFromSize(it.w, it.h);

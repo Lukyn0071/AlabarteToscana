@@ -19,6 +19,8 @@ function ensure_news_tables(PDO $pdo): void
             `display_date` VARCHAR(32) NULL,
             `published_at` DATE NULL,
             `is_published` TINYINT(1) NOT NULL DEFAULT 1,
+            `has_link` TINYINT(1) NOT NULL DEFAULT 0,
+            `link_url` VARCHAR(2048) NULL,
             `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (`id`),
@@ -35,6 +37,20 @@ function ensure_news_tables(PDO $pdo): void
         }
     } catch (Throwable $e) {}
 
+    try {
+        $col = $pdo->query("SHOW COLUMNS FROM `news_posts` LIKE 'has_link'")->fetch();
+        if (!$col) {
+            $pdo->exec("ALTER TABLE `news_posts` ADD COLUMN `has_link` TINYINT(1) NOT NULL DEFAULT 0 AFTER `is_published`");
+        }
+    } catch (Throwable $e) {}
+
+    try {
+        $col = $pdo->query("SHOW COLUMNS FROM `news_posts` LIKE 'link_url'")->fetch();
+        if (!$col) {
+            $pdo->exec("ALTER TABLE `news_posts` ADD COLUMN `link_url` VARCHAR(2048) NULL AFTER `has_link`");
+        }
+    } catch (Throwable $e) {}
+
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS `news_post_translations` (
             `post_id` INT UNSIGNED NOT NULL,
@@ -42,6 +58,7 @@ function ensure_news_tables(PDO $pdo): void
             `title` VARCHAR(255) NOT NULL,
             `perex` TEXT NOT NULL,
             `body_html` MEDIUMTEXT NULL,
+            `link_label` VARCHAR(120) NULL,
             `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (`post_id`, `lang`),
@@ -50,6 +67,13 @@ function ensure_news_tables(PDO $pdo): void
                 ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
+
+    try {
+        $col = $pdo->query("SHOW COLUMNS FROM `news_post_translations` LIKE 'link_label'")->fetch();
+        if (!$col) {
+            $pdo->exec("ALTER TABLE `news_post_translations` ADD COLUMN `link_label` VARCHAR(120) NULL AFTER `body_html`");
+        }
+    } catch (Throwable $e) {}
 }
 
 /**
@@ -97,10 +121,13 @@ function load_news(PDO $pdo, string $lang, bool $publishedOnly = true): array
             p.sort_order,
             p.badge,
             p.image_paths,
+            p.has_link,
+            p.link_url,
             COALESCE(p.display_date, DATE_FORMAT(p.published_at, '%m/%Y')) AS display_date,
             t.title,
             t.perex,
-            t.body_html
+            t.body_html,
+            t.link_label
         FROM news_posts p
         LEFT JOIN news_post_translations t
             ON t.post_id = p.id AND t.lang = :lang
@@ -140,9 +167,12 @@ function load_news(PDO $pdo, string $lang, bool $publishedOnly = true): array
             'badge' => $row['badge'],
             'images' => $images,
             'display_date' => $row['display_date'],
+            'has_link' => !empty($row['has_link']),
+            'link_url' => (string)($row['link_url'] ?? ''),
             'title' => $row['title'] ?? '',
             'perex' => $row['perex'] ?? '',
             'body_html' => $row['body_html'] ?? '',
+            'link_label' => (string)($row['link_label'] ?? ''),
         ];
     }
 

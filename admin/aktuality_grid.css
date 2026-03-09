@@ -279,6 +279,12 @@
 #ngPostEditorPanel .ng-editorrow,
 .ng-editor-panel .ng-editorrow{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
 
+#ngPostEditorPanel .ng-editorrow--link,
+.ng-editor-panel .ng-editorrow--link{
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
 #ngPostEditorPanel .ng-field,
 .ng-editor-panel .ng-field{ display:flex; flex-direction:column; gap:6px; }
 

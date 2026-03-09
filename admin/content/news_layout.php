@@ -203,8 +203,10 @@ function load_news_layout(PDO $pdo, string $lang, string $layoutKey = 'aktuality
             li.x, li.y, li.w, li.h,
             p.badge,
             p.image_paths,
+            p.has_link,
+            p.link_url,
             COALESCE(p.display_date, DATE_FORMAT(p.published_at, '%m/%Y')) AS display_date,
-            t.title, t.perex, t.body_html
+            t.title, t.perex, t.body_html, t.link_label
         FROM news_layout_items li
         INNER JOIN news_posts p ON p.id = li.post_id
         INNER JOIN news_post_translations t ON t.post_id = p.id AND t.lang = :lang
@@ -250,9 +252,12 @@ function load_news_layout(PDO $pdo, string $lang, string $layoutKey = 'aktuality
             'badge' => (string)($r['badge'] ?? ''),
             'images' => $images,
             'date' => (string)($r['display_date'] ?? ''),
+            'has_link' => !empty($r['has_link']),
+            'link_url' => (string)($r['link_url'] ?? ''),
             'title' => (string)($r['title'] ?? ''),
             'perex' => (string)($r['perex'] ?? ''),
             'bodyHtml' => (string)($r['body_html'] ?? ''),
+            'link_label' => (string)($r['link_label'] ?? ''),
         ];
     }
 

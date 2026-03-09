@@ -65,9 +65,12 @@ try {
                 'images' => $imgs,
                 'image' => $imgs[0] ?? '',
                 'date' => (string)($r['display_date'] ?? ''),
+                'has_link' => !empty($r['has_link']),
+                'link_url' => (string)($r['link_url'] ?? ''),
                 'title' => (string)($r['title'] ?? ''),
                 'perex' => (string)($r['perex'] ?? ''),
                 'bodyHtml' => (string)($r['body_html'] ?? ''),
+                'link_label' => (string)($r['link_label'] ?? ''),
             ];
         }
 

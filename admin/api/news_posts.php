@@ -37,13 +37,17 @@ try {
             p.id,
             p.badge,
             p.image_paths,
+            p.has_link,
+            p.link_url,
             COALESCE(p.display_date, DATE_FORMAT(p.published_at, '%m/%Y')) AS display_date,
             cs.title AS title_cs,
             en.title AS title_en,
             cs.perex AS perex_cs,
             en.perex AS perex_en,
             cs.body_html AS body_cs,
-            en.body_html AS body_en
+            en.body_html AS body_en,
+            cs.link_label AS link_label_cs,
+            en.link_label AS link_label_en
         FROM news_posts p
         LEFT JOIN news_post_translations cs ON cs.post_id = p.id AND cs.lang='cs'
         LEFT JOIN news_post_translations en ON en.post_id = p.id AND en.lang='en'
@@ -76,12 +80,16 @@ try {
             'images' => $images,
             'image' => (function_exists('normalize_image_url') ? normalize_image_url($images[0] ?? '') : ($images[0] ?? '')),
             'date' => (string)($r['display_date'] ?? ''),
+            'has_link' => !empty($r['has_link']),
+            'link_url' => (string)($r['link_url'] ?? ''),
             'title_cs' => (string)($r['title_cs'] ?? ''),
             'title_en' => (string)($r['title_en'] ?? ''),
             'perex_cs' => (string)($r['perex_cs'] ?? ''),
             'perex_en' => (string)($r['perex_en'] ?? ''),
             'body_cs' => (string)($r['body_cs'] ?? ''),
             'body_en' => (string)($r['body_en'] ?? ''),
+            'link_label_cs' => (string)($r['link_label_cs'] ?? ''),
+            'link_label_en' => (string)($r['link_label_en'] ?? ''),
         ];
     }, $rows);
 
