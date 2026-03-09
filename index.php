@@ -49,7 +49,7 @@ $sections = load_page_sections($pdo, $lang);
                 <header class="hero-header hero-header--reference">
                     <div class="hero-logo hero-logo--reference">
                         <a href="index.php" aria-label="Alabarte">
-                            <img src="Images/ALABARTE RED trans.png" alt="Alabarte">
+                            <img src="Images/alabarte-red.png" alt="Alabarte">
                         </a>
 
                         <!-- klik v hero jen posune na sekci partnera -->
