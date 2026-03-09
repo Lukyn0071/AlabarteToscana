@@ -55,7 +55,7 @@
                 <!-- ✅ LOGA -->
                 <div class="vina-brands" aria-label="Loga značek">
                     <div class="vina-brand vina-brand--left">
-                        <img src="Images/Alabarte-logo.webp" alt="Alabarte logo">
+                        <img src="Images/alabarte-red.png" alt="Alabarte logo">
                     </div>
 
                     <div class="vina-brand vina-brand--right">
@@ -75,15 +75,31 @@
             <button class="presentation-arrow presentation-arrow--prev" type="button" aria-label="Předchozí obrázek">‹</button>
 
             <section class="wine-presentation-slider" data-slider="presentation" aria-label="Prezentace vín">
+
                 <div class="presentation-slide is-active">
                     <img src="Images/prezentace/acquaiole-pret.png" alt="">
                 </div>
+
                 <div class="presentation-slide">
                     <img src="Images/prezentace/Caroobacoo-pret.png" alt="">
                 </div>
+
                 <div class="presentation-slide">
                     <img src="Images/prezentace/sciallebianco-pret.png" alt="">
                 </div>
+
+                <div class="presentation-slide">
+                    <img src="Images/prezentace/chiacchere-pret.png" alt="">
+                </div>
+
+                <div class="presentation-slide">
+                    <img src="Images/prezentace/guinzano-pret.png" alt="">
+                </div>
+
+                <div class="presentation-slide">
+                    <img src="Images/prezentace/stradina-pret.png" alt="">
+                </div>
+
             </section>
 
             <button class="presentation-arrow presentation-arrow--next" type="button" aria-label="Další obrázek">›</button>
@@ -148,7 +164,11 @@
     <section class="wines" id="vina-katalog" aria-label="Katalog vín">
 
         <!-- 1) Vermentino -->
-        <article class="wine-card wine-card--catalog" data-wine="vermentino" tabindex="0" role="button"
+        <article class="wine-card wine-card--catalog"
+                 data-wine="vermentino"
+                 data-shop="https://www.alabarte.cz/vermentino-bagiogie/"
+                 tabindex="0"
+                 role="button"
                  aria-label="Detail vína Vermentino IGT Toscana 2023 BAGIOGIE">
             <div class="wine-media">
                 <img src="Images/Vína/vermetinoigt23.png" alt="Vermentino IGT Toscana 2023 BAGIOGIE">
@@ -159,7 +179,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">IGT TOSCANA</p>
-                <p class="wine-price">287 Kč</p>
+                <p class="wine-price"></p>
 
                 <span class="wine-meta sr-only">2023 • suché bílé • Itálie</span>
                 <span class="wine-story sr-only">citrusy, bylinky, mineralita</span>
@@ -171,7 +191,11 @@
         </article>
 
         <!-- 2) Chianti -->
-        <article class="wine-card wine-card--catalog" data-wine="chianti" tabindex="0" role="button"
+        <article class="wine-card wine-card--catalog"
+                 data-wine="chianti"
+                 data-shop="https://www.alabarte.cz/chianti-la-villa/"
+                 tabindex="0"
+                 role="button"
                  aria-label="Detail vína Chianti Colli Senesi DOCG 2023 La Villa">
             <div class="wine-media">
                 <img src="Images/Vína/chiantisenesi23.png" alt="Chianti Colli Senesi DOCG 2023 La Villa">
@@ -182,7 +206,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">CHIANTI COLLI SENESI DOCG</p>
-                <p class="wine-price">459 Kč</p>
+                <p class="wine-price"></p>
 
                 <span class="wine-meta sr-only">2023 • suché červené • Itálie</span>
                 <span class="wine-story sr-only">červené ovoce, koření, jemné třísloviny</span>
@@ -194,7 +218,11 @@
         </article>
 
         <!-- 3) Rosato -->
-        <article class="wine-card wine-card--catalog" data-wine="rosato" tabindex="0" role="button"
+        <article class="wine-card wine-card--catalog"
+                 data-wine="rosato"
+                 data-shop="https://www.alabarte.cz/badalui-rosato/"
+                 tabindex="0"
+                 role="button"
                  aria-label="Detail vína Rosato IGT Toscana 2023 Badalui">
             <div class="wine-media">
                 <img src="Images/Vína/rosatoigt23.png" alt="Rosato IGT Toscana 2023 Badalui">
@@ -205,7 +233,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">IGT TOSCANA</p>
-                <p class="wine-price">332 Kč</p>
+                <p class="wine-price"></p>
 
                 <span class="wine-meta sr-only">2023 • růžové • Itálie</span>
                 <span class="wine-story sr-only">červené ovoce, svěžest, lehkost</span>
@@ -217,7 +245,11 @@
         </article>
 
         <!-- 4) Vernaccia -->
-        <article class="wine-card wine-card--catalog" data-wine="vernaccia" tabindex="0" role="button"
+        <article class="wine-card wine-card--catalog"
+                 data-wine="vernaccia"
+                 data-shop="https://www.alabarte.cz/vernaccia-di-san-gimignano-docg/"
+                 tabindex="0"
+                 role="button"
                  aria-label="Detail vína Vernaccia di San Gimignano DOCG 2024">
             <div class="wine-media">
                 <img src="Images/Vína/vernaccia24.png" alt="Vernaccia di San Gimignano DOCG 2024">
@@ -228,7 +260,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">VERNACCIA DI SAN GIMIGNANO DOCG</p>
-                <p class="wine-price">249 Kč</p>
+                <p class="wine-price"></p>
 
                 <span class="wine-meta sr-only">2024 • suché bílé • Itálie</span>
                 <span class="wine-story sr-only">citrusy, zelené jablko, mineralita</span>
@@ -240,7 +272,11 @@
         </article>
 
         <!-- 5) Rosso (Guinzano) -->
-        <article class="wine-card wine-card--catalog" data-wine="guinzano" tabindex="0" role="button"
+        <article class="wine-card wine-card--catalog"
+                 data-wine="guinzano"
+                 data-shop="https://www.alabarte.cz/san-gimignano-rosso-doc-2022/"
+                 tabindex="0"
+                 role="button"
                  aria-label="Detail vína San Gimignano Rosso DOC 2022 Guinzano">
             <div class="wine-media">
                 <img src="Images/Vína/rossodoc22.png" alt="San Gimignano Rosso DOC 2022 Guinzano">
@@ -251,7 +287,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">SAN GIMIGNANO ROSSO DOC</p>
-                <p class="wine-price">418 Kč</p>
+                <p class="wine-price"></p>
 
                 <span class="wine-meta sr-only">2022 • suché červené • Itálie</span>
                 <span class="wine-story sr-only">zralé červené ovoce, jemné dřevo</span>
@@ -263,7 +299,11 @@
         </article>
 
         <!-- 6) Sciallebiancho Riserva -->
-        <article class="wine-card wine-card--catalog" data-wine="sciallebiancho" tabindex="0" role="button"
+        <article class="wine-card wine-card--catalog"
+                 data-wine="sciallebiancho"
+                 data-shop="https://www.alabarte.cz/vernaccia-sciallebianco/"
+                 tabindex="0"
+                 role="button"
                  aria-label="Detail vína Vernaccia di San Gimignano Riserva DOCG 2022 Sciallebiancho">
             <div class="wine-media">
                 <img src="Images/Vína/vernacciadocg22.png" alt="Vernaccia di San Gimignano Riserva DOCG 2022 Sciallebiancho">
@@ -274,7 +314,7 @@
                 <div class="wine-divider" aria-hidden="true"></div>
 
                 <p class="wine-appellation typo-meta">VERNACCIA DI SAN GIMIGNANO RISERVA DOCG</p>
-                <p class="wine-price">379 Kč</p>
+                <p class="wine-price"></p>
 
                 <span class="wine-meta sr-only">2022 • suché bílé • Itálie</span>
                 <span class="wine-story sr-only">mineralita, citrusová kůra, jemná krémovost</span>
@@ -322,8 +362,19 @@
                 </div>
 
                 <div class="modal__section">
-                    <h3 class="modal__h3 typo-h3">Chuť a párování</h3>
+                    <h3 class="modal__h3 typo-h3"></h3>
                     <ul class="modal__specs" id="modalPairing"></ul>
+                </div>
+
+                <div class="modal__section">
+                    <a id="wineShopBtn"
+                       class="wine-shop-btn"
+                       href="#"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="Přejít na produkt v e-shopu">
+                        Koupit v e-shopu
+                    </a>
                 </div>
             </div>
         </div>
