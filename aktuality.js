@@ -295,48 +295,114 @@
         const images = Array.isArray(item.images) && item.images.length > 0 ? item.images : (item.image ? [item.image] : []);
         CURRENT_IMAGE_INDEX = 0;
 
-        // internal state for sliding
-        let _isSliding = false;
+        // robust slide state for rapid navigation
         let _slideTimeout = null;
+        let _slideTokenSeq = 0;
+        let _activeSlide = null;
+        const _sessionToken = Date.now() + Math.random();
+        try { modal._slideSessionToken = _sessionToken; } catch (e) {}
 
-        function finishSlideCleanup(oldEl, newEl) {
+        function getSlideWrap() {
             try {
-                if (oldEl && oldEl.parentElement) oldEl.parentElement.removeChild(oldEl);
+                return modalImg && modalImg.parentElement && modalImg.parentElement.classList.contains('slide-wrap')
+                    ? modalImg.parentElement
+                    : ((modalImg && modalImg.closest('.modal__media')) ? modalImg.closest('.modal__media').querySelector('.slide-wrap') : null);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function normalizeActiveImage(el) {
+            if (!el) return;
+            try {
+                el.id = 'newsModalImage';
+                el.classList.remove('slide', 'is-loading');
+                el.style.transition = '';
+                el.style.transform = '';
+                el.style.opacity = '';
+                el.style.position = '';
+                el.style.top = '';
+                el.style.left = '';
+                el.style.width = '';
+                el.style.height = '';
+                el.style.zIndex = '';
+                el.style.willChange = '';
             } catch (e) {}
-            // ensure modalImg points to the active image element and has the same id
+        }
+
+        function cancelActiveSlide(reason) {
+            const active = _activeSlide;
+            if (!active) return;
+            active.cancelled = true;
+            if (_slideTimeout) {
+                try { clearTimeout(_slideTimeout); } catch (e) {}
+                _slideTimeout = null;
+            }
+            try { if (active.oldEl) normalizeActiveImage(active.oldEl); } catch (e) {}
             try {
-                if (newEl) {
-                    // normalize styles so the image sits normally in the flow inside slide-wrap
-                    try {
-                        newEl.id = 'newsModalImage';
-                        newEl.classList.remove('slide');
-                        newEl.style.transition = '';
-                        newEl.style.transform = '';
-                        newEl.style.opacity = '';
-                        newEl.style.position = '';
-                        newEl.style.top = '';
-                        newEl.style.left = '';
-                        newEl.style.width = '';
-                        newEl.style.height = '';
-                        newEl.style.zIndex = '';
-                        newEl.style.willChange = '';
-                    } catch (ee) {}
-                    modalImg = newEl;
+                if (active.newEl && active.newEl.parentElement) {
+                    active.newEl.onload = null;
+                    active.newEl.parentElement.removeChild(active.newEl);
                 }
             } catch (e) {}
-            _isSliding = false;
-            if (_slideTimeout) { clearTimeout(_slideTimeout); _slideTimeout = null; }
+            _activeSlide = null;
+        }
+
+        function commitActiveSlide(active) {
+            if (!active || _activeSlide !== active || active.cancelled) return;
+            if (!modal || modal._slideSessionToken !== _sessionToken) return;
+            try {
+                if (active.oldEl && active.oldEl.parentElement) active.oldEl.parentElement.removeChild(active.oldEl);
+            } catch (e) {}
+            try { normalizeActiveImage(active.newEl); } catch (e) {}
+            try { modalImg = active.newEl; } catch (e) {}
+            _activeSlide = null;
+            if (_slideTimeout) {
+                try { clearTimeout(_slideTimeout); } catch (e) {}
+                _slideTimeout = null;
+            }
+        }
+
+        function resetSlideWrap() {
+            const wrap = getSlideWrap();
+            if (!wrap) return;
+            try {
+                const imgs = Array.from(wrap.querySelectorAll('img'));
+                imgs.forEach((img) => {
+                    if (img === modalImg) {
+                        normalizeActiveImage(img);
+                        return;
+                    }
+                    try { if (img.parentElement) img.parentElement.removeChild(img); } catch (e) {}
+                });
+                if (modalImg && modalImg.parentElement !== wrap) wrap.appendChild(modalImg);
+                if (modalImg) normalizeActiveImage(modalImg);
+            } catch (e) {}
         }
 
         function showImage(idx, opts) {
             opts = opts || {};
-            if (!images.length) return;
+            if (!images.length) {
+                cancelActiveSlide('no-images');
+                try { if (modalImg) { modalImg.removeAttribute('src'); modalImg.style.display = 'none'; } } catch (e) {}
+                try {
+                    const mediaEl = modal ? (modal.querySelector('.modal__media') || modal) : null;
+                    if (mediaEl) {
+                        const prevArrow = mediaEl.querySelector('.modal__nav-prev');
+                        const nextArrow = mediaEl.querySelector('.modal__nav-next');
+                        if (prevArrow) prevArrow.style.display = 'none';
+                        if (nextArrow) nextArrow.style.display = 'none';
+                    }
+                } catch (e) {}
+                return;
+            }
+
+            try { if (modalImg) modalImg.style.display = ''; } catch (e) {}
+
             const prevIndex = CURRENT_IMAGE_INDEX;
             const tgt = ((idx % images.length) + images.length) % images.length;
-            // if same index and not forced, no-op
             if (tgt === prevIndex && !opts.force) return;
 
-            // direction: 'right' means image moves from right -> center (we advanced forward), 'left' opposite
             let direction = opts.dir;
             if (!direction) {
                 try {
@@ -344,156 +410,102 @@
                     const forward = (tgt - prevIndex + n2) % n2;
                     const backward = (prevIndex - tgt + n2) % n2;
                     direction = (forward <= backward) ? 'right' : 'left';
-                } catch (e) { direction = (tgt > prevIndex) ? 'right' : 'left'; }
+                } catch (e) {
+                    direction = (tgt > prevIndex) ? 'right' : 'left';
+                }
             }
 
             CURRENT_IMAGE_INDEX = tgt;
 
-            // Visual loading state
-            try { if (!opts.instant) modalImg.classList.add('is-loading'); } catch(e){}
-
-            // If instant requested (first show) just swap src without animation
             const media = modalImg.closest('.modal__media') || modalImg.parentElement || document.body;
-            const slideWrap = modalImg.parentElement && modalImg.parentElement.classList.contains('slide-wrap') ? modalImg.parentElement : (media.querySelector('.slide-wrap') || null);
+            const slideWrap = getSlideWrap() || media;
 
             if (opts.instant) {
+                cancelActiveSlide('instant');
+                resetSlideWrap();
                 try {
-                    // reset any previous inline positioning so image displays normally
-                    try {
-                        modalImg.style.transition = '';
-                        modalImg.style.transform = 'translateX(0)';
-                        modalImg.style.opacity = '1';
-                        modalImg.style.position = '';
-                        modalImg.style.top = '';
-                        modalImg.style.left = '';
-                        modalImg.style.width = '';
-                        modalImg.style.height = '';
-                        modalImg.style.zIndex = '';
-                        modalImg.style.willChange = '';
-                    } catch (e) {}
                     modalImg.onload = function(){ try{ modalImg.classList.remove('is-loading'); }catch(e){} modalImg.onload = null; };
+                    normalizeActiveImage(modalImg);
                     modalImg.src = resolveAssetPath(images[CURRENT_IMAGE_INDEX]);
                 } catch(e){}
-                // update thumbs
-                try { if (nav && nav._track) { const track = nav._track; const thumbs = Array.from(track.children); thumbs.forEach((b, i) => { if (i === CURRENT_IMAGE_INDEX) b.classList.add('is-active'); else b.classList.remove('is-active'); }); updateThumbs(); } } catch(e){}
                 return;
             }
 
-            // Prevent overlapping animations
-            if (_isSliding) {
-                // if already sliding, do a hard swap (cancel previous) to keep UI responsive
-                try {
-                    const current = modalImg;
-                    current.onload = null;
-                    // reset current positioning so replacement looks correct
-                    try {
-                        current.style.transition = '';
-                        current.style.transform = 'translateX(0)';
-                        current.style.opacity = '1';
-                        current.style.position = '';
-                        current.style.top = '';
-                        current.style.left = '';
-                        current.style.width = '';
-                        current.style.height = '';
-                        current.style.zIndex = '';
-                        current.classList.remove('slide');
-                    } catch (ee) {}
-                    current.src = resolveAssetPath(images[CURRENT_IMAGE_INDEX]);
-                    current.classList.remove('is-loading');
-                } catch (e) {}
-                try { updateThumbs(); } catch(e){}
-                return;
-            }
+            cancelActiveSlide('replace');
+            resetSlideWrap();
 
-            _isSliding = true;
+            const oldImg = modalImg;
+            if (!oldImg) return;
 
-            // create new image element
+            try { oldImg.classList.add('is-loading'); } catch (e) {}
+
             const newImg = document.createElement('img');
-            newImg.className = modalImg.className || '';
+            newImg.className = oldImg.className || '';
             newImg.classList.add('slide');
+            newImg.removeAttribute('id');
             newImg.loading = 'eager';
-            newImg.alt = modalImg.alt || '';
-            // ensure absolute positioning so transforms move the element cleanly
+            newImg.alt = oldImg.alt || '';
             newImg.style.position = 'absolute';
             newImg.style.top = '30px';
-            newImg.style.left = '35px';
+            newImg.style.left = '50px';
             newImg.style.width = '100%';
             newImg.style.height = '100%';
             newImg.style.objectFit = 'contain';
             newImg.style.willChange = 'transform, opacity';
             newImg.style.transform = (direction === 'right') ? 'translateX(100%)' : 'translateX(-100%)';
+            newImg.style.opacity = '1';
             newImg.style.transition = 'transform 420ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease';
             newImg.style.zIndex = '50';
-
-            // ensure new image src loads then animate
-            newImg.onload = function () { try{ newImg.classList.remove('is-loading'); }catch(e){} newImg.onload = null; };
+            newImg.onload = function () { try { newImg.classList.remove('is-loading'); } catch (e) {} newImg.onload = null; };
             newImg.src = resolveAssetPath(images[CURRENT_IMAGE_INDEX]);
 
-            // put new image into slideWrap (fallback to media if not found)
-            const container = slideWrap || media;
-            // ensure container is positioned and overflow hidden
-            try { container.style.position = container.style.position || 'relative'; container.style.overflow = 'hidden'; } catch(e){}
-
-            // make sure old image is absolute so it animates out predictably
             try {
-                if (modalImg && (!modalImg.style.position || modalImg.style.position === 'relative')) {
-                    modalImg.style.position = 'absolute';
-                    modalImg.style.top = '30px';
-                    modalImg.style.left = '35px';
-                    modalImg.style.width = '100%';
-                    modalImg.style.height = '100%';
-                    modalImg.style.objectFit = 'contain';
-                    modalImg.style.zIndex = '40';
-                }
+                slideWrap.style.position = slideWrap.style.position || 'relative';
+                slideWrap.style.overflow = 'hidden';
             } catch (e) {}
 
-            // append new image
-            container.appendChild(newImg);
+            try {
+                oldImg.style.position = 'absolute';
+                oldImg.style.top = '30px';
+                oldImg.style.left = '50px';
+                oldImg.style.width = '100%';
+                oldImg.style.height = '100%';
+                oldImg.style.objectFit = 'contain';
+                oldImg.style.zIndex = '40';
+            } catch (e) {}
 
-            // force reflow then animate both images
+            slideWrap.appendChild(newImg);
+
+            const active = {
+                id: ++_slideTokenSeq,
+                oldEl: oldImg,
+                newEl: newImg,
+                cancelled: false,
+                sessionToken: _sessionToken,
+            };
+            _activeSlide = active;
+
             requestAnimationFrame(() => {
+                if (_activeSlide !== active || active.cancelled || !modal || modal._slideSessionToken !== _sessionToken) return;
                 try {
-                    // animate old image out and new image in
-                    const old = modalImg;
-                    if (old) {
-                        old.style.transition = 'transform 420ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease';
-                        old.style.transform = (direction === 'right') ? 'translateX(-100%)' : 'translateX(100%)';
-                        old.style.opacity = '0';
-                        old.style.zIndex = '40';
-                    }
-                    newImg.style.transform = 'translateX(0)';
-                    newImg.style.opacity = '1';
+                    active.oldEl.style.transition = 'transform 420ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease';
+                    active.oldEl.style.transform = (direction === 'right') ? 'translateX(-100%)' : 'translateX(100%)';
+                    active.oldEl.style.opacity = '0';
+                    active.oldEl.style.zIndex = '40';
+                    active.newEl.style.transform = 'translateX(0)';
+                    active.newEl.style.opacity = '1';
                 } catch (e) { if (DEBUG) console.warn('[aktuality] slide animate failed', e); }
             });
 
-            // After animation complete, remove old image and set modalImg to new
             _slideTimeout = setTimeout(() => {
-                try {
-                    // ensure new image is exactly centered and visible
-                    try {
-                        if (newImg) {
-                            newImg.style.transition = '';
-                            newImg.style.transform = 'translateX(0)';
-                            newImg.style.opacity = '1';
-                            newImg.style.position = '';
-                            newImg.style.top = '';
-                            newImg.style.left = '';
-                            newImg.style.width = '';
-                            newImg.style.height = '';
-                            newImg.style.zIndex = '';
-                            newImg.classList.remove('slide');
-                        }
-                    } catch (ee) {}
-                } catch (e) {}
-                try { finishSlideCleanup(modalImg, newImg); } catch (e) {}
-                try { updateThumbs(); } catch(e){}
+                commitActiveSlide(active);
             }, 460);
         }
 
-        // Helper to navigate to target index with direction calculated for thumb update
+        // Helper to navigate to target index with direction calculated
         function navigateTo(targetIndex, forcedDir) {
             const n = images.length;
-            if (!n) return;
+            if (n < 2) return; // with 0/1 image there's nothing to navigate
             const tgt = ((targetIndex % n) + n) % n;
             const prev = CURRENT_IMAGE_INDEX;
             // determine direction: if caller forced it, use forcedDir (explicit prev/next buttons)
@@ -507,8 +519,6 @@
                 } catch (e) { dir = (tgt > prev) ? 'right' : 'left'; }
             }
             showImage(tgt, { dir: dir });
-            // update thumbs (pass direction so it shifts by one step animated)
-            try { updateThumbs(dir); } catch (e) { updateThumbs(); }
         }
 
         // attach arrow handlers (if present)
@@ -521,210 +531,37 @@
             }
         } catch (e) {}
 
+        // Toggle arrows visibility depending on image count
+        try {
+            const mediaEl = modal ? (modal.querySelector('.modal__media') || modal) : null;
+            const hasNav = images.length > 1;
+            if (mediaEl) {
+                const prevArrow = mediaEl.querySelector('.modal__nav-prev');
+                const nextArrow = mediaEl.querySelector('.modal__nav-next');
+                if (prevArrow) prevArrow.style.display = hasNav ? '' : 'none';
+                if (nextArrow) nextArrow.style.display = hasNav ? '' : 'none';
+            }
+        } catch (e) {}
+
         // show initial image without animation
         showImage(0, { instant: true, force: true });
 
-        // Přidání šipek pro galerii
-        let nav = modalImg.closest('.modal__media').querySelector('.modal-gallery-thumbs');
-        if (!nav) {
-            nav = document.createElement('div');
-            nav.className = 'modal-gallery-thumbs';
-            modalImg.parentElement.appendChild(nav);
-        }
-
-        // Build full thumbs track (all thumbnails). We'll slide the track by one thumb on next/prev.
-        function buildFullTrack() {
-             nav.innerHTML = '';
-             const track = document.createElement('div');
-             track.className = 'thumbs-track';
-
-             for (let idx = 0; idx < images.length; idx++) {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'modal-thumb' + (idx === CURRENT_IMAGE_INDEX ? ' is-active' : '');
-                btn.setAttribute('aria-label', `Zobrazit obrázek ${idx+1}`);
-                btn.dataset.index = String(idx);
-
-                const imgEl = document.createElement('img');
-                imgEl.src = resolveAssetPath(images[idx]);
-                imgEl.alt = '';
-                imgEl.loading = 'lazy';
-                imgEl.className = 'modal-thumb-img';
-                btn.appendChild(imgEl);
-
-                btn.onclick = (ev) => {
-                    ev && ev.preventDefault && ev.preventDefault();
-                    // use navigateTo so sliding animation occurs and thumbs update correctly
-                    // determine visual direction based on relative position to current image
-                    const forcedDir = (idx < CURRENT_IMAGE_INDEX) ? 'left' : (idx > CURRENT_IMAGE_INDEX ? 'right' : undefined);
-                    navigateTo(idx, forcedDir);
-                     // center clicked thumb (animate)
-                     ensureThumbVisible(idx, false);
-                  };
-
-                 track.appendChild(btn);
-              }
-
-              nav.appendChild(track);
-              nav._track = track;
-            if (DEBUG) console.debug('[aktuality] built thumbs track, thumbs=', track.children.length);
-            // ensure nav has exact width for visible window so extra thumbs are hidden
-            try {
-                const firstThumb = track.children[0];
-                if (firstThumb) {
-                    // compute pixel-accurate step using bounding rects (distance between left edges)
-                    const firstRect = firstThumb.getBoundingClientRect();
-                    const secondThumb = track.children[1];
-                    const step = secondThumb ? Math.round(secondThumb.getBoundingClientRect().left - firstRect.left) : Math.round(firstRect.width || 96);
-                     // desired visible count
-                     const DESIRED = 3;
-                     // Always show up to 3 thumbnails (or fewer when images count < 3)
-                     const visible = Math.min(DESIRED, images.length);
-                     nav.style.boxSizing = 'content-box';
-                     nav.style.width = `${visible * step}px`;
-                     nav.style.overflow = 'hidden';
-                 }
-             } catch (e) {}
-             // calculate layout (step size, visible count, maxStart) now that width is set
-             calculateThumbLayout();
-             if (DEBUG) console.debug('[aktuality] after calculateThumbLayout', { step: nav._step, visible: nav._visible, maxStart: nav._start });
-             // position track to current start
-              applyTrackPosition(false);
-         }
-
-         function calculateThumbLayout() {
-             const track = nav._track;
-             if (!track) return;
-             const thumbs = Array.from(track.children);
-             if (!thumbs.length) return;
-
-             // compute pixel-accurate step: difference between left edges of consecutive thumbs
-             const firstRect = thumbs[0].getBoundingClientRect();
-             const secondRect = thumbs[1] ? thumbs[1].getBoundingClientRect() : null;
-             const step = secondRect ? Math.round(secondRect.left - firstRect.left) : Math.round(firstRect.width || 96);
-
-             nav._step = step;
-             if (DEBUG) console.debug('[aktuality] calculateThumbLayout', { step, clientWidth: nav.clientWidth });
-             // Force visible thumbnails window to exactly 3 (or fewer if fewer thumbnails exist)
-             const DESIRED = 3;
-             nav._visible = Math.min(DESIRED, thumbs.length);
-             nav._maxStart = Math.max(0, thumbs.length - nav._visible);
-
-             // initialize start if not set
-             if (typeof nav._start === 'undefined') {
-                 // center window around current image where possible
-                 nav._start = Math.min(Math.max(0, CURRENT_IMAGE_INDEX - Math.floor(nav._visible / 2)), nav._maxStart);
-             } else {
-                 // clamp current start
-                 nav._start = Math.min(Math.max(0, nav._start), nav._maxStart);
-             }
-         }
-
-         function applyTrackPosition(animate) {
-             const track = nav._track;
-             if (!track) return;
-            try {
-                const thumbs = Array.from(track.children);
-                if (!thumbs.length) return;
-
-                const idx = Math.max(0, Math.min(thumbs.length - 1, CURRENT_IMAGE_INDEX));
-                const thumb = thumbs[idx];
-
-                // Compute absolute translate so thumb center aligns with container center.
-                const thumbCenter = (thumb.offsetLeft || 0) + ((thumb.offsetWidth || (nav._step || 96)) / 2);
-                const containerCenter = Math.round(nav.clientWidth / 2);
-                let newTx = Math.round(containerCenter - thumbCenter);
-
-                // clamp to prevent empty space on sides
-                const totalWidth = track.scrollWidth || (thumbs.length * (nav._step || thumb.offsetWidth || 96));
-                const minTx = Math.min(0, nav.clientWidth - totalWidth);
-                const maxTx = 0;
-                if (newTx < minTx) newTx = minTx;
-                if (newTx > maxTx) newTx = maxTx;
-
-                if (animate) track.style.transition = 'transform 520ms cubic-bezier(.2,.9,.2,1)'; else track.style.transition = 'none';
-                requestAnimationFrame(() => { track.style.transform = `translateX(${newTx}px)`; });
-                if (animate) setTimeout(() => { if (track) track.style.transition = ''; }, 560);
-
-                // update nav._start approximation for other logic
-                try {
-                    const step = nav._step || Math.round(thumb.offsetWidth || 96);
-                    const visible = nav._visible || Math.max(1, Math.floor(nav.clientWidth / step));
-                    nav._start = Math.min(nav._maxStart || 0, Math.max(0, CURRENT_IMAGE_INDEX - Math.floor(visible / 2)));
-                } catch (e) {}
-            } catch (e) {
-                if (DEBUG) console.warn('[aktuality] applyTrackPosition failed', e);
-            }
-         }
-
-        function ensureThumbVisible(idx, instant) {
-            if (!nav._track) return;
-            calculateThumbLayout();
-            // center the idx so that it's in the middle of the visible window
-            const visible = nav._visible || 1;
-            const desiredStart = Math.min(nav._maxStart || 0, Math.max(0, idx - Math.floor(visible / 2)));
-            nav._start = desiredStart;
-            // animate unless instant === true
-            const animate = !instant;
-            applyTrackPosition(animate);
-         }
-
-        function updateThumbs(dir) {
-            if (!nav._track) buildFullTrack();
-            calculateThumbLayout();
-            const track = nav._track;
-            if (!track) return;
-
-            // update active class on thumbs
-            const thumbs = Array.from(track.children);
-            thumbs.forEach((b, i) => {
-                if (i === CURRENT_IMAGE_INDEX) b.classList.add('is-active'); else b.classList.remove('is-active');
-            });
-
-            // shift by one only when navigating with dir: move nav._start one step toward the desired centered start
-            if (DEBUG) console.debug('[aktuality] updateThumbs', { dir, start: nav._start, visible: nav._visible, current: CURRENT_IMAGE_INDEX });
-            if (dir === 'right' || dir === 'left') {
-                try {
-                    const DESIRED = 3;
-                    const visible = nav._visible || Math.min(DESIRED, Math.max(1, Math.floor(nav.clientWidth / (nav._step || 1))));
-                    const desiredStart = Math.min(nav._maxStart || 0, Math.max(0, CURRENT_IMAGE_INDEX - Math.floor(visible / 2)));
-                    if (desiredStart > nav._start) {
-                        nav._start = Math.min(nav._maxStart, nav._start + 1);
-                        applyTrackPosition(true);
-                        return;
-                    } else if (desiredStart < nav._start) {
-                        nav._start = Math.max(0, nav._start - 1);
-                        applyTrackPosition(true);
-                        return;
-                    }
-                } catch (e) { /* ignore and fall back */ }
-            }
-
-            // otherwise ensure visible without sliding multiple positions
-            ensureThumbVisible(CURRENT_IMAGE_INDEX, true);
-        }
-
-        // initial build
-        buildFullTrack();
-        // recalc on resize
-        function onThumbsResize(){ try { calculateThumbLayout(); try { if (nav._step && nav._visible) { nav.style.width = `${nav._visible * nav._step}px`; } } catch(e){} applyTrackPosition(false); } catch(e){} }
-        window.addEventListener('resize', onThumbsResize);
-        try { nav._onResize = onThumbsResize; } catch(e){}
-
-        modalTitle.textContent = localizedField(item, 'title').replaceAll("\n", " ");
-        modalMeta.textContent = item.date ? item.date : "";
-        modalPerex.textContent = localizedField(item, 'perex');
+        // Naplnění obsahu modalu
+        modalTitle.textContent = (localizedField(item, 'title') || '').split("\n").join(" ");
+        modalMeta.textContent = item && item.date ? String(item.date) : "";
+        modalPerex.textContent = localizedField(item, 'perex') || "";
         modalBody.innerHTML = localizedField(item, 'bodyHtml') || localizedField(item, 'bodyHtml_en') || "";
 
+        // Otevření modalu
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         document.body.classList.add('modal-open');
 
-        const closeBtn = modal.querySelector("[data-close='true']");
-        if (closeBtn) closeBtn.focus();
+        // (Pozn.: thumbnail galerie v modalu byla odstraněna, proto zde nejsou žádné helpery typu updateThumbs/buildFullTrack.)
 
         // Keyboard navigation for gallery
         function onKeyDown(e) {
+            if (images.length < 2) return;
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 const isLeft = e.key === 'ArrowLeft';
                 const target = isLeft ? (CURRENT_IMAGE_INDEX - 1) : (CURRENT_IMAGE_INDEX + 1);
@@ -752,18 +589,34 @@
         // Remove gallery keyboard handler if present
         try { if (modal._aktKeyHandler) { document.removeEventListener('keydown', modal._aktKeyHandler); delete modal._aktKeyHandler; } } catch (e) {}
 
-        // Cleanup thumbs resize listener and track if present
+        // Reset any active slide transition / orphaned slide images
         try {
-            const nav = modal.querySelector('.modal-gallery-thumbs');
-            if (nav) {
-                if (nav._onResize) {
-                    try { window.removeEventListener('resize', nav._onResize); } catch (e) {}
-                    try { delete nav._onResize; } catch(e){}
-                }
-                // clear track to release DOM refs
-                try { nav.innerHTML = ''; delete nav._track; } catch(e){}
+            if (modal._slideSessionToken) delete modal._slideSessionToken;
+            const wrap = modal.querySelector('.slide-wrap');
+            const current = modal.querySelector('#newsModalImage');
+            if (wrap) {
+                const imgs = Array.from(wrap.querySelectorAll('img'));
+                imgs.forEach((img) => {
+                    if (current && img === current) {
+                        try {
+                            img.classList.remove('slide', 'is-loading');
+                            img.style.transition = '';
+                            img.style.transform = '';
+                            img.style.opacity = '';
+                            img.style.position = '';
+                            img.style.top = '';
+                            img.style.left = '';
+                            img.style.width = '';
+                            img.style.height = '';
+                            img.style.zIndex = '';
+                            img.style.willChange = '';
+                        } catch (e) {}
+                        return;
+                    }
+                    try { if (img.parentElement) img.parentElement.removeChild(img); } catch (e) {}
+                });
             }
-        } catch(e) {}
+        } catch (e) {}
 
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
@@ -775,9 +628,10 @@
     }
 
     function onCardActivate(el) {
-        const id = el.getAttribute('data-news-id');
+        if (!el) return;
+        const id = (el.getAttribute && el.getAttribute('data-news-id')) || (el.dataset && el.dataset.newsId) || '';
         if (!id) return;
-        const item = getItemById(id);
+        const item = getItemById(String(id));
         if (!item) return;
         openModal(item, el);
     }
@@ -795,7 +649,10 @@
             }
 
             const card = target && target.closest ? target.closest('.news-card[data-news-id]') : null;
-            if (card) onCardActivate(card);
+            if (card) {
+                e.preventDefault();
+                onCardActivate(card);
+            }
         });
 
         document.addEventListener('keydown', (e) => {
@@ -816,15 +673,15 @@
 
     function escapeText(s) {
         return String(s)
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll("\"", "&quot;")
-            .replaceAll("'", "&#39;");
+            .split("&").join("&amp;")
+            .split("<").join("&lt;")
+            .split(">").join("&gt;")
+            .split('"').join("&quot;")
+            .split("'").join("&#39;");
     }
 
     function nlToBr(s) {
-        return escapeText(s).replaceAll("\n", "<br>");
+        return escapeText(s).split("\n").join("<br>");
     }
 
     function cardTemplate(item, variant) {
@@ -833,8 +690,8 @@
         article.className = ['news-card', variant].filter(Boolean).join(' ');
         article.setAttribute('tabindex', '0');
         article.setAttribute('role', 'button');
-        article.setAttribute('aria-label', `Detail aktuality ${escapeText(localizedField(item, 'title')).replaceAll('\n', ' ')}`);
-        article.dataset.newsId = escapeText(item.id);
+        article.setAttribute('aria-label', `Detail aktuality ${escapeText(localizedField(item, 'title')).split('\n').join(' ')}`);
+        article.dataset.newsId = String(item.id);
         // If images are provided on the underlying __newsItems, attach them as JSON for modal lookup
         try {
             if (item.images && Array.isArray(item.images) && item.images.length) {
@@ -876,14 +733,7 @@
         article.appendChild(overlay);
         article.appendChild(content);
 
-        // attach event listeners directly to the created element
-        article.addEventListener('click', () => onCardActivate(article));
-        article.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onCardActivate(article);
-            }
-        });
+        // Modal opening is handled centrally in bind() via event delegation.
 
         return article;
     }

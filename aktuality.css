@@ -392,68 +392,13 @@ a { color: inherit; }
 .modal__badge { display:inline-block; background: linear-gradient(90deg,#8c825c,#d3caa0); color:#fff; padding:0.35rem 0.6rem; border-radius:999px; font-weight:700; font-size:0.85rem; }
 
 /* Modal gallery nav */
-.modal-gallery-nav {
-  display:flex;
-  gap:0.6rem;
-  align-items:center;
-  justify-content:center;
-  margin-top:0.6rem;
-}
-.modal-gallery-nav button {
-  border:0;
-  background: rgba(17,17,17,0.04);
-  padding:0.45rem 0.7rem;
-  border-radius:10px;
-  cursor:pointer;
-  transition: background 160ms ease, transform 160ms ease;
-}
-.modal-gallery-nav button:hover { background: rgba(17,17,17,0.09); transform: translateY(-2px); }
-.modal-gallery-count {
-  font-weight:600;
-  color: rgba(17,17,17,0.85);
-  min-width: 48px;
-  text-align: center;
-}
-
-/* Thumbnail strip for modal gallery */
-.modal-gallery-thumbs {
-  display:flex;
-  gap:0.5rem;
-  align-items:center;
-  margin-top:32rem;
-  overflow: hidden; /* clip sliding tracks */
-}
-.modal-gallery-thumbs .thumbs-track {
-  display:flex;
-  align-items:center;
-  gap:0.5rem;
-  will-change: transform;
-}
-.modal-gallery-thumbs .modal-thumb {
-  display:inline-block;
-  border:0;
-  background-color: white;
-  padding: 0;
-  width: 96px;
-  height: 68px;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 180ms ease;
-}
-
+.modal-gallery-nav,
+.modal-gallery-count,
+.modal-gallery-thumbs,
+.modal-gallery-thumbs .thumbs-track,
+.modal-gallery-thumbs .modal-thumb,
 .modal-gallery-thumbs .modal-thumb .modal-thumb-img {
-  width: 100%;
-  height: 100%;
-  object-position: center center;
-  display:block;
-  padding: 0; /* remove inner padding so image fills the thumbnail */
-  background: transparent; /* no letterboxing; image fills the box */
-  filter: saturate(0.95) contrast(0.98);
-}
-
-@media (max-width: 760px) {
-  .modal-gallery-thumbs .modal-thumb { width: 72px; height: 56px; }
+  display: none !important;
 }
 
 /* Footer / contact card */
@@ -545,7 +490,7 @@ button:focus { outline: 3px solid rgba(140,130,92,0.18); outline-offset: 3px; }
 #newsModalImage {
   position: absolute;
   top: 30px;
-  left: 35px;
+  left: 50px;
   width: 100%;
   height: 100%;
   object-fit: contain;
