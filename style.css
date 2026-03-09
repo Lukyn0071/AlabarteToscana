@@ -1044,3 +1044,139 @@ body {
     box-shadow: none;
     padding: 0;
 }
+/* ===== HOMEPAGE PREZENTAČNÍ SLIDER POD INTRO ===== */
+.home-index-presentation{
+    margin: 0 0 clamp(2rem, 4vw, 2.8rem);
+}
+
+.home-presentation-shell{
+    width: min(980px, 100%);
+    margin: 0 auto;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(191,155,48,0.30);
+    border-radius: 18px;
+    padding: 1rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 18px 42px rgba(0,0,0,0.14);
+    overflow: visible;
+}
+
+.wine-presentation-slider{
+    position: relative;
+    width: 100%;
+    height: clamp(280px, 42vh, 560px);
+    border-radius: 14px;
+    overflow: hidden;
+    background: transparent;
+}
+
+.presentation-slide{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.presentation-slide.is-active{
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.presentation-slide.is-enter{
+    transform: translateX(100%);
+    opacity: 0;
+    z-index: 3;
+}
+
+.presentation-slide.is-exit{
+    transform: translateX(-100%);
+    opacity: 0;
+    z-index: 1;
+}
+
+.presentation-slide.is-animating{
+    transition:
+            transform 2000ms cubic-bezier(.22,1,.36,1),
+            opacity 2000ms cubic-bezier(.22,1,.36,1);
+}
+
+.presentation-slide img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: transparent;
+}
+
+/* šipky */
+.presentation-arrow{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    width: auto;
+    height: auto;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    color: #111;
+    font-size: 48px;
+    font-weight: 300;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 180ms ease, color 180ms ease;
+}
+
+.presentation-arrow:hover{
+    transform: translateY(-50%) scale(1.1);
+    color: #000;
+}
+
+.presentation-arrow:active{
+    transform: translateY(-50%) scale(0.95);
+}
+
+.presentation-arrow--prev{
+    left: 0;
+}
+
+.presentation-arrow--next{
+    right: 0;
+}
+
+@media (max-width: 560px){
+    .wine-presentation-slider{
+        height: 240px;
+        border-radius: 20px;
+    }
+
+    .presentation-arrow{
+        width: 40px;
+        height: 40px;
+        font-size: 28px;
+    }
+
+    .presentation-arrow--prev{
+        left: -20px;
+    }
+
+    .presentation-arrow--next{
+        right: -20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .presentation-slide.is-animating{
+        transition: none !important;
+    }
+}

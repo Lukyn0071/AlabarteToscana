@@ -29,30 +29,21 @@
 
             <!-- ===== TOP BAR ===== -->
             <div class="hero-top">
-
-                <!-- LANG SWITCHER -->
                 <div class="lang-switcher" aria-label="Přepínač jazyka">
-                    <button type="button" class="lang-btn active" data-lang="cs" aria-pressed="true">CZ</button>
-                    <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+                    <a class="lang-btn" href="?lang=cs">CS</a>
+                    <a class="lang-btn" href="?lang=en">EN</a>
                 </div>
 
-                <!-- NAV -->
                 <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
                     <a href="index.php" data-key="home">Domů</a>
-                    <a href="aktuality.php" data-key="aktuality">Aktuality</a>
-                    <a href="https://www.alabarte.cz/vino/" data-key="eshop" target="_blank" rel="noopener">E-shop</a>
+                    <a href="vina.php" data-key="vina" aria-current="page">Vína</a>
+                    <a href="index.php#partner-section" data-key="partner">Fattoria La Torre</a>
+                    <a href="aktuality.php" data-key="aktuality">Novinky</a>
+                    <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-Shop</a>
                 </nav>
-
             </div>
-
             <!-- ===== TITLE + LOGA ===== -->
             <header class="vina-header" aria-label="Nadpis sekce Vína">
-                <h1 class="vina-title typo-h1" data-key="vina_title">
-                    <span class="vina-title__small">Naše</span>
-                    <span class="vina-title__big">vína</span>
-                </h1>
-
-                <!-- ✅ LOGA -->
                 <div class="vina-brands" aria-label="Loga značek">
                     <div class="vina-brand vina-brand--left">
                         <img src="Images/alabarte-red.png" alt="Alabarte logo">
@@ -62,6 +53,11 @@
                         <img src="Images/fattoria.png" alt="Fattoria La Torre logo">
                     </div>
                 </div>
+
+                <h1 class="vina-title typo-h1" data-key="vina_title">
+                    <span class="vina-title__small">Naše</span>
+                    <span class="vina-title__big">vína</span>
+                </h1>
             </header>
 
         </div>

@@ -50,7 +50,82 @@ document.addEventListener("DOMContentLoaded", () => {
         // rotace cca každých 7s (dost dlouho, ať je to luxusní)
         window.setInterval(rotateHeroBg, 7000);
     }
+    /* ================= PREZENTAČNÍ SLIDER ================= */
+    const slider = document.querySelector(".wine-presentation-slider[data-slider='presentation']");
+    const slides = slider ? Array.from(slider.querySelectorAll(".presentation-slide")) : [];
 
+    if (slider && slides.length > 1) {
+        const shell = slider.closest(".presentation-shell");
+        const prevBtn = shell?.querySelector(".presentation-arrow--prev");
+        const nextBtn = shell?.querySelector(".presentation-arrow--next");
+
+        const DURATION = 2000;
+        const INTERVAL = 7000;
+
+        let current = slides.findIndex((s) => s.classList.contains("is-active"));
+        if (current < 0) current = 0;
+
+        let isAnimating = false;
+        let timer = null;
+
+        const resetClasses = (el) => {
+            el.classList.remove("is-enter", "is-exit", "is-animating", "is-active");
+        };
+
+        const goTo = (nextIndex) => {
+            if (isAnimating || nextIndex === current) return;
+
+            isAnimating = true;
+
+            const currentEl = slides[current];
+            const nextEl = slides[nextIndex];
+
+            resetClasses(nextEl);
+            nextEl.classList.add("is-enter");
+
+            requestAnimationFrame(() => {
+                currentEl.classList.add("is-exit", "is-animating");
+                nextEl.classList.add("is-animating");
+
+                nextEl.classList.remove("is-enter");
+                nextEl.classList.add("is-active");
+            });
+
+            window.setTimeout(() => {
+                resetClasses(currentEl);
+                current = nextIndex;
+                isAnimating = false;
+            }, DURATION);
+        };
+
+        const goNext = (fromAuto = false) => {
+            goTo((current + 1) % slides.length);
+            if (!fromAuto) startAuto();
+        };
+
+        const goPrev = () => {
+            goTo((current - 1 + slides.length) % slides.length);
+            startAuto();
+        };
+
+        const stopAuto = () => {
+            if (timer) clearInterval(timer);
+            timer = null;
+        };
+
+        const startAuto = () => {
+            stopAuto();
+            timer = setInterval(() => goNext(true), INTERVAL);
+        };
+
+        nextBtn?.addEventListener("click", () => goNext(false));
+        prevBtn?.addEventListener("click", goPrev);
+
+        slider.addEventListener("mouseenter", stopAuto);
+        slider.addEventListener("mouseleave", startAuto);
+
+        startAuto();
+    }
     /* ================= SCROLL TO PARTNER (hero La Torre logo) ================= */
     const partnerLink = document.querySelector('.js-scroll-to-partner');
     const partnerSection = document.querySelector('#partner-section');

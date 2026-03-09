@@ -90,7 +90,39 @@ $sections = load_page_sections($pdo, $lang);
             </section>
         </div>
     </section>
+    <section class="home-index-presentation" aria-label="Prezentace vín">
+        <div class="presentation-shell home-presentation-shell">
+            <button class="presentation-arrow presentation-arrow--prev" type="button" aria-label="Předchozí obrázek">‹</button>
 
+            <section class="wine-presentation-slider" data-slider="presentation" aria-label="Prezentace vín">
+                <div class="presentation-slide is-active">
+                    <img src="Images/prezentace/acquaiole-pret.png" alt="Prezentace vína Acquaiole">
+                </div>
+
+                <div class="presentation-slide">
+                    <img src="Images/prezentace/Caroobacoo-pret.png" alt="Prezentace vína Caroobacoo">
+                </div>
+
+                <div class="presentation-slide">
+                    <img src="Images/prezentace/sciallebianco-pret.png" alt="Prezentace vína Sciallebianco">
+                </div>
+
+                <div class="presentation-slide">
+                    <img src="Images/prezentace/chiacchere-pret.png" alt="Prezentace vína Chiacchere">
+                </div>
+
+                <div class="presentation-slide">
+                    <img src="Images/prezentace/guinzano-pret.png" alt="Prezentace vína Guinzano">
+                </div>
+
+                <div class="presentation-slide">
+                    <img src="Images/prezentace/stradina-pret.png" alt="Prezentace vína Stradina">
+                </div>
+            </section>
+
+            <button class="presentation-arrow presentation-arrow--next" type="button" aria-label="Další obrázek">›</button>
+        </div>
+    </section>
     <section class="home-partner" id="partner-section">
         <h2 class="home-partner__title">Fattoria La Torre, San Gimignano – domov našich vín</h2>
 
