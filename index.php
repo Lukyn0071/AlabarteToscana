@@ -37,9 +37,11 @@ $sections = load_page_sections($pdo, $lang);
                 </div>
 
                 <nav class="hero-nav" id="heroNav">
-                    <a href="vina.php"><?php echo htmlspecialchars((string)$ui['nav_vina'], ENT_QUOTES, 'UTF-8'); ?></a>
-                    <a href="aktuality.php"><?php echo htmlspecialchars((string)$ui['nav_galerie'], ENT_QUOTES, 'UTF-8'); ?></a>
-                    <a href="https://www.alabarte.cz/vino/"><?php echo htmlspecialchars((string)$ui['nav_eshop'], ENT_QUOTES, 'UTF-8'); ?></a>
+                    <a href="index.php">Domů</a>
+                    <a href="vina.php">Vína</a>
+                    <a href="#partner-section">Fattoria La Torre</a>
+                    <a href="aktuality.php">Novinky</a>
+                    <a href="https://www.alabarte.cz/vino/">E-Shop</a>
                 </nav>
             </div>
 
@@ -47,16 +49,17 @@ $sections = load_page_sections($pdo, $lang);
                 <header class="hero-header hero-header--reference">
                     <div class="hero-logo hero-logo--reference">
                         <a href="index.php" aria-label="Alabarte">
-                            <img src="Images/Alabarte-logo.webp" alt="Alabarte">
+                            <img src="Images/ALABARTE RED trans.png" alt="Alabarte">
                         </a>
 
-                        <a class="hero-fattoria-inline" href="https://latorrefattoria.it/en/" target="_blank" rel="noopener noreferrer" aria-label="Fattoria La Torre (otevře se nové okno)">
+                        <!-- klik v hero jen posune na sekci partnera -->
+                        <a class="hero-fattoria-inline js-scroll-to-partner" href="#partner-section" aria-label="Přejít na sekci o našem partnerovi">
                             <img src="Images/fattoriaLogo.png" alt="Fattoria La Torre">
                         </a>
                     </div>
 
-                    <h1 class="hero-headline">Toskánská tradice.<br>Česká vášeň.</h1>
-                    <p class="hero-subtitle">Exkluzivní vína z vinařství Fattoria La Torre, dovážená přímo do České republiky.</p>
+                    <h1 class="hero-headline">Víno. Historie.<br>Umění.</h1>
+                    <p class="hero-subtitle">Toskánská vína s otiskem tradice, krajiny a umění.</p>
 
                     <div class="hero-cta">
                         <a href="vina.php" class="cta-btn cta-btn--primary"><?php echo htmlspecialchars((string)$ui['cta_wines'], ENT_QUOTES, 'UTF-8'); ?></a>
@@ -76,22 +79,40 @@ $sections = load_page_sections($pdo, $lang);
 
 <div class="page-content page-content--bordeaux">
 
+    <section class="home-texts-endcap home-texts-endcap--intro">
+        <div class="info-wrapper">
+            <section class="home-intro-block" aria-label="ALABARTE – z Toskánska až k vám">
+                <div class="home-intro-block__card">
+                    <h2 class="home-intro-block__title">ALABARTE – z Toskánska až k vám</h2>
+                    <p class="home-intro-block__text">Do České republiky přinášíme toskánská vína s historií, charakterem a kulturním přesahem. Stojí za námi konkrétní lidé a osobní vztahy. Spolupracujeme napřímo s naším toskánským partnerem, se kterým každé víno pečlivě vybíráme.</p>
+                    <p class="home-intro-block__text">Zakládáme si na spolupráci založené na důvěře, otevřenosti a pravidelném kontaktu. Stejný přístup uplatňujeme i vůči klientům – ať už jde o soukromé zákazníky, restaurace nebo firemní partnery.</p>
+                </div>
+            </section>
+        </div>
+    </section>
 
+    <section class="home-partner" id="partner-section">
+        <h2 class="home-partner__title">Fattoria La Torre, San Gimignano – domov našich vín</h2>
 
-    <section class="home-partner">
-        <h2 class="home-partner__title">Náš partner v Toskánsku</h2>
-
-        <a class="partner-card partner-card--link" href="https://latorrefattoria.it/en/" target="_blank" rel="noopener noreferrer" aria-label="Otevřít latorrefattoria.it">
+        <div class="partner-card">
             <div class="partner-card__media">
                 <img src="Images/fattoria.jpg" alt="Fattoria La Torre">
             </div>
             <div class="partner-card__body">
-                <h3 class="partner-card__headline">Fattoria La Torre –<br>Srdce našeho vína</h3>
-                <p class="partner-card__text">Rodinné vinařství v srdci Toskánska, kde se víno tvoří s respektem k půdě, času, lásce a tradici.</p>
-                <p class="partner-card__text">Spolupracujeme s vinařstvím Fattoria La Torre a přinášíme vína.</p>
-                <p class="partner-card__signature">"From Tuscany with love, 2023"</p>
+                <h3 class="partner-card__headline">Náš partner v Toskánsku</h3>
+                <p class="partner-card__text">Fattoria La Torre se nachází poblíž San Gimignana v krajině toskánských kopců pokrytých vinicemi a olivovými háji. Celému panství dominuje středověká věž z 10. století, která je symbolem místní historické kontinuity.</p>
+                <p class="partner-card__text">Rodina Angiolini zde od roku 1960 rozvíjí vlastní vinařství s důrazem na kvalitu, pečlivou práci a osobní přístup.</p>
+                <p class="partner-card__text">Vznikají zde především historicky významná vína Vernaccia di San Gimignano a Chianti doplněná o další toskánské odrůdy.</p>
+                <p class="partner-card__text">Silnou součástí identity je propojení vína a umění. Etikety nesou fragmenty děl toskánských malířů Macchiaioli z rodinné sbírky a připomínají každodenní život v krajině kolem San Gimignana.</p>
+                <p class="partner-card__text">Fattoria La Torre představuje autentické toskánské vinařství, kde se víno, historie a umění přirozeně prolínají.</p>
+
+                <p class="partner-card__actions">
+                    <a class="cta-btn cta-btn--ghost" href="https://latorrefattoria.it/en/" target="_blank" rel="noopener noreferrer" aria-label="Otevřít latorrefattoria.it (nové okno)">
+                        Otevřít web La Torre
+                    </a>
+                </p>
             </div>
-        </a>
+        </div>
     </section>
 
     <section class="home-texts-endcap">

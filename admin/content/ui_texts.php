@@ -18,6 +18,7 @@ function ensure_ui_texts_table(PDO $pdo, string $tableName): void
             `nav_kontakt` VARCHAR(80) NOT NULL DEFAULT '',
             `nav_vina` VARCHAR(80) NOT NULL DEFAULT '',
             `nav_galerie` VARCHAR(80) NOT NULL DEFAULT '',
+            `nav_partner` VARCHAR(80) NOT NULL DEFAULT '',
             `nav_eshop` VARCHAR(80) NOT NULL DEFAULT '',
 
             `hero_tagline` VARCHAR(255) NOT NULL DEFAULT '',
@@ -62,6 +63,7 @@ function load_ui_texts(PDO $pdo, ?string $lang = null): array
         'nav_kontakt' => '',
         'nav_vina' => '',
         'nav_galerie' => '',
+        'nav_partner' => '',
         'nav_eshop' => '',
         'hero_tagline' => '',
         'scroll_hint' => '',

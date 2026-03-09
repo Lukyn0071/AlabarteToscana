@@ -51,6 +51,27 @@ document.addEventListener("DOMContentLoaded", () => {
         window.setInterval(rotateHeroBg, 7000);
     }
 
+    /* ================= SCROLL TO PARTNER (hero La Torre logo) ================= */
+    const partnerLink = document.querySelector('.js-scroll-to-partner');
+    const partnerSection = document.querySelector('#partner-section');
+
+    if (partnerLink && partnerSection) {
+        partnerLink.addEventListener('click', (e) => {
+            // vždy zruš default (anchor), ať nemůže proběhnout žádná jiná navigace
+            e.preventDefault();
+            e.stopPropagation();
+
+            partnerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // pro sdílení/refresh nastav hash až sekundárně
+            try {
+                history.replaceState(null, '', '#partner-section');
+            } catch (err) {
+                // ignore
+            }
+        });
+    }
+
     /* ================= HERO WINES (Top 3 showcase) ================= */
     // Nová varianta: fixní 3-kusový "showcase" bez drag/scroll.
     // (záměrně bez JS animací, aby to působilo prémiově a stabilně)

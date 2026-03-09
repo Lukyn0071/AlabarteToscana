@@ -114,10 +114,10 @@ $ver_grid_js = asset_ver(__DIR__ . '/aktuality_grid.js');
         </div>
 
         <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
-          <a href="index.php" aria-current="page">Admin</a>
           <a href="../index.php" data-key="home"><?php echo htmlspecialchars((string)($ui['nav_home'] ?? 'Domů'), ENT_QUOTES, 'UTF-8'); ?></a>
           <a href="../vina.php" data-key="vina"><?php echo htmlspecialchars((string)($ui['nav_vina'] ?? 'Vína'), ENT_QUOTES, 'UTF-8'); ?></a>
-          <a href="aktuality.php" data-key="aktuality"><?php echo htmlspecialchars((string)($ui['nav_galerie'] ?? 'Aktuality'), ENT_QUOTES, 'UTF-8'); ?></a>
+          <a href="aktuality.php" data-key="aktuality"><?php echo htmlspecialchars((string)($ui['nav_galerie'] ?? 'Novinky'), ENT_QUOTES, 'UTF-8'); ?></a>
+          <a href="../index.php#partner-section" data-key="partner"><?php echo htmlspecialchars((string)($ui['nav_partner'] ?? 'Fattoria La Torre'), ENT_QUOTES, 'UTF-8'); ?></a>
           <a href="https://www.alabarte.cz/vino/" data-key="eshop"><?php echo htmlspecialchars((string)($ui['nav_eshop'] ?? 'E-shop'), ENT_QUOTES, 'UTF-8'); ?></a>
         </nav>
       </div>
@@ -305,3 +305,4 @@ $ver_grid_js = asset_ver(__DIR__ . '/aktuality_grid.js');
 
 </body>
 </html>
+

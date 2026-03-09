@@ -60,10 +60,11 @@ $assetV = (string)max(
         </div>
 
         <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
-          <a href="index.php" data-key="home"><?php echo htmlspecialchars((string)($ui['nav_home'] ?? 'Domů'), ENT_QUOTES, 'UTF-8'); ?></a>
-          <a href="vina.php" data-key="vina"><?php echo htmlspecialchars((string)($ui['nav_vina'] ?? 'Vína'), ENT_QUOTES, 'UTF-8'); ?></a>
-          <a href="aktuality.php" data-key="aktuality" aria-current="page"><?php echo htmlspecialchars((string)($ui['nav_galerie'] ?? 'Aktuality'), ENT_QUOTES, 'UTF-8'); ?></a>
-          <a href="https://www.alabarte.cz/vino/" data-key="eshop"><?php echo htmlspecialchars((string)($ui['nav_eshop'] ?? 'E-shop'), ENT_QUOTES, 'UTF-8'); ?></a>
+          <a href="index.php" data-key="home">Domů</a>
+          <a href="vina.php" data-key="vina">Vína</a>
+          <a href="index.php#partner-section" data-key="partner">Fattoria La Torre</a>
+          <a href="aktuality.php" data-key="aktuality" aria-current="page">Novinky</a>
+          <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-Shop</a>
         </nav>
       </div>
 

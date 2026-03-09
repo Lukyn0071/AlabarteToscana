@@ -21,6 +21,15 @@
 </head>
 <body>
 
+<?php
+ require_once __DIR__ . '/admin/db.php';
+ require_once __DIR__ . '/admin/content/page_content.php';
+ require_once __DIR__ . '/admin/content/ui_texts.php';
+
+ $lang = get_lang();
+ $ui = load_ui_texts($pdo, $lang);
+?>
+
 <section class="hero">
 
     <!-- ✅ TOP (pozadí jen pro nav + nadpis) -->
@@ -32,16 +41,17 @@
 
                 <!-- LANG SWITCHER -->
                 <div class="lang-switcher" aria-label="Přepínač jazyka">
-                    <button type="button" class="lang-btn" data-lang="cs">CS</button>
-                    <button type="button" class="lang-btn" data-lang="en">EN</button>
+                    <a class="lang-btn" href="?lang=cs" data-lang="cs">CS</a>
+                    <a class="lang-btn" href="?lang=en" data-lang="en">EN</a>
                 </div>
 
                 <!-- NAV -->
                 <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
                     <a href="index.php" data-key="home">Domů</a>
-                    <a href="kontakt.php" data-key="contact">Kontakt</a>
-                    <a href="aktuality.php" data-key="aktuality">Aktuality</a>
-                    <a href="https://www.alabarte.cz/vino/" data-key="eshop" target="_blank" rel="noopener">E-shop</a>
+                    <a href="vina.php" data-key="vina">Vína</a>
+                    <a href="index.php#partner-section" data-key="partner">Fattoria La Torre</a>
+                    <a href="aktuality.php" data-key="aktuality">Novinky</a>
+                    <a href="https://www.alabarte.cz/vino/" data-key="eshop" target="_blank" rel="noopener">E-Shop</a>
                 </nav>
 
             </div>

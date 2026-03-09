@@ -417,7 +417,8 @@ $toastUndo = isset($_GET['u']) && (string)$_GET['u'] === '1';
                 <nav class="hero-nav" id="heroNav">
                     <a href="#kontakt" data-ui-field="nav_kontakt">Kontakt</a>
                     <a href="../vina.php" data-ui-field="nav_vina">Vína</a>
-                    <a href="../aktuality.php" data-ui-field="nav_galerie">Galerie</a>
+                    <a href="../aktuality.php" data-ui-field="nav_galerie">Novinky</a>
+                    <a href="../index.php#partner-section" data-ui-field="nav_partner">Fattoria La Torre</a>
                     <a href="aktuality.php" style="font-weight:700;">Aktuality (admin)</a>
                     <a href="https://www.alabarte.cz/vino/" data-ui-field="nav_eshop">E-shop</a>
                 </nav>

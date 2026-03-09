@@ -1,6 +1,7 @@
 /* ===== ZÁKLAD ===== */
 html {
     scrollbar-gutter: stable;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -126,40 +127,41 @@ body {
 }
 
 .hero-logo {
-    margin-bottom: clamp(0.6rem, 2vh, 1.2rem);
+    margin-bottom: clamp(5rem, 10vh, 10rem);
+
+    /* sdílená velikost obou log */
+    --hero-logo-h: clamp(78px, 11vh, 132px);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(3rem, 6vw, 7rem);
+    position: relative;
 }
 
 .hero-logo img {
     width: auto;
-    height: clamp(64px, 11vh, 120px);
+    height: calc(var(--hero-logo-h) * 2);
 
-    /* červené logo přes CSS filtr (intenzivnější, aby nepůsobilo žlutě) */
     opacity: 0.995;
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(5400%) hue-rotate(345deg)
-        brightness(0.95) contrast(1.08)
-        drop-shadow(0 12px 26px rgba(0,0,0,0.30));
+    filter: drop-shadow(0 12px 26px rgba(0,0,0,0.30));
     transition: opacity 0.25s ease, transform 0.25s ease, filter 0.25s ease;
 }
 
-.hero-logo a:hover img {
-    opacity: 1;
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.02) contrast(1.10)
-        drop-shadow(0 16px 34px rgba(0,0,0,0.34));
+.hero-logo::after{
+    content: "";
+    position: absolute;
+    inset: -6px -10px;
+    pointer-events: none;
+    background: radial-gradient(closest-side, rgba(122, 15, 29, 0.18), rgba(122, 15, 29, 0) 70%);
+    mix-blend-mode: multiply;
+    opacity: 0.55;
 }
 
-/* Fallback: když by filtr na některých zařízeních táhl do žluta, lehce to srovnáme overlayem */
-/* Fattoria logo vedle Alabarte loga (inline) */
-.hero-logo{
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(0.65rem, 1.2vw, 1rem);
-    position: relative;
+/* sjednocený hover pro obě loga (jemné zvětšení) */
+.hero-logo a:hover img,
+.hero-fattoria-inline:hover img{
+    transform: scale(1.03);
 }
 
 .hero-fattoria-inline{
@@ -171,27 +173,16 @@ body {
 }
 
 .hero-fattoria-inline img{
-    height: clamp(64px, 11vh, 120px);
+    height: var(--hero-logo-h);
     width: auto;
     display: block;
     opacity: 0.995;
 
-    /* stejná červená jako Alabarte logo */
     filter:
             brightness(0) invert(1)
             drop-shadow(0 12px 26px rgba(0,0,0,0.25));
 
     transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
-}
-
-.hero-fattoria-inline:hover img{
-    transform: scale(1.06);
-    opacity: 1;
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.02) contrast(1.10)
-        drop-shadow(0 16px 34px rgba(0,0,0,0.34));
 }
 
 .hero-fattoria-inline:focus-visible{
@@ -200,17 +191,7 @@ body {
 }
 
 @media (max-width: 560px){
-    .hero-logo{ gap: 0.55rem; }
-}
-
-.hero-logo::after{
-    content: "";
-    position: absolute;
-    inset: -6px -10px;
-    pointer-events: none;
-    background: radial-gradient(closest-side, rgba(122, 15, 29, 0.18), rgba(122, 15, 29, 0) 70%);
-    mix-blend-mode: multiply;
-    opacity: 0.55;
+    .hero-logo{ gap: 1.1rem; }
 }
 
 .hero-headline{
@@ -232,7 +213,6 @@ body {
     text-shadow: 0 16px 34px rgba(0,0,0,0.35);
 }
 
-/* CTA: tlačítka stojí na "papírové" ploše jako na referenci */
 .hero-cta{
     display:flex;
     gap: 0.9rem;
@@ -272,17 +252,9 @@ body {
     backdrop-filter: blur(10px);
 }
 
-.cta-btn:hover {
-    transform: translateY(-1px);
-}
-
-.cta-btn--primary:hover {
-    background: rgba(142, 18, 34, 0.92);
-}
-
-.cta-btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.92);
-}
+.cta-btn:hover { transform: translateY(-1px); }
+.cta-btn--primary:hover { background: rgba(142, 18, 34, 0.92); }
+.cta-btn--ghost:hover { background: rgba(255, 255, 255, 0.92); }
 
 /* ===== HERO NAV ===== */
 .hero-top {
@@ -292,943 +264,7 @@ body {
     width: 100%;
     padding: 0.75rem 2rem;
     box-sizing: border-box;
-    position: relative; /* allow absolute positioning of logo + centering of nav */
-}
-
-/* ================== HERO: Fattoria logo (absolute, safe) ================== */
-.hero-fattoria-logo{
-    position: absolute;
-    /* víc doprava – mimo oblast jazykového přepínače */
-    left: 11.2rem;
-    top: 50%;
-    transform: translateY(-50%);
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-
-    padding: 0.1rem 0.2rem;
-    border-radius: 10px;
-    background: transparent;
-
-    z-index: 1100;
-}
-
-.hero-fattoria-logo img{
-    /* vždy červené */
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.04) contrast(1.10)
-        drop-shadow(0 16px 34px rgba(0,0,0,0.26)) !important;
-}
-
-.hero-fattoria-logo:hover img{
-    /* větší při hover, ale stále červené */
-    transform: scale(1.12) !important;
-    opacity: 1 !important;
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.06) contrast(1.14)
-        drop-shadow(0 22px 46px rgba(0,0,0,0.32)) !important;
-}
-
-.hero-fattoria-logo:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
-    outline-offset: 3px;
-}
-
-@media (max-width: 760px){
-    .hero-fattoria-logo{
-        position: static;
-        transform: none;
-        left: auto;
-        top: auto;
-    }
-    .hero-fattoria-logo img{ height: 40px; }
-}
-
-/* Logo Fattoria v hero – mimo flow, ať nerozbije nav bublinu */
-/* (viz hlavní blok stylů výše pro .hero-fattoria-logo) */
-
-/* Fallback: když by filtr na některých zařízeních táhl do žluta, lehce to srovnáme overlayem */
-.hero-logo{
     position: relative;
-    display: inline-block;
-}
-
-.hero-logo::after{
-    content: "";
-    position: absolute;
-    inset: -6px -10px;
-    pointer-events: none;
-    background: radial-gradient(closest-side, rgba(122, 15, 29, 0.18), rgba(122, 15, 29, 0) 70%);
-    mix-blend-mode: multiply;
-    opacity: 0.55;
-}
-
-.hero-headline{
-    font-family: "Faculty Glyphic", serif;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    font-size: clamp(2.1rem, 4.2vw, 3.25rem);
-    line-height: 1.05;
-    margin: 0 0 0.8rem;
-    text-shadow: 0 18px 45px rgba(0,0,0,0.35);
-}
-
-.hero-subtitle{
-    max-width: 62ch;
-    margin: 0 auto;
-    font-size: clamp(0.95rem, 1.25vw, 1.05rem);
-    line-height: 1.6;
-    color: rgba(255,255,255,0.86);
-    text-shadow: 0 16px 34px rgba(0,0,0,0.35);
-}
-
-/* CTA: tlačítka stojí na "papírové" ploše jako na referenci */
-.hero-cta{
-    display:flex;
-    gap: 0.9rem;
-    justify-content:center;
-    margin-top: 1.25rem;
-}
-
-.cta-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.55rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-size: 0.82rem;
-
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
-    user-select: none;
-    white-space: nowrap;
-}
-
-.cta-btn--primary {
-    background: rgba(122, 15, 29, 0.88);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-}
-
-.cta-btn--ghost {
-    background: rgba(251, 250, 248, 0.86);
-    color: #2a1717;
-    border: 1px solid rgba(42, 23, 23, 0.22);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(10px);
-}
-
-.cta-btn:hover {
-    transform: translateY(-1px);
-}
-
-.cta-btn--primary:hover {
-    background: rgba(142, 18, 34, 0.92);
-}
-
-.cta-btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.92);
-}
-
-/* ===== HERO NAV ===== */
-.hero-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.75rem 2rem;
-    box-sizing: border-box;
-    position: relative; /* allow absolute positioning of logo + centering of nav */
-}
-
-/* ================== HERO: Fattoria logo (absolute, safe) ================== */
-.hero-fattoria-logo{
-    position: absolute;
-    /* víc doprava – mimo oblast jazykového přepínače */
-    left: 11.2rem;
-    top: 50%;
-    transform: translateY(-50%);
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-
-    padding: 0.1rem 0.2rem;
-    border-radius: 10px;
-    background: transparent;
-
-    z-index: 1100;
-}
-
-.hero-fattoria-logo img{
-    /* vždy červené */
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.04) contrast(1.10)
-        drop-shadow(0 16px 34px rgba(0,0,0,0.26)) !important;
-}
-
-.hero-fattoria-logo:hover img{
-    /* větší při hover, ale stále červené */
-    transform: scale(1.12) !important;
-    opacity: 1 !important;
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.06) contrast(1.14)
-        drop-shadow(0 22px 46px rgba(0,0,0,0.32)) !important;
-}
-
-.hero-fattoria-logo:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
-    outline-offset: 3px;
-}
-
-@media (max-width: 760px){
-    .hero-fattoria-logo{
-        position: static;
-        transform: none;
-        left: auto;
-        top: auto;
-    }
-    .hero-fattoria-logo img{ height: 40px; }
-}
-
-/* Logo Fattoria v hero – mimo flow, ať nerozbije nav bublinu */
-/* (viz hlavní blok stylů výše pro .hero-fattoria-logo) */
-
-/* Fallback: když by filtr na některých zařízeních táhl do žluta, lehce to srovnáme overlayem */
-.hero-logo{
-    position: relative;
-    display: inline-block;
-}
-
-.hero-logo::after{
-    content: "";
-    position: absolute;
-    inset: -6px -10px;
-    pointer-events: none;
-    background: radial-gradient(closest-side, rgba(122, 15, 29, 0.18), rgba(122, 15, 29, 0) 70%);
-    mix-blend-mode: multiply;
-    opacity: 0.55;
-}
-
-.hero-headline{
-    font-family: "Faculty Glyphic", serif;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    font-size: clamp(2.1rem, 4.2vw, 3.25rem);
-    line-height: 1.05;
-    margin: 0 0 0.8rem;
-    text-shadow: 0 18px 45px rgba(0,0,0,0.35);
-}
-
-.hero-subtitle{
-    max-width: 62ch;
-    margin: 0 auto;
-    font-size: clamp(0.95rem, 1.25vw, 1.05rem);
-    line-height: 1.6;
-    color: rgba(255,255,255,0.86);
-    text-shadow: 0 16px 34px rgba(0,0,0,0.35);
-}
-
-/* CTA: tlačítka stojí na "papírové" ploše jako na referenci */
-.hero-cta{
-    display:flex;
-    gap: 0.9rem;
-    justify-content:center;
-    margin-top: 1.25rem;
-}
-
-.cta-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.55rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-size: 0.82rem;
-
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
-    user-select: none;
-    white-space: nowrap;
-}
-
-.cta-btn--primary {
-    background: rgba(122, 15, 29, 0.88);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-}
-
-.cta-btn--ghost {
-    background: rgba(251, 250, 248, 0.86);
-    color: #2a1717;
-    border: 1px solid rgba(42, 23, 23, 0.22);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(10px);
-}
-
-.cta-btn:hover {
-    transform: translateY(-1px);
-}
-
-.cta-btn--primary:hover {
-    background: rgba(142, 18, 34, 0.92);
-}
-
-.cta-btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.92);
-}
-
-/* ===== HERO NAV ===== */
-.hero-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.75rem 2rem;
-    box-sizing: border-box;
-    position: relative; /* allow absolute positioning of logo + centering of nav */
-}
-
-/* ================== HERO: Fattoria logo (absolute, safe) ================== */
-.hero-fattoria-logo{
-    position: absolute;
-    /* víc doprava – mimo oblast jazykového přepínače */
-    left: 11.2rem;
-    top: 50%;
-    transform: translateY(-50%);
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-
-    padding: 0.1rem 0.2rem;
-    border-radius: 10px;
-    background: transparent;
-
-    z-index: 1100;
-}
-
-.hero-fattoria-logo img{
-    /* vždy červené */
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.04) contrast(1.10)
-        drop-shadow(0 16px 34px rgba(0,0,0,0.26)) !important;
-}
-
-.hero-fattoria-logo:hover img{
-    /* větší při hover, ale stále červené */
-    transform: scale(1.12) !important;
-    opacity: 1 !important;
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.06) contrast(1.14)
-        drop-shadow(0 22px 46px rgba(0,0,0,0.32)) !important;
-}
-
-.hero-fattoria-logo:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
-    outline-offset: 3px;
-}
-
-@media (max-width: 760px){
-    .hero-fattoria-logo{
-        position: static;
-        transform: none;
-        left: auto;
-        top: auto;
-    }
-    .hero-fattoria-logo img{ height: 40px; }
-}
-
-/* Logo Fattoria v hero – mimo flow, ať nerozbije nav bublinu */
-/* (viz hlavní blok stylů výše pro .hero-fattoria-logo) */
-
-/* Fallback: když by filtr na některých zařízeních táhl do žluta, lehce to srovnáme overlayem */
-.hero-logo{
-    position: relative;
-    display: inline-block;
-}
-
-.hero-logo::after{
-    content: "";
-    position: absolute;
-    inset: -6px -10px;
-    pointer-events: none;
-    background: radial-gradient(closest-side, rgba(122, 15, 29, 0.18), rgba(122, 15, 29, 0) 70%);
-    mix-blend-mode: multiply;
-    opacity: 0.55;
-}
-
-.hero-headline{
-    font-family: "Faculty Glyphic", serif;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    font-size: clamp(2.1rem, 4.2vw, 3.25rem);
-    line-height: 1.05;
-    margin: 0 0 0.8rem;
-    text-shadow: 0 18px 45px rgba(0,0,0,0.35);
-}
-
-.hero-subtitle{
-    max-width: 62ch;
-    margin: 0 auto;
-    font-size: clamp(0.95rem, 1.25vw, 1.05rem);
-    line-height: 1.6;
-    color: rgba(255,255,255,0.86);
-    text-shadow: 0 16px 34px rgba(0,0,0,0.35);
-}
-
-/* CTA: tlačítka stojí na "papírové" ploše jako na referenci */
-.hero-cta{
-    display:flex;
-    gap: 0.9rem;
-    justify-content:center;
-    margin-top: 1.25rem;
-}
-
-.cta-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.55rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-size: 0.82rem;
-
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
-    user-select: none;
-    white-space: nowrap;
-}
-
-.cta-btn--primary {
-    background: rgba(122, 15, 29, 0.88);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-}
-
-.cta-btn--ghost {
-    background: rgba(251, 250, 248, 0.86);
-    color: #2a1717;
-    border: 1px solid rgba(42, 23, 23, 0.22);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(10px);
-}
-
-.cta-btn:hover {
-    transform: translateY(-1px);
-}
-
-.cta-btn--primary:hover {
-    background: rgba(142, 18, 34, 0.92);
-}
-
-.cta-btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.92);
-}
-
-/* ===== HERO NAV ===== */
-.hero-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.75rem 2rem;
-    box-sizing: border-box;
-    position: relative; /* allow absolute positioning of logo + centering of nav */
-}
-
-/* ================== HERO: Fattoria logo (absolute, safe) ================== */
-.hero-fattoria-logo{
-    position: absolute;
-    /* víc doprava – mimo oblast jazykového přepínače */
-    left: 11.2rem;
-    top: 50%;
-    transform: translateY(-50%);
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-
-    padding: 0.1rem 0.2rem;
-    border-radius: 10px;
-    background: transparent;
-
-    z-index: 1100;
-}
-
-.hero-fattoria-logo img{
-    /* vždy červené */
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.04) contrast(1.10)
-        drop-shadow(0 16px 34px rgba(0,0,0,0.26)) !important;
-}
-
-.hero-fattoria-logo:hover img{
-    /* větší při hover, ale stále červené */
-    transform: scale(1.12) !important;
-    opacity: 1 !important;
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.06) contrast(1.14)
-        drop-shadow(0 22px 46px rgba(0,0,0,0.32)) !important;
-}
-
-.hero-fattoria-logo:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
-    outline-offset: 3px;
-}
-
-@media (max-width: 760px){
-    .hero-fattoria-logo{
-        position: static;
-        transform: none;
-        left: auto;
-        top: auto;
-    }
-    .hero-fattoria-logo img{ height: 40px; }
-}
-
-/* Logo Fattoria v hero – mimo flow, ať nerozbije nav bublinu */
-/* (viz hlavní blok stylů výše pro .hero-fattoria-logo) */
-
-/* Fallback: když by filtr na některých zařízeních táhl do žluta, lehce to srovnáme overlayem */
-.hero-logo{
-    position: relative;
-    display: inline-block;
-}
-
-.hero-logo::after{
-    content: "";
-    position: absolute;
-    inset: -6px -10px;
-    pointer-events: none;
-    background: radial-gradient(closest-side, rgba(122, 15, 29, 0.18), rgba(122, 15, 29, 0) 70%);
-    mix-blend-mode: multiply;
-    opacity: 0.55;
-}
-
-.hero-headline{
-    font-family: "Faculty Glyphic", serif;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    font-size: clamp(2.1rem, 4.2vw, 3.25rem);
-    line-height: 1.05;
-    margin: 0 0 0.8rem;
-    text-shadow: 0 18px 45px rgba(0,0,0,0.35);
-}
-
-.hero-subtitle{
-    max-width: 62ch;
-    margin: 0 auto;
-    font-size: clamp(0.95rem, 1.25vw, 1.05rem);
-    line-height: 1.6;
-    color: rgba(255,255,255,0.86);
-    text-shadow: 0 16px 34px rgba(0,0,0,0.35);
-}
-
-/* CTA: tlačítka stojí na "papírové" ploše jako na referenci */
-.hero-cta{
-    display:flex;
-    gap: 0.9rem;
-    justify-content:center;
-    margin-top: 1.25rem;
-}
-
-.cta-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.55rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-size: 0.82rem;
-
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
-    user-select: none;
-    white-space: nowrap;
-}
-
-.cta-btn--primary {
-    background: rgba(122, 15, 29, 0.88);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-}
-
-.cta-btn--ghost {
-    background: rgba(251, 250, 248, 0.86);
-    color: #2a1717;
-    border: 1px solid rgba(42, 23, 23, 0.22);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(10px);
-}
-
-.cta-btn:hover {
-    transform: translateY(-1px);
-}
-
-.cta-btn--primary:hover {
-    background: rgba(142, 18, 34, 0.92);
-}
-
-.cta-btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.92);
-}
-
-/* ===== HERO NAV ===== */
-.hero-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.75rem 2rem;
-    box-sizing: border-box;
-    position: relative; /* allow absolute positioning of logo + centering of nav */
-}
-
-/* ================== HERO: Fattoria logo (absolute, safe) ================== */
-.hero-fattoria-logo{
-    position: absolute;
-    /* víc doprava – mimo oblast jazykového přepínače */
-    left: 11.2rem;
-    top: 50%;
-    transform: translateY(-50%);
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-
-    padding: 0.1rem 0.2rem;
-    border-radius: 10px;
-    background: transparent;
-
-    z-index: 1100;
-}
-
-.hero-fattoria-logo img{
-    /* vždy červené */
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.04) contrast(1.10)
-        drop-shadow(0 16px 34px rgba(0,0,0,0.26)) !important;
-}
-
-.hero-fattoria-logo:hover img{
-    /* větší při hover, ale stále červené */
-    transform: scale(1.12) !important;
-    opacity: 1 !important;
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.06) contrast(1.14)
-        drop-shadow(0 22px 46px rgba(0,0,0,0.32)) !important;
-}
-
-.hero-fattoria-logo:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
-    outline-offset: 3px;
-}
-
-@media (max-width: 760px){
-    .hero-fattoria-logo{
-        position: static;
-        transform: none;
-        left: auto;
-        top: auto;
-    }
-    .hero-fattoria-logo img{ height: 40px; }
-}
-
-/* Logo Fattoria v hero – mimo flow, ať nerozbije nav bublinu */
-/* (viz hlavní blok stylů výše pro .hero-fattoria-logo) */
-
-/* Fallback: když by filtr na některých zařízeních táhl do žluta, lehce to srovnáme overlayem */
-.hero-logo{
-    position: relative;
-    display: inline-block;
-}
-
-.hero-logo::after{
-    content: "";
-    position: absolute;
-    inset: -6px -10px;
-    pointer-events: none;
-    background: radial-gradient(closest-side, rgba(122, 15, 29, 0.18), rgba(122, 15, 29, 0) 70%);
-    mix-blend-mode: multiply;
-    opacity: 0.55;
-}
-
-.hero-headline{
-    font-family: "Faculty Glyphic", serif;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    font-size: clamp(2.1rem, 4.2vw, 3.25rem);
-    line-height: 1.05;
-    margin: 0 0 0.8rem;
-    text-shadow: 0 18px 45px rgba(0,0,0,0.35);
-}
-
-.hero-subtitle{
-    max-width: 62ch;
-    margin: 0 auto;
-    font-size: clamp(0.95rem, 1.25vw, 1.05rem);
-    line-height: 1.6;
-    color: rgba(255,255,255,0.86);
-    text-shadow: 0 16px 34px rgba(0,0,0,0.35);
-}
-
-/* CTA: tlačítka stojí na "papírové" ploše jako na referenci */
-.hero-cta{
-    display:flex;
-    gap: 0.9rem;
-    justify-content:center;
-    margin-top: 1.25rem;
-}
-
-.cta-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.55rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-size: 0.82rem;
-
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
-    user-select: none;
-    white-space: nowrap;
-}
-
-.cta-btn--primary {
-    background: rgba(122, 15, 29, 0.88);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-}
-
-.cta-btn--ghost {
-    background: rgba(251, 250, 248, 0.86);
-    color: #2a1717;
-    border: 1px solid rgba(42, 23, 23, 0.22);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(10px);
-}
-
-.cta-btn:hover {
-    transform: translateY(-1px);
-}
-
-.cta-btn--primary:hover {
-    background: rgba(142, 18, 34, 0.92);
-}
-
-.cta-btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.92);
-}
-
-/* ===== HERO NAV ===== */
-.hero-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.75rem 2rem;
-    box-sizing: border-box;
-    position: relative; /* allow absolute positioning of logo + centering of nav */
-}
-
-/* ================== HERO: Fattoria logo (absolute, safe) ================== */
-.hero-fattoria-logo{
-    position: absolute;
-    /* víc doprava – mimo oblast jazykového přepínače */
-    left: 11.2rem;
-    top: 50%;
-    transform: translateY(-50%);
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-
-    padding: 0.1rem 0.2rem;
-    border-radius: 10px;
-    background: transparent;
-
-    z-index: 1100;
-}
-
-.hero-fattoria-logo img{
-    /* vždy červené */
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.04) contrast(1.10)
-        drop-shadow(0 16px 34px rgba(0,0,0,0.26)) !important;
-}
-
-.hero-fattoria-logo:hover img{
-    /* větší při hover, ale stále červené */
-    transform: scale(1.12) !important;
-    opacity: 1 !important;
-    filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.06) contrast(1.14)
-        drop-shadow(0 22px 46px rgba(0,0,0,0.32)) !important;
-}
-
-.hero-fattoria-logo:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
-    outline-offset: 3px;
-}
-
-@media (max-width: 760px){
-    .hero-fattoria-logo{
-        position: static;
-        transform: none;
-        left: auto;
-        top: auto;
-    }
-    .hero-fattoria-logo img{ height: 40px; }
-}
-
-/* Logo Fattoria v hero – mimo flow, ať nerozbije nav bublinu */
-/* (viz hlavní blok stylů výše pro .hero-fattoria-logo) */
-
-/* Fallback: když by filtr na některých zařízeních táhl do žluta, lehce to srovnáme overlayem */
-.hero-logo{
-    position: relative;
-    display: inline-block;
-}
-
-.hero-logo::after{
-    content: "";
-    position: absolute;
-    inset: -6px -10px;
-    pointer-events: none;
-    background: radial-gradient(closest-side, rgba(122, 15, 29, 0.18), rgba(122, 15, 29, 0) 70%);
-    mix-blend-mode: multiply;
-    opacity: 0.55;
-}
-
-.hero-headline{
-    font-family: "Faculty Glyphic", serif;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    font-size: clamp(2.1rem, 4.2vw, 3.25rem);
-    line-height: 1.05;
-    margin: 0 0 0.8rem;
-    text-shadow: 0 18px 45px rgba(0,0,0,0.35);
-}
-
-.hero-subtitle{
-    max-width: 62ch;
-    margin: 0 auto;
-    font-size: clamp(0.95rem, 1.25vw, 1.05rem);
-    line-height: 1.6;
-    color: rgba(255,255,255,0.86);
-    text-shadow: 0 16px 34px rgba(0,0,0,0.35);
-}
-
-/* CTA: tlačítka stojí na "papírové" ploše jako na referenci */
-.hero-cta{
-    display:flex;
-    gap: 0.9rem;
-    justify-content:center;
-    margin-top: 1.25rem;
-}
-
-.cta-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.55rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-size: 0.82rem;
-
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
-    user-select: none;
-    white-space: nowrap;
-}
-
-.cta-btn--primary {
-    background: rgba(122, 15, 29, 0.88);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-}
-
-.cta-btn--ghost {
-    background: rgba(251, 250, 248, 0.86);
-    color: #2a1717;
-    border: 1px solid rgba(42, 23, 23, 0.22);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(10px);
-}
-
-.cta-btn:hover {
-    transform: translateY(-1px);
-}
-
-.cta-btn--primary:hover {
-    background: rgba(142, 18, 34, 0.92);
-}
-
-.cta-btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.92);
-}
-
-/* ===== HERO NAV ===== */
-.hero-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.75rem 2rem;
-    box-sizing: border-box;
-    position: relative; /* allow absolute positioning of logo + centering of nav */
 }
 
 .hero-nav {
@@ -1262,11 +298,7 @@ body {
 .hero-nav a:hover { opacity: 1; }
 
 /* jazykový přepínač (nový styl pro aktivní stav) */
-.lang-switcher {
-    display: flex;
-    gap: 0.5rem;
-    z-index: 1100; /* nad bublinou nav, aby šla vždy kliknout */
-}
+.lang-switcher { display: flex; gap: 0.5rem; z-index: 1100; }
 
 .lang-btn {
     background: rgba(0,0,0,0.60);
@@ -1286,6 +318,58 @@ body {
 .lang-btn.active {
     background: rgba(255,255,255,0.92);
     color: #111;
+}
+
+/* ================== HERO: Fattoria logo (absolute, safe) ================== */
+.hero-fattoria-logo{
+    position: absolute;
+    left: 11.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+
+    padding: 0.1rem 0.2rem;
+    border-radius: 10px;
+    background: transparent;
+
+    z-index: 1100;
+}
+
+.hero-fattoria-logo img{
+    filter:
+        brightness(0) saturate(100%)
+        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
+        brightness(1.04) contrast(1.10)
+        drop-shadow(0 16px 34px rgba(0,0,0,0.26)) !important;
+}
+
+.hero-fattoria-logo:hover img{
+    transform: scale(1.12) !important;
+    opacity: 1 !important;
+    filter:
+        brightness(0) saturate(100%)
+        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
+        brightness(1.06) contrast(1.14)
+        drop-shadow(0 22px 46px rgba(0,0,0,0.32)) !important;
+}
+
+.hero-fattoria-logo:focus-visible{
+    outline: 3px solid rgba(191,155,48,0.55);
+    outline-offset: 3px;
+}
+
+@media (max-width: 760px){
+    .hero-fattoria-logo{
+        position: static;
+        transform: none;
+        left: auto;
+        top: auto;
+    }
+    .hero-fattoria-logo img{ height: 40px; }
 }
 
 /* mobile: navigace do flow */
@@ -1318,7 +402,6 @@ body {
     display: block;
     opacity: 0.98;
 
-    /* víc čitelné na tmavém pozadí */
     filter:
         drop-shadow(0 14px 28px rgba(0,0,0,0.28))
         drop-shadow(0 0 1px rgba(255,255,255,0.25));
@@ -1336,12 +419,6 @@ body {
     outline-offset: 3px;
 }
 
-@media (max-width: 560px){
-    .wines-show{ margin: 1.0rem auto 1.4rem; width: min(980px, 92%); }
-    .wines-show__inner{ padding: 0.8rem; }
-    .wines-show__inner::before{ inset: 7px; border-radius: 12px; }
-}
-
 /* ===== CONTENT BELOW HERO ===== */
 .page-content {
     width: 100%;
@@ -1351,7 +428,7 @@ body {
     background-color: var(--paper);
     background-image:
             radial-gradient(1200px 700px at 12% 0%, rgba(111, 28, 45, 0.11) 0%, rgba(111, 28, 45, 0.00) 62%),
-            radial-gradient(900px 520px at 88% 10%, rgba(191, 155, 48, 0.10) 0%, rgba(191, 155, 48, 0.00) 58%),
+            radial-gradient(900px 560px at 88% 10%, rgba(191, 155, 48, 0.10) 0%, rgba(191, 155, 48, 0.00) 58%),
             linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(251,250,248,1) 45%, rgba(246,244,240,1) 100%),
             repeating-linear-gradient(0deg, rgba(0,0,0,0.012) 0 1px, rgba(0,0,0,0.0) 1px 6px);
     background-repeat: no-repeat, no-repeat, no-repeat, repeat;
@@ -1392,7 +469,8 @@ body {
 
 .partner-card{
     display: grid;
-    grid-template-columns: 1.05fr 1fr;
+    grid-template-columns: minmax(320px, 1.15fr) minmax(0, 1fr);
+    align-items: stretch;
     gap: 1.75rem;
     padding: 1.4rem;
 
@@ -1406,22 +484,23 @@ body {
     position: relative;
 }
 
-.partner-card::before{
-    content:"";
-    position:absolute;
-    inset: 10px;
-    border-radius: 14px;
-    border: 1px solid rgba(42, 23, 23, 0.16);
-    pointer-events:none;
+.partner-card__media{
+    min-height: clamp(320px, 34vw, 460px);
 }
 
 .partner-card__media img{
     width: 100%;
     height: 100%;
-    max-height: 260px;
+    min-height: clamp(320px, 34vw, 460px);
     object-fit: cover;
     border-radius: 14px;
     box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+}
+
+.partner-card__body{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .partner-card__headline{
@@ -1460,6 +539,21 @@ body {
 .partner-card--link:focus-visible{
     outline: 3px solid rgba(191,155,48,0.65);
     outline-offset: 4px;
+}
+
+@media (max-width: 860px){
+    .partner-card{
+        grid-template-columns: 1fr;
+        gap: 1.15rem;
+    }
+
+    .partner-card__media{
+        min-height: clamp(220px, 52vw, 320px);
+    }
+
+    .partner-card__media img{
+        min-height: clamp(220px, 52vw, 320px);
+    }
 }
 
 /* ================== WINE CAROUSEL (manuální, bez auto-rotace) ================== */
@@ -1551,6 +645,15 @@ body {
 
     /* prostor po stranách, aby šlo dosnapovat na střední */
     padding: 0.25rem 18% 0.4rem;
+}
+
+.hero-logo{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* rozumný gap – uživatelsky dobře laditelný */
+    gap: clamp(3rem, 6vw, 7rem);
+    position: relative;
 }
 
 /* coverflow track */
@@ -1880,4 +983,64 @@ body {
 @media (max-width: 560px){
     .contact-card__cols{ flex-direction:column; align-items:flex-start; }
     .contact-card__col--right{ align-items:flex-start; }
+}
+
+#partner-section{
+    scroll-margin-top: 18px;
+}
+
+/* ===== INTRO BLOCK (nový blok nad první bílou sekcí) ===== */
+.home-intro-block{
+    margin: 0 0 clamp(1.6rem, 3vw, 2.4rem);
+}
+
+.home-intro-block__card{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: clamp(1.55rem, 3.2vw, 2.15rem);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(251,250,248,0.95), rgba(246,244,240,0.9));
+    border: 1px solid rgba(191,155,48,0.46);
+    box-shadow: 0 18px 42px rgba(0,0,0,0.14);
+}
+
+.home-intro-block__title{
+    margin: 0 0 1rem;
+    font-family: "Faculty Glyphic", serif;
+    font-weight: 650;
+    font-size: clamp(1.45rem, 2.5vw, 2rem);
+    line-height: 1.15;
+    color: #6f1c2d;
+}
+
+.home-intro-block__text{
+    margin: 0 0 0.9rem;
+    color: rgba(42,23,23,0.92);
+    font-size: 1rem;
+    line-height: 1.72;
+}
+
+.home-intro-block__text:last-child{
+    margin-bottom: 0;
+}
+
+.home-texts-endcap--intro{
+    margin-top: 0;
+    margin-bottom: clamp(2rem, 4vw, 2.8rem);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+.home-texts-endcap--intro::before,
+.home-texts-endcap--intro::after{
+    display: none;
+}
+
+.home-texts-endcap--intro .info-wrapper{
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
 }
