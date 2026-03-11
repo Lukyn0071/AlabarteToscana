@@ -7,19 +7,21 @@
             titleSmall: "Naše",
             titleBig: "vína",
             searchLabel: "Vyhledat víno",
-            searchPlaceholder: "Název, profil, párování...",
+            searchPlaceholder: "Název vína...",
             clear: "Vymazat",
-            category: "Kategorie:",
-            all: "Všechna",
-            white: "Bílá",
-            rose: "Růžová",
-            red: "Červená",
+            certification: "Certifikace:",
+            styleLabel: "Styl:",
+            price: "Cena:",
+            priceFrom: "Od",
+            priceTo: "Do",
             loading: "Načítám vína…",
             empty: "Žádná vína zatím nejsou k dispozici.",
             loadError: "Nepodařilo se načíst vína.",
             noResults: "Žádná vína neodpovídají zadanému hledání.",
             shown: (shown, total) => `Zobrazeno ${shown} z ${total} vín.`,
             shownQuery: (shown, total, q) => `Zobrazeno ${shown} z ${total} vín pro „${q}“.`,
+            priceRange: (min, max) => `Cenové rozmezí: ${min} Kč – ${max} Kč`,
+            noCertification: "Bez certifikace",
             wineFallback: "Víno",
             wineType: "víno",
             specs: "Specifikace",
@@ -37,19 +39,21 @@
             titleSmall: "Our",
             titleBig: "wines",
             searchLabel: "Search wines",
-            searchPlaceholder: "Name, profile, pairing...",
+            searchPlaceholder: "Wine name...",
             clear: "Clear",
-            category: "Category:",
-            all: "All",
-            white: "White",
-            rose: "Rosé",
-            red: "Red",
+            certification: "Certification:",
+            styleLabel: "Style:",
+            price: "Price:",
+            priceFrom: "From",
+            priceTo: "To",
             loading: "Loading wines…",
             empty: "No wines are available yet.",
             loadError: "Failed to load wines.",
             noResults: "No wines match your search.",
             shown: (shown, total) => `Showing ${shown} of ${total} wines.`,
             shownQuery: (shown, total, q) => `Showing ${shown} of ${total} wines for “${q}”.`,
+            priceRange: (min, max) => `Price range: ${min} CZK – ${max} CZK`,
+            noCertification: "No certification",
             wineFallback: "Wine",
             wineType: "wine",
             specs: "Specifications",
@@ -91,20 +95,20 @@
         .replace(/[\u0300-\u036f]/g, "")
         .trim();
 
-    const stylToCategory = (styl) => {
-        const s = normalizeText(styl);
-        if (s.includes("bile") || s.includes("white")) return "white";
-        if (s.includes("ruzove") || s.includes("rose")) return "rose";
-        if (s.includes("cervene") || s.includes("red")) return "red";
-        return "other";
-    };
-
     const getUi = () => UI_TEXT[currentLang] || UI_TEXT.cs;
 
     const getWineTitle = (wine) => {
         if (wine.name) return wine.name;
         const year = wine.rocnik ? ` ${wine.rocnik}` : "";
         return `${getUi().wineFallback}${year}`;
+    };
+
+    const getCertificationValue = (wine) => String(wine.certifikace || "none");
+    const getStyleValue = (wine) => String(wine.styl || "");
+
+    const getCertificationLabel = (value) => {
+        if (!value || value === "none") return getUi().noCertification;
+        return value;
     };
 
     const buildMeta = (wine) => {
@@ -190,7 +194,16 @@
         const searchLabelEl = document.querySelector("[data-wine-search-label]");
         const searchInput = document.getElementById("wineSearch");
         const clearBtn = document.getElementById("wineSearchClear");
-        const categoryLabelEl = document.querySelector("[data-wine-category-label]");
+        const certificationLabelEl = document.querySelector("[data-wine-certification-label]");
+        const styleLabelEl = document.querySelector("[data-wine-style-label]");
+        const priceLabelEl = document.querySelector("[data-wine-price-label]");
+        const priceMinLabelEl = document.querySelector("[data-wine-price-min-label]");
+        const priceMaxLabelEl = document.querySelector("[data-wine-price-max-label]");
+        const certificationFiltersEl = document.getElementById("wineCertificationFilters");
+        const styleFiltersEl = document.getElementById("wineStyleFilters");
+        const priceMinInput = document.getElementById("winePriceMin");
+        const priceMaxInput = document.getElementById("winePriceMax");
+        const priceStatusEl = document.getElementById("winePriceStatus");
         const catalogEl = document.getElementById("vina-katalog");
         const catalogStatusEl = document.getElementById("wineCatalogStatus");
         const noResultsEl = document.getElementById("wineNoResults");
@@ -208,14 +221,16 @@
         const searchWrap = document.getElementById("wineSearchWrap");
         const searchToggle = document.getElementById("wineSearchToggle");
         const searchPanel = document.getElementById("wineSearchPanel");
-        const filterButtons = Array.from(document.querySelectorAll(".wine-filter-btn[data-filter]"));
+        const priceRangeFillEl = document.getElementById("winePriceRangeFill");
 
         const modalReady = !!(modal && panel && modalImage && modalTitle && modalMeta && modalStory && modalSpecs && modalPairing);
 
         let wines = [];
         let cardIndex = [];
-        let activeCategoryFilter = "all";
         let currentIndex = 0;
+        let selectedCertifications = new Set();
+        let selectedStyles = new Set();
+        let priceBounds = { min: 0, max: 0, selectedMin: 0, selectedMax: 0 };
 
         const applyStaticTranslations = () => {
             const ui = getUi();
@@ -225,19 +240,85 @@
             if (searchLabelEl) searchLabelEl.textContent = ui.searchLabel;
             if (searchInput) searchInput.placeholder = ui.searchPlaceholder;
             if (clearBtn) clearBtn.textContent = ui.clear;
-            if (categoryLabelEl) categoryLabelEl.textContent = ui.category;
+            if (certificationLabelEl) certificationLabelEl.textContent = ui.certification;
+            if (styleLabelEl) styleLabelEl.textContent = ui.styleLabel;
+            if (priceLabelEl) priceLabelEl.textContent = ui.price;
+            if (priceMinLabelEl) priceMinLabelEl.textContent = ui.priceFrom;
+            if (priceMaxLabelEl) priceMaxLabelEl.textContent = ui.priceTo;
             if (noResultsEl) noResultsEl.textContent = ui.noResults;
             if (modalSpecsTitle) modalSpecsTitle.textContent = ui.specs;
             if (modalShopBtn) modalShopBtn.textContent = ui.shop;
-            filterButtons.forEach((btn) => {
-                btn.textContent = currentLang === "en" ? (btn.dataset.labelEn || btn.textContent) : (btn.dataset.labelCs || btn.textContent);
-            });
+            renderCheckboxFilters();
+            updatePriceStatus();
         };
 
         const setCatalogStatus = (message = "", isVisible = false) => {
             if (!catalogStatusEl) return;
             catalogStatusEl.textContent = message;
             catalogStatusEl.hidden = !isVisible;
+        };
+
+        const renderCheckboxGroup = (mountEl, values, selectedSet, groupName, labelResolver) => {
+            if (!mountEl) return;
+            mountEl.innerHTML = "";
+            values.forEach((value) => {
+                const label = document.createElement("label");
+                label.className = "wine-checkbox";
+                const input = document.createElement("input");
+                input.type = "checkbox";
+                input.name = groupName;
+                input.value = value;
+                input.checked = selectedSet.has(value);
+                input.addEventListener("change", () => {
+                    if (input.checked) selectedSet.add(value);
+                    else selectedSet.delete(value);
+                    applyFilter();
+                });
+                const text = document.createElement("span");
+                text.textContent = labelResolver(value);
+                label.appendChild(input);
+                label.appendChild(text);
+                mountEl.appendChild(label);
+            });
+        };
+
+        const renderCheckboxFilters = () => {
+            const certificationValues = [...new Set(wines.map(getCertificationValue))].sort();
+            const styleValues = [...new Set(wines.map(getStyleValue).filter(Boolean))].sort((a, b) => a.localeCompare(b, currentLang));
+            renderCheckboxGroup(certificationFiltersEl, certificationValues, selectedCertifications, "wineCertification", getCertificationLabel);
+            renderCheckboxGroup(styleFiltersEl, styleValues, selectedStyles, "wineStyle", (value) => value);
+        };
+
+        const syncPriceInputs = () => {
+            if (!priceMinInput || !priceMaxInput) return;
+            priceMinInput.min = String(priceBounds.min);
+            priceMinInput.max = String(priceBounds.max);
+            priceMaxInput.min = String(priceBounds.min);
+            priceMaxInput.max = String(priceBounds.max);
+            priceMinInput.value = String(priceBounds.selectedMin);
+            priceMaxInput.value = String(priceBounds.selectedMax);
+
+            const span = Math.max(1, priceBounds.max - priceBounds.min);
+            const startPct = ((priceBounds.selectedMin - priceBounds.min) / span) * 100;
+            const endPct = ((priceBounds.selectedMax - priceBounds.min) / span) * 100;
+            if (priceRangeFillEl) {
+                priceRangeFillEl.style.left = `${startPct}%`;
+                priceRangeFillEl.style.right = `${100 - endPct}%`;
+            }
+        };
+
+        const updatePriceStatus = () => {
+            if (!priceStatusEl) return;
+            priceStatusEl.textContent = getUi().priceRange(priceBounds.selectedMin, priceBounds.selectedMax);
+        };
+
+        const initPriceBounds = () => {
+            const prices = wines.map((wine) => Number(wine.cena)).filter((price) => Number.isFinite(price));
+            const min = prices.length ? Math.min(...prices) : 0;
+            const max = prices.length ? Math.max(...prices) : 0;
+            priceBounds = { min, max, selectedMin: min, selectedMax: max };
+            syncPriceInputs();
+            updatePriceStatus();
         };
 
         const renderCards = () => {
@@ -247,17 +328,12 @@
             wines.forEach((wine, index) => {
                 const card = document.createElement("article");
                 const title = getWineTitle(wine);
-                const cert = wine.certifikace && wine.certifikace !== "none" ? wine.certifikace : "";
+                const cert = wine.certifikace && wine.certifikace !== "none" ? wine.certifikace : getCertificationLabel("none");
                 const price = formatPrice(wine.cena);
                 const meta = [wine.rocnik, wine.styl, wine.zeme].filter(Boolean).join(" • ");
-                const story = wine.text || "";
-                const category = stylToCategory(wine.styl);
-                const specs = buildSpecs(wine).join(" | ");
 
                 card.className = "wine-card wine-card--catalog";
                 card.dataset.wineId = String(wine.id);
-                card.dataset.filterCat = category;
-                card.dataset.shop = wine.odkaz || "";
                 card.setAttribute("tabindex", "0");
                 card.setAttribute("role", "button");
                 card.setAttribute("aria-label", title);
@@ -269,11 +345,9 @@
                     <div class="wine-info">
                         <h3 class="wine-name typo-h3">${escapeHtml(title)}</h3>
                         <div class="wine-divider" aria-hidden="true"></div>
-                        ${cert ? `<p class="wine-appellation typo-meta">${escapeHtml(cert)}</p>` : ""}
+                        <p class="wine-appellation typo-meta">${escapeHtml(cert)}</p>
                         <p class="wine-price">${escapeHtml(price)}</p>
                         <span class="wine-meta sr-only">${escapeHtml(meta)}</span>
-                        <span class="wine-story sr-only">${escapeHtml(story)}</span>
-                        <span class="wine-notes sr-only">${escapeHtml(specs)}</span>
                     </div>
                 `;
 
@@ -288,18 +362,12 @@
                 catalogEl.appendChild(card);
             });
 
-            cardIndex = Array.from(catalogEl.querySelectorAll(".wine-card[data-wine-id]")).map((card) => {
-                const name = card.querySelector(".wine-name")?.textContent ?? "";
-                const story = card.querySelector(".wine-story")?.textContent ?? "";
-                const notes = card.querySelector(".wine-notes")?.textContent ?? "";
-                const meta = card.querySelector(".wine-meta")?.textContent ?? "";
-                card.setAttribute("data-orig-tabindex", card.getAttribute("tabindex") ?? "");
-                return {
+            cardIndex = Array.from(catalogEl.querySelectorAll(".wine-card[data-wine-id]"))
+                .map((card, index) => ({
                     el: card,
-                    haystack: normalizeText(`${name} ${story} ${notes} ${meta}`),
-                    category: card.getAttribute("data-filter-cat") || "other"
-                };
-            });
+                    wine: wines[index],
+                    name: normalizeText(getWineTitle(wines[index]))
+                }));
         };
 
         const updateShopButton = (wine) => {
@@ -385,7 +453,7 @@
                 statusEl.textContent = q ? ui.shownQuery(shownCount, totalCount, q) : ui.shown(shownCount, totalCount);
             }
             if (noResultsEl) noResultsEl.hidden = shownCount !== 0 || totalCount === 0;
-            if (clearBtn) clearBtn.disabled = !String(queryRaw ?? "").trim();
+            if (clearBtn) clearBtn.disabled = !String(queryRaw ?? "").trim() && selectedCertifications.size === 0 && selectedStyles.size === 0 && priceBounds.selectedMin === priceBounds.min && priceBounds.selectedMax === priceBounds.max;
         };
 
         const applyFilter = () => {
@@ -393,14 +461,23 @@
             const queryRaw = searchInput?.value ?? "";
             const query = normalizeText(queryRaw);
             let shownCount = 0;
+
             for (const item of cardIndex) {
-                const matchText = !query || item.haystack.includes(query);
-                const matchCat = activeCategoryFilter === "all" || item.category === activeCategoryFilter;
-                const match = matchText && matchCat;
+                const wine = item.wine;
+                const cert = getCertificationValue(wine);
+                const style = getStyleValue(wine);
+                const price = Number(wine.cena) || 0;
+                const matchText = !query || item.name.includes(query);
+                const matchCertification = selectedCertifications.size === 0 || selectedCertifications.has(cert);
+                const matchStyle = selectedStyles.size === 0 || selectedStyles.has(style);
+                const matchPrice = price >= priceBounds.selectedMin && price <= priceBounds.selectedMax;
+                const match = matchText && matchCertification && matchStyle && matchPrice;
                 setCardVisible(item.el, match);
                 if (match) shownCount++;
             }
+
             updateUi(shownCount, total, queryRaw);
+            updatePriceStatus();
         };
 
         const loadWines = async () => {
@@ -424,7 +501,11 @@
                     throw new Error("Wine API error");
                 }
                 wines = json.items;
+                selectedCertifications = new Set();
+                selectedStyles = new Set();
                 renderCards();
+                renderCheckboxFilters();
+                initPriceBounds();
                 applyFilter();
                 setCatalogStatus(wines.length ? "" : getUi().empty, !wines.length);
             } catch (error) {
@@ -465,21 +546,30 @@
             });
         }
 
-        if (filterButtons.length) {
-            filterButtons.forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    activeCategoryFilter = btn.dataset.filter || "all";
-                    filterButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
-                    applyFilter();
-                });
-            });
-        }
-
         searchInput?.addEventListener("input", applyFilter);
         clearBtn?.addEventListener("click", () => {
             if (searchInput) searchInput.value = "";
+            selectedCertifications = new Set();
+            selectedStyles = new Set();
+            renderCheckboxFilters();
+            priceBounds.selectedMin = priceBounds.min;
+            priceBounds.selectedMax = priceBounds.max;
+            syncPriceInputs();
             applyFilter();
             searchInput?.focus();
+        });
+
+        priceMinInput?.addEventListener("input", () => {
+            const nextValue = Number(priceMinInput.value);
+            priceBounds.selectedMin = Math.min(nextValue, priceBounds.selectedMax);
+            syncPriceInputs();
+            applyFilter();
+        });
+        priceMaxInput?.addEventListener("input", () => {
+            const nextValue = Number(priceMaxInput.value);
+            priceBounds.selectedMax = Math.max(nextValue, priceBounds.selectedMin);
+            syncPriceInputs();
+            applyFilter();
         });
 
         document.addEventListener("langchange", (event) => {

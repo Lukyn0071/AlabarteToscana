@@ -14,6 +14,9 @@
         cs: { name: "", text: "", zeme: "", region: "" },
         en: { name: "", text: "", zeme: "", region: "" }
     };
+    let selectedCertifications = new Set();
+    let selectedStyles = new Set();
+    let priceBounds = { min: 0, max: 0, selectedMin: 0, selectedMax: 0 };
 
     const catalogEl = document.getElementById("vina-katalog");
     const modal = document.getElementById("wineEditModal");
@@ -27,6 +30,12 @@
     const saveBtn = document.getElementById("editWineSave");
     const statusEl = document.getElementById("editWineStatus");
     const langButtons = Array.from(document.querySelectorAll(".wine-form-lang-btn[data-form-lang]"));
+    const certificationFiltersEl = document.getElementById("wineCertificationFilters");
+    const styleFiltersEl = document.getElementById("wineStyleFilters");
+    const priceMinInput = document.getElementById("winePriceMin");
+    const priceMaxInput = document.getElementById("winePriceMax");
+    const priceStatusEl = document.getElementById("winePriceStatus");
+    const priceRangeFillEl = document.getElementById("winePriceRangeFill");
 
     // Form fields
     const fName = document.getElementById("editName");
@@ -56,17 +65,11 @@
         return Number.isFinite(n) && n > 0 ? `${Math.round(n)} Kč` : "";
     };
 
-    const stylToFilter = (styl) => {
-        if (!styl) return "other";
-        const s = styl.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        if (s.includes("bile")) return "white";
-        if (s.includes("ruzove") || s.includes("rose")) return "rose";
-        if (s.includes("cervene")) return "red";
-        return "other";
-    };
+    const normalizeText = (value) =>
+        String(value ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
     const certLabel = (c) => {
-        if (!c || c === "none") return "";
+        if (!c || c === "none") return "Bez certifikace";
         return c;
     };
 
@@ -95,18 +98,10 @@
         if (fZeme) fZeme.value = draft.zeme || "";
         if (fRegion) fRegion.value = draft.region || "";
         langButtons.forEach((btn) => btn.classList.toggle("is-active", btn.dataset.formLang === activeFormLang));
-        if (fName) {
-            fName.placeholder = activeFormLang === "en" ? "Wine name" : "Název vína";
-        }
-        if (fText) {
-            fText.placeholder = activeFormLang === "en" ? "Wine description..." : "Popis vína...";
-        }
-        if (fZeme) {
-            fZeme.placeholder = activeFormLang === "en" ? "Country" : "Země";
-        }
-        if (fRegion) {
-            fRegion.placeholder = activeFormLang === "en" ? "Region" : "Region";
-        }
+        if (fName) fName.placeholder = activeFormLang === "en" ? "Wine name" : "Název vína";
+        if (fText) fText.placeholder = activeFormLang === "en" ? "Wine description..." : "Popis vína...";
+        if (fZeme) fZeme.placeholder = activeFormLang === "en" ? "Country" : "Země";
+        if (fRegion) fRegion.placeholder = "Region";
     };
 
     const switchFormLang = (lang) => {
@@ -114,6 +109,69 @@
         persistCurrentLanguageDraft();
         activeFormLang = next;
         renderLanguageDraft();
+    };
+
+    const renderCheckboxGroup = (mountEl, values, selectedSet, groupName, labelResolver) => {
+        if (!mountEl) return;
+        mountEl.innerHTML = "";
+        values.forEach((value) => {
+            const label = document.createElement("label");
+            label.className = "wine-checkbox";
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.name = groupName;
+            input.value = value;
+            input.checked = selectedSet.has(value);
+            input.addEventListener("change", () => {
+                if (input.checked) selectedSet.add(value);
+                else selectedSet.delete(value);
+                applyFilter();
+            });
+            const text = document.createElement("span");
+            text.textContent = labelResolver(value);
+            label.appendChild(input);
+            label.appendChild(text);
+            mountEl.appendChild(label);
+        });
+    };
+
+    const renderCheckboxFilters = () => {
+        const certificationValues = [...new Set(wines.map((wine) => String(wine.certifikace || "none")))].sort();
+        const styleValues = [...new Set(wines.map((wine) => String(wine.styl || "")).filter(Boolean))].sort((a, b) => a.localeCompare(b, "cs"));
+        renderCheckboxGroup(certificationFiltersEl, certificationValues, selectedCertifications, "wineCertification", certLabel);
+        renderCheckboxGroup(styleFiltersEl, styleValues, selectedStyles, "wineStyle", (value) => value);
+    };
+
+    const syncPriceInputs = () => {
+        if (!priceMinInput || !priceMaxInput) return;
+        priceMinInput.min = String(priceBounds.min);
+        priceMinInput.max = String(priceBounds.max);
+        priceMaxInput.min = String(priceBounds.min);
+        priceMaxInput.max = String(priceBounds.max);
+        priceMinInput.value = String(priceBounds.selectedMin);
+        priceMaxInput.value = String(priceBounds.selectedMax);
+
+        const span = Math.max(1, priceBounds.max - priceBounds.min);
+        const startPct = ((priceBounds.selectedMin - priceBounds.min) / span) * 100;
+        const endPct = ((priceBounds.selectedMax - priceBounds.min) / span) * 100;
+        if (priceRangeFillEl) {
+            priceRangeFillEl.style.left = `${startPct}%`;
+            priceRangeFillEl.style.right = `${100 - endPct}%`;
+        }
+    };
+
+    const updatePriceStatus = () => {
+        if (!priceStatusEl) return;
+        priceStatusEl.textContent = `Cenové rozmezí: ${priceBounds.selectedMin} Kč – ${priceBounds.selectedMax} Kč`;
+    };
+
+    const initPriceBounds = () => {
+        const prices = wines.map((wine) => Number(wine.cena)).filter((price) => Number.isFinite(price));
+        const min = prices.length ? Math.min(...prices) : 0;
+        const max = prices.length ? Math.max(...prices) : 0;
+        priceBounds = { min, max, selectedMin: min, selectedMax: max };
+        syncPriceInputs();
+        updatePriceStatus();
     };
 
     const resetForm = () => {
@@ -152,7 +210,6 @@
         catalogEl.innerHTML = "";
 
         wines.forEach((w) => {
-            const filterCat = stylToFilter(w.styl);
             const price = formatPrice(w.cena);
             const cert = certLabel(w.certifikace);
             const shortName = w.translations?.cs?.name || w.name || "Bez názvu";
@@ -160,7 +217,6 @@
             const card = document.createElement("article");
             card.className = "wine-card wine-card--catalog";
             card.setAttribute("data-wine-id", w.id);
-            card.setAttribute("data-filter-cat", filterCat);
 
             card.innerHTML = `
                 <div class="wine-media">
@@ -169,9 +225,8 @@
                 <div class="wine-info">
                     <h3 class="wine-name typo-h3">${esc(shortName)}</h3>
                     <div class="wine-divider" aria-hidden="true"></div>
-                    ${cert ? `<p class="wine-appellation typo-meta">${esc(cert)}</p>` : ""}
+                    <p class="wine-appellation typo-meta">${esc(cert)}</p>
                     ${price ? `<p class="wine-price">${esc(price)}</p>` : ""}
-                    <span class="wine-meta sr-only">${esc(w.rocnik || "")} • ${esc(w.styl || "")} • ${esc(w.zeme || "")}</span>
                 </div>
                 <div class="wine-card-actions">
                     <button type="button" class="wine-edit-btn" data-edit-id="${w.id}">Upravit</button>
@@ -212,7 +267,11 @@
             }
 
             wines = json.items;
+            selectedCertifications = new Set();
+            selectedStyles = new Set();
             renderCards();
+            renderCheckboxFilters();
+            initPriceBounds();
         } catch (e) {
             console.error("Failed to load wines", e);
             showStatus("Nepodařilo se načíst vína", true);
@@ -452,43 +511,45 @@
     };
 
     /* =========================================================
-       SEARCH & FILTER (admin side – vina.js is not loaded)
+       SEARCH & FILTER
        ========================================================= */
-    const normalizeText = (value) =>
-        String(value ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-
-    let activeCategoryFilter = "all";
-
-    const applyFilter = () => {
-        const searchInput = document.getElementById("wineSearch");
+    const updateUi = (shownCount, totalCount, queryRaw) => {
         const statusSearch = document.getElementById("wineSearchStatus");
         const noResultsEl = document.getElementById("wineNoResults");
         const clearBtn = document.getElementById("wineSearchClear");
+        const q = String(queryRaw ?? "").trim();
 
+        if (statusSearch) {
+            statusSearch.textContent = q
+                ? `Zobrazeno ${shownCount} z ${totalCount} vín pro „${q}“.`
+                : `Zobrazeno ${shownCount} z ${totalCount} vín.`;
+        }
+        if (noResultsEl) noResultsEl.hidden = shownCount !== 0;
+        if (clearBtn) clearBtn.disabled = !q && selectedCertifications.size === 0 && selectedStyles.size === 0 && priceBounds.selectedMin === priceBounds.min && priceBounds.selectedMax === priceBounds.max;
+        updatePriceStatus();
+    };
+
+    const applyFilter = () => {
+        const searchInput = document.getElementById("wineSearch");
         const queryRaw = searchInput?.value ?? "";
         const query = normalizeText(queryRaw);
-
         const cards = Array.from(catalogEl?.querySelectorAll(".wine-card[data-wine-id]") ?? []);
         let shown = 0;
 
-        cards.forEach((card) => {
-            const cat = card.getAttribute("data-filter-cat") || "other";
-            const hay = normalizeText(card.textContent);
-            const matchText = !query || hay.includes(query);
-            const matchCat = activeCategoryFilter === "all" || cat === activeCategoryFilter;
-            const ok = matchText && matchCat;
+        cards.forEach((card, index) => {
+            const wine = wines[index];
+            const matchText = !query || normalizeText(wine?.translations?.cs?.name || wine?.name || "").includes(query);
+            const matchCert = selectedCertifications.size === 0 || selectedCertifications.has(String(wine?.certifikace || "none"));
+            const matchStyle = selectedStyles.size === 0 || selectedStyles.has(String(wine?.styl || ""));
+            const price = Number(wine?.cena) || 0;
+            const matchPrice = price >= priceBounds.selectedMin && price <= priceBounds.selectedMax;
+            const ok = matchText && matchCert && matchStyle && matchPrice;
 
             card.classList.toggle("is-filtered-out", !ok);
             if (ok) shown++;
         });
 
-        if (statusSearch) {
-            statusSearch.textContent = query
-                ? `Zobrazeno ${shown} z ${cards.length} vín pro „${queryRaw}“.`
-                : `Zobrazeno ${shown} z ${cards.length} vín.`;
-        }
-        if (noResultsEl) noResultsEl.hidden = shown !== 0;
-        if (clearBtn) clearBtn.disabled = !query;
+        updateUi(shown, cards.length, queryRaw);
     };
 
     /* =========================================================
@@ -537,26 +598,35 @@
 
         const searchInput = document.getElementById("wineSearch");
         const clearBtn = document.getElementById("wineSearchClear");
+        const searchToggle = document.getElementById("wineSearchToggle");
+        const searchPanel = document.getElementById("wineSearchPanel");
+        const searchWrap = document.getElementById("wineSearchWrap");
+
         searchInput?.addEventListener("input", applyFilter);
         clearBtn?.addEventListener("click", () => {
             if (searchInput) searchInput.value = "";
+            selectedCertifications = new Set();
+            selectedStyles = new Set();
+            renderCheckboxFilters();
+            priceBounds.selectedMin = priceBounds.min;
+            priceBounds.selectedMax = priceBounds.max;
+            syncPriceInputs();
             applyFilter();
             searchInput?.focus();
         });
 
-        document.querySelectorAll(".wine-filter-btn[data-filter]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-                activeCategoryFilter = btn.dataset.filter || "all";
-                document.querySelectorAll(".wine-filter-btn[data-filter]").forEach((b) =>
-                    b.classList.toggle("is-active", b === btn)
-                );
-                applyFilter();
-            });
+        priceMinInput?.addEventListener("input", () => {
+            const nextValue = Number(priceMinInput.value);
+            priceBounds.selectedMin = Math.min(nextValue, priceBounds.selectedMax);
+            syncPriceInputs();
+            applyFilter();
         });
-
-        const searchToggle = document.getElementById("wineSearchToggle");
-        const searchPanel = document.getElementById("wineSearchPanel");
-        const searchWrap = document.getElementById("wineSearchWrap");
+        priceMaxInput?.addEventListener("input", () => {
+            const nextValue = Number(priceMaxInput.value);
+            priceBounds.selectedMax = Math.max(nextValue, priceBounds.selectedMin);
+            syncPriceInputs();
+            applyFilter();
+        });
 
         if (searchToggle && searchPanel) {
             searchToggle.addEventListener("click", () => {

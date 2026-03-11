@@ -164,19 +164,34 @@ $ver_vina_admin_js  = asset_ver_vina(__DIR__ . '/vina_admin.js');
             <section class="wine-search wine-search--panel" id="wineSearchPanel" hidden>
                 <div class="wine-search__label typo-eyebrow">Vyhledat víno</div>
                 <div class="wine-search__controls">
-                    <input id="wineSearch" class="wine-search__input" type="search" placeholder="Název, odrůda, region..." autocomplete="off">
+                    <input id="wineSearch" class="wine-search__input" type="search" placeholder="Název vína..." autocomplete="off">
                     <button id="wineSearchClear" class="wine-search__clear" type="button">Vymazat</button>
                 </div>
-                <p id="wineSearchStatus" class="wine-search__status"></p>
-                <div class="wine-filters" aria-label="Kategorie vín">
-                    <div class="wine-filters__label typo-meta">Kategorie:</div>
-                    <div class="wine-filters__buttons" role="group" aria-label="Filtr kategorií">
-                        <button type="button" class="wine-filter-btn is-active" data-filter="all">Všechna</button>
-                        <button type="button" class="wine-filter-btn" data-filter="white">Bílá</button>
-                        <button type="button" class="wine-filter-btn" data-filter="rose">Růžová</button>
-                        <button type="button" class="wine-filter-btn" data-filter="red">Červená</button>
+
+                <div class="wine-filter-groups">
+                    <div class="wine-filter-group" aria-label="Filtr certifikace">
+                        <div class="wine-filters__label typo-meta">Certifikace:</div>
+                        <div class="wine-checkbox-grid" id="wineCertificationFilters"></div>
+                    </div>
+
+                    <div class="wine-filter-group" aria-label="Filtr stylu">
+                        <div class="wine-filters__label typo-meta">Styl:</div>
+                        <div class="wine-checkbox-grid" id="wineStyleFilters"></div>
                     </div>
                 </div>
+
+                <div class="wine-price-filter" aria-label="Cenové rozmezí">
+                    <div class="wine-filters__label typo-meta">Cena:</div>
+                    <div class="wine-range" id="winePriceRange">
+                        <div class="wine-range__track"></div>
+                        <div class="wine-range__fill" id="winePriceRangeFill"></div>
+                        <input id="winePriceMin" class="wine-range__input wine-range__input--min" type="range" min="0" max="0" step="1" value="0" aria-label="Minimální cena">
+                        <input id="winePriceMax" class="wine-range__input wine-range__input--max" type="range" min="0" max="0" step="1" value="0" aria-label="Maximální cena">
+                    </div>
+                    <p id="winePriceStatus" class="wine-search__status"></p>
+                </div>
+
+                <p id="wineSearchStatus" class="wine-search__status"></p>
             </section>
         </div>
 

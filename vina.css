@@ -1050,3 +1050,135 @@ body.modal-open{
 #wineSearchPanel[hidden]{
     display: none !important;
 }
+
+.wine-filter-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.wine-filter-group {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.wine-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.55rem 0.75rem;
+}
+
+.wine-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #2a211d;
+}
+
+.wine-checkbox input {
+    accent-color: #7a0f1d;
+}
+
+.wine-price-filter {
+    display: grid;
+    gap: 0.7rem;
+    margin-top: 1rem;
+}
+
+.wine-price-filter__inputs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.wine-price-filter__field {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    color: #2a211d;
+}
+
+.wine-price-filter__field input[type="range"] {
+    width: 100%;
+    accent-color: #7a0f1d;
+}
+
+.wine-range {
+    position: relative;
+    height: 2.4rem;
+    display: flex;
+    align-items: center;
+}
+
+.wine-range__track,
+.wine-range__fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 6px;
+    border-radius: 999px;
+    pointer-events: none;
+}
+
+.wine-range__track {
+    background: rgba(17, 17, 17, 0.12);
+}
+
+.wine-range__fill {
+    background: #7a0f1d;
+}
+
+.wine-range__input {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    background: transparent;
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.wine-range__input::-webkit-slider-runnable-track {
+    height: 6px;
+    background: transparent;
+}
+
+.wine-range__input::-moz-range-track {
+    height: 6px;
+    background: transparent;
+}
+
+.wine-range__input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #7a0f1d;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
+    pointer-events: auto;
+    cursor: pointer;
+    margin-top: -6px;
+}
+
+.wine-range__input::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #7a0f1d;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+@media (max-width: 720px) {
+    .wine-filter-groups,
+    .wine-price-filter__inputs {
+        grid-template-columns: 1fr;
+    }
+}
