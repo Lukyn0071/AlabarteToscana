@@ -16,8 +16,7 @@ $options = [
 try {
     /** @var PDO $pdo */
     $pdo = new PDO($dsn, $user, $pass, $options);
-    // echo "Připojeno k databázi!";
 } catch (PDOException $e) {
-    die("Chyba připojení: " . $e->getMessage());
+    throw new RuntimeException('Chyba připojení k databázi: ' . $e->getMessage(), 0, $e);
 }
 ?>
