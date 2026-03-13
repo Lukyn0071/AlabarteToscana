@@ -8,19 +8,27 @@ body {
     margin: 0;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: #fff;
-    overflow-x: hidden; /* ✅ pojistka proti ujetí do strany na mobilech */
+    overflow-x: hidden;
 }
 
-/* --- Homepage tokens (ladění podle reference) --- */
-:root{
-    --gold: rgba(191,155,48,0.85);
+/* --- Homepage tokens --- */
+:root {
+    --gold: rgba(191, 155, 48, 0.85);
     --bordeaux-1: #2a0f11;
     --bordeaux-2: #4b141b;
     --paper: #fbfaf8;
     --brand-red: #7a0f1d;
 }
 
-/* ===== HERO – TEXT (slidy vpravo) ===== */
+/* ===== HERO – TEXT ===== */
+.text-bg {
+    padding: 0;
+    max-width: 46ch;
+    margin: 0 auto;
+    text-align: center;
+    color: #111;
+}
+
 .text-bg h2 {
     font-family: "Faculty Glyphic", serif;
     font-weight: 600;
@@ -29,7 +37,6 @@ body {
     margin-bottom: 0.6rem;
 }
 
-/* čárka pod nadpisem */
 .text-bg h2::after {
     content: "";
     display: block;
@@ -48,71 +55,51 @@ body {
     text-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
 }
 
-.text-bg {
-    /* ✅ už neobří padding – o layout se stará .text-frame */
-    padding: 0;
-    max-width: 46ch;
-    margin: 0 auto;
-    text-align: center;
-    color: #111;
-}
-
-/* ===== HERO (fullscreen + čára vždy dole, BEZ scrollu uvnitř) ===== */
+/* ===== HERO ===== */
 .hero {
     position: relative;
 }
 
-/* ✅ pouze tato část má pozadí */
 .hero-bg {
     position: relative;
     overflow: hidden;
-
     height: 100svh;
     height: 100vh;
     width: 100%;
 
-    /* výchozí fotka – JS ji může přepsat přes CSS proměnné */
-    /* stylelint/css analyzér v IDE někdy hlásí false-positive na CSS proměnné definované až v JS */
     --hero-photo: url("Images/diskphoto/DJI_0973.jpg");
+    --blend: 0;
+
     background-image: var(--hero-photo);
     background-size: cover;
     background-position: center;
-
-    --blend: 0;
 }
 
-/* teplý + červený film jako na referenci */
-.hero-bg::before{
+.hero-bg::before {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
     background:
-        radial-gradient(1200px 700px at 72% 10%, rgba(255, 208, 148, 0.22), rgba(255, 208, 148, 0) 60%),
-        radial-gradient(1000px 700px at 20% 65%, rgba(122, 15, 29, 0.30), rgba(122, 15, 29, 0) 62%),
-        linear-gradient(180deg, rgba(22, 6, 9, 0.10) 0%, rgba(22, 6, 9, 0.32) 78%, rgba(22, 6, 9, 0.45) 100%);
+            radial-gradient(1200px 700px at 72% 10%, rgba(255, 208, 148, 0.22), rgba(255, 208, 148, 0) 60%),
+            radial-gradient(1000px 700px at 20% 65%, rgba(122, 15, 29, 0.30), rgba(122, 15, 29, 0) 62%),
+            linear-gradient(180deg, rgba(22, 6, 9, 0.10) 0%, rgba(22, 6, 9, 0.32) 78%, rgba(22, 6, 9, 0.45) 100%);
     mix-blend-mode: multiply;
     opacity: 0.98;
 }
 
-/* overlay obsah musí být nad pseudo-elementem + flex layout */
 .hero-overlay {
     position: relative;
     z-index: 1;
-
     height: 100%;
     width: 100%;
-
     background: rgba(0, 0, 0, 0);
-
     display: flex;
     flex-direction: column;
     align-items: center;
-
     padding: 1rem 1.5rem;
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     box-sizing: border-box;
-
     overflow: hidden;
 }
 
@@ -120,18 +107,14 @@ body {
 .hero-header {
     margin: clamp(1rem, 4vh, 2.8rem) 0 clamp(0.6rem, 2.2vh, 1.8rem);
     text-align: center;
-    color: rgba(255,255,255,0.92);
+    color: rgba(255, 255, 255, 0.92);
     transform: translateY(-6px);
-
-    position: relative; /* pro absolutně pozicovaná hero vína */
+    position: relative;
 }
 
 .hero-logo {
     margin-bottom: clamp(5rem, 10vh, 10rem);
-
-    /* sdílená velikost obou log */
     --hero-logo-h: clamp(78px, 11vh, 132px);
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -142,17 +125,12 @@ body {
 .hero-logo img {
     width: auto;
     height: calc(var(--hero-logo-h) * 2);
-
     opacity: 0.995;
-
-    filter:
-            brightness(0) invert(1)
-            drop-shadow(0 12px 26px rgba(0,0,0,0.30));
-
+    filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.30));
     transition: opacity 0.25s ease, transform 0.25s ease, filter 0.25s ease;
 }
 
-.hero-logo::after{
+.hero-logo::after {
     content: "";
     position: absolute;
     inset: -6px -10px;
@@ -162,13 +140,12 @@ body {
     opacity: 0.55;
 }
 
-/* sjednocený hover pro obě loga (jemné zvětšení) */
 .hero-logo a:hover img,
-.hero-fattoria-inline:hover img{
+.hero-fattoria-inline:hover img {
     transform: scale(1.03);
 }
 
-.hero-fattoria-inline{
+.hero-fattoria-inline {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -176,51 +153,51 @@ body {
     border-radius: 10px;
 }
 
-.hero-fattoria-inline img{
+.hero-fattoria-inline img {
     height: var(--hero-logo-h);
     width: auto;
     display: block;
     opacity: 0.995;
-
     filter:
             brightness(0) invert(1)
-            drop-shadow(0 12px 26px rgba(0,0,0,0.25));
-
+            drop-shadow(0 12px 26px rgba(0, 0, 0, 0.25));
     transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
 }
 
-.hero-fattoria-inline:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
+.hero-fattoria-inline:focus-visible {
+    outline: 3px solid rgba(191, 155, 48, 0.55);
     outline-offset: 4px;
 }
 
-@media (max-width: 560px){
-    .hero-logo{ gap: 1.1rem; }
+@media (max-width: 560px) {
+    .hero-logo {
+        gap: 1.1rem;
+    }
 }
 
-.hero-headline{
+.hero-headline {
     font-family: "Faculty Glyphic", serif;
     font-weight: 600;
     letter-spacing: 0.02em;
     font-size: clamp(2.1rem, 4.2vw, 3.25rem);
     line-height: 1.05;
     margin: 0 0 0.8rem;
-    text-shadow: 0 18px 45px rgba(0,0,0,0.35);
+    text-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
 }
 
-.hero-subtitle{
+.hero-subtitle {
     max-width: 62ch;
     margin: 0 auto;
     font-size: clamp(0.95rem, 1.25vw, 1.05rem);
     line-height: 1.6;
-    color: rgba(255,255,255,0.86);
-    text-shadow: 0 16px 34px rgba(0,0,0,0.35);
+    color: rgba(255, 255, 255, 0.86);
+    text-shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
 }
 
-.hero-cta{
-    display:flex;
+.hero-cta {
+    display: flex;
     gap: 0.9rem;
-    justify-content:center;
+    justify-content: center;
     margin-top: 1.25rem;
 }
 
@@ -235,7 +212,6 @@ body {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-size: 0.82rem;
-
     transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
     user-select: none;
     white-space: nowrap;
@@ -256,9 +232,17 @@ body {
     backdrop-filter: blur(10px);
 }
 
-.cta-btn:hover { transform: translateY(-1px); }
-.cta-btn--primary:hover { background: rgba(142, 18, 34, 0.92); }
-.cta-btn--ghost:hover { background: rgba(255, 255, 255, 0.92); }
+.cta-btn:hover {
+    transform: translateY(-1px);
+}
+
+.cta-btn--primary:hover {
+    background: rgba(142, 18, 34, 0.92);
+}
+
+.cta-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.92);
+}
 
 /* ===== HERO NAV ===== */
 .hero-top {
@@ -271,26 +255,160 @@ body {
     position: relative;
 }
 
+/* =========================================================
+   MOBILE NAV (hamburger)
+   ========================================================= */
+.mobile-nav-toggle{
+    display: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    cursor: pointer;
+    z-index: 1200;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-toggle:hover{
+    background: rgba(0,0,0,0.65);
+}
+
+.mobile-nav-toggle:focus-visible{
+    outline: 3px solid rgba(191, 155, 48, 0.55);
+    outline-offset: 3px;
+}
+
+.mobile-nav-toggle__icon{
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 2px;
+    margin: 0 auto;
+    background: currentColor;
+    border-radius: 2px;
+}
+
+.mobile-nav-toggle__icon::before,
+.mobile-nav-toggle__icon::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+}
+
+.mobile-nav-toggle__icon::before{ top: -6px; }
+.mobile-nav-toggle__icon::after{ top: 6px; }
+
+.mobile-nav{
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 2000;
+}
+
+.mobile-nav.is-open{
+    display: block;
+}
+
+.mobile-nav__backdrop{
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(6px);
+}
+
+.mobile-nav__panel{
+    position: absolute;
+    right: 12px;
+    top: calc(12px + env(safe-area-inset-top));
+    width: min(360px, calc(100vw - 24px));
+    border-radius: 16px;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 22px 70px rgba(0,0,0,0.35);
+    padding: 0.75rem;
+}
+
+/* navigace uvnitř panelu = sloupec */
+.mobile-nav .hero-nav{
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    backdrop-filter: none;
+    border: 0;
+}
+
+.mobile-nav .hero-nav a{
+    padding: 0.85rem 0.9rem;
+    border-radius: 12px;
+    letter-spacing: 0.16em;
+}
+
+.mobile-nav .hero-nav a:hover{
+    background: rgba(255,255,255,0.10);
+}
+
+body.mobile-nav-open{
+    overflow: hidden;
+}
+
+@media (min-width: 761px){
+    /* desktop: hamburger/panel pryč => zůstává původní nav */
+    .mobile-nav-toggle{ display: none !important; }
+    .mobile-nav{ display: none !important; }
+
+    /* explicitně vrať původní nav (kdyby ji něco přepsalo) */
+    .hero-top > .hero-nav{ display: flex !important; }
+}
+
+@media (max-width: 760px){
+    /* mobile: ukázat hamburger */
+    .hero-top{ gap: 0.75rem; }
+
+    .mobile-nav-toggle{
+        display: inline-grid;
+        place-items: center;
+    }
+
+    /* aby se původní hero-nav nezobrazovala mimo panel */
+    .hero-top > .hero-nav{
+        display: none;
+    }
+}
+
+/* ===== HERO NAV ===== */
 .hero-nav {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-
     display: flex;
     gap: 2.2rem;
     align-items: center;
-
-    background: rgba(0,0,0,0.35);
+    background: rgba(0, 0, 0, 0.35);
     padding: 0.45rem 0.95rem;
     border-radius: 999px;
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     z-index: 1000;
 }
 
 .hero-nav a {
-    color: rgba(255,255,255,0.92);
+    color: rgba(255, 255, 255, 0.92);
     text-decoration: none;
     font-size: 0.86rem;
     letter-spacing: 0.22em;
@@ -299,15 +417,21 @@ body {
     transition: opacity 0.2s ease;
 }
 
-.hero-nav a:hover { opacity: 1; }
+.hero-nav a:hover {
+    opacity: 1;
+}
 
-/* jazykový přepínač (nový styl pro aktivní stav) */
-.lang-switcher { display: flex; gap: 0.5rem; z-index: 1100; }
+/* jazykový přepínač */
+.lang-switcher {
+    display: flex;
+    gap: 0.5rem;
+    z-index: 1100;
+}
 
 .lang-btn {
-    background: rgba(0,0,0,0.60);
+    background: rgba(0, 0, 0, 0.60);
     color: #fff;
-    border: 1px solid rgba(255,255,255,0.16);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     padding: 0.35rem 0.75rem;
     cursor: pointer;
     border-radius: 8px;
@@ -317,67 +441,66 @@ body {
     text-decoration: none;
 }
 
-.lang-btn:hover{ transform: translateY(-1px); }
+.lang-btn:hover {
+    transform: translateY(-1px);
+}
 
 .lang-btn.active {
-    background: rgba(255,255,255,0.92);
+    background: rgba(255, 255, 255, 0.92);
     color: #111;
 }
 
-/* ================== HERO: Fattoria logo (absolute, safe) ================== */
-.hero-fattoria-logo{
+/* ===== HERO FATTORIA LOGO ===== */
+.hero-fattoria-logo {
     position: absolute;
     left: 11.2rem;
     top: 50%;
     transform: translateY(-50%);
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-
     padding: 0.1rem 0.2rem;
     border-radius: 10px;
     background: transparent;
-
     z-index: 1100;
 }
 
-.hero-fattoria-logo img{
+.hero-fattoria-logo img {
     filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.04) contrast(1.10)
-        drop-shadow(0 16px 34px rgba(0,0,0,0.26)) !important;
+            brightness(0) saturate(100%)
+            invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
+            brightness(1.04) contrast(1.10)
+            drop-shadow(0 16px 34px rgba(0, 0, 0, 0.26)) !important;
 }
 
-.hero-fattoria-logo:hover img{
+.hero-fattoria-logo:hover img {
     transform: scale(1.12) !important;
     opacity: 1 !important;
     filter:
-        brightness(0) saturate(100%)
-        invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
-        brightness(1.06) contrast(1.14)
-        drop-shadow(0 22px 46px rgba(0,0,0,0.32)) !important;
+            brightness(0) saturate(100%)
+            invert(11%) sepia(91%) saturate(6500%) hue-rotate(345deg)
+            brightness(1.06) contrast(1.14)
+            drop-shadow(0 22px 46px rgba(0, 0, 0, 0.32)) !important;
 }
 
-.hero-fattoria-logo:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
+.hero-fattoria-logo:focus-visible {
+    outline: 3px solid rgba(191, 155, 48, 0.55);
     outline-offset: 3px;
 }
 
-@media (max-width: 760px){
-    .hero-fattoria-logo{
+@media (max-width: 760px) {
+    .hero-fattoria-logo {
         position: static;
         transform: none;
         left: auto;
         top: auto;
     }
-    .hero-fattoria-logo img{ height: 40px; }
-}
 
-/* mobile: navigace do flow */
-@media (max-width: 760px) {
+    .hero-fattoria-logo img {
+        height: 40px;
+    }
+
     .hero-nav {
         position: static;
         transform: none;
@@ -386,13 +509,13 @@ body {
         margin-top: 0.6rem;
         width: 100%;
         justify-content: flex-start;
+        overflow-x: auto;
+        max-width: 100%;
     }
 }
 
-/* partner logo vlevo nahoře */
-/* (odstraněno) .hero-partner-logo – logo je teď pod hero sekcí */
-
-.fattoria-below-hero{
+/* ===== FATTORIA BELOW HERO ===== */
+.fattoria-below-hero {
     display: flex;
     justify-content: center;
     padding: 0.9rem 1.5rem 0.2rem;
@@ -400,26 +523,24 @@ body {
     background: transparent;
 }
 
-.fattoria-below-hero img{
+.fattoria-below-hero img {
     height: 46px;
     width: auto;
     display: block;
     opacity: 0.98;
-
     filter:
-        drop-shadow(0 14px 28px rgba(0,0,0,0.28))
-        drop-shadow(0 0 1px rgba(255,255,255,0.25));
-
+            drop-shadow(0 14px 28px rgba(0, 0, 0, 0.28))
+            drop-shadow(0 0 1px rgba(255, 255, 255, 0.25));
     transition: opacity 0.16s ease, transform 0.16s ease;
 }
 
-.fattoria-below-hero:hover img{
+.fattoria-below-hero:hover img {
     opacity: 1;
     transform: translateY(-1px);
 }
 
-.fattoria-below-hero:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
+.fattoria-below-hero:focus-visible {
+    outline: 3px solid rgba(191, 155, 48, 0.55);
     outline-offset: 3px;
 }
 
@@ -428,41 +549,37 @@ body {
     width: 100%;
     padding: 3.5rem 0 4.5rem;
     box-sizing: border-box;
-
     background-color: var(--paper);
     background-image:
             radial-gradient(1200px 700px at 12% 0%, rgba(111, 28, 45, 0.11) 0%, rgba(111, 28, 45, 0.00) 62%),
             radial-gradient(900px 560px at 88% 10%, rgba(191, 155, 48, 0.10) 0%, rgba(191, 155, 48, 0.00) 58%),
-            linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(251,250,248,1) 45%, rgba(246,244,240,1) 100%),
-            repeating-linear-gradient(0deg, rgba(0,0,0,0.012) 0 1px, rgba(0,0,0,0.0) 1px 6px);
+            linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(251, 250, 248, 1) 45%, rgba(246, 244, 240, 1) 100%),
+            repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.012) 0 1px, rgba(0, 0, 0, 0) 1px 6px);
     background-repeat: no-repeat, no-repeat, no-repeat, repeat;
     background-position: center, center, center, 0 0;
     background-size: auto, auto, auto, 100% 100%;
-
     position: relative;
     overflow: hidden;
 }
 
-/* burgundský blok jako na referenci */
-.page-content--bordeaux{
-    /* ✅ místo červené použij RedM.jpg */
+.page-content--bordeaux {
     background-color: #120608;
     background-image:
-        linear-gradient(180deg, rgba(10,4,5,0.55) 0%, rgba(10,4,5,0.72) 100%),
-        url("Images/RedM.jpg");
+            linear-gradient(180deg, rgba(10, 4, 5, 0.55) 0%, rgba(10, 4, 5, 0.72) 100%),
+            url("Images/RedM.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 }
 
-/* ===== HOME: partner sekce (karta jako v referenci) ===== */
-.home-partner{
+/* ===== HOME PARTNER ===== */
+.home-partner {
     width: min(1100px, 92%);
     margin: 0 auto 2.4rem;
-    color: rgba(255,255,255,0.92);
+    color: rgba(255, 255, 255, 0.92);
 }
 
-.home-partner__title{
+.home-partner__title {
     font-family: "Faculty Glyphic", serif;
     font-weight: 600;
     text-align: center;
@@ -471,43 +588,40 @@ body {
     letter-spacing: 0.02em;
 }
 
-.partner-card{
+.partner-card {
     display: grid;
     grid-template-columns: minmax(320px, 1.15fr) minmax(0, 1fr);
     align-items: stretch;
     gap: 1.75rem;
     padding: 1.4rem;
-
-    background:
-        linear-gradient(180deg, rgba(251,250,248,0.95), rgba(246,244,240,0.92));
+    background: linear-gradient(180deg, rgba(251, 250, 248, 0.95), rgba(246, 244, 240, 0.92));
     color: #2a1717;
-
     border-radius: 18px;
-    border: 1px solid rgba(191,155,48,0.55);
-    box-shadow: 0 22px 50px rgba(0,0,0,0.35);
+    border: 1px solid rgba(191, 155, 48, 0.55);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.35);
     position: relative;
 }
 
-.partner-card__media{
+.partner-card__media {
     min-height: clamp(320px, 34vw, 460px);
 }
 
-.partner-card__media img{
+.partner-card__media img {
     width: 100%;
     height: 100%;
     min-height: clamp(320px, 34vw, 460px);
     object-fit: cover;
     border-radius: 14px;
-    box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
 }
 
-.partner-card__body{
+.partner-card__body {
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-.partner-card__headline{
+.partner-card__headline {
     font-family: "Faculty Glyphic", serif;
     margin: 0 0 0.8rem;
     font-weight: 650;
@@ -516,84 +630,84 @@ body {
     color: #6f1c2d;
 }
 
-.partner-card__text{
+.partner-card__text {
     margin: 0 0 0.85rem;
     line-height: 1.65;
     font-size: 0.98rem;
-    color: rgba(42,23,23,0.9);
+    color: rgba(42, 23, 23, 0.9);
 }
 
-.partner-card__signature{
+.partner-card__signature {
     margin: 0.4rem 0 0;
     font-family: "Faculty Glyphic", serif;
     opacity: 0.7;
     font-style: italic;
 }
 
-.partner-card--link{
+.partner-card--link {
     text-decoration: none;
     color: inherit;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.partner-card--link:hover{
+.partner-card--link:hover {
     transform: translateY(-1px);
-    box-shadow: 0 26px 60px rgba(0,0,0,0.42);
+    box-shadow: 0 26px 60px rgba(0, 0, 0, 0.42);
 }
 
-.partner-card--link:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.65);
+.partner-card--link:focus-visible {
+    outline: 3px solid rgba(191, 155, 48, 0.65);
     outline-offset: 4px;
 }
 
-@media (max-width: 860px){
-    .partner-card{
+@media (max-width: 860px) {
+    .partner-card {
         grid-template-columns: 1fr;
         gap: 1.15rem;
     }
 
-    .partner-card__media{
+    .partner-card__media {
         min-height: clamp(220px, 52vw, 320px);
     }
 
-    .partner-card__media img{
+    .partner-card__media img {
         min-height: clamp(220px, 52vw, 320px);
     }
 }
 
-/* ================== WINE CAROUSEL (manuální, bez auto-rotace) ================== */
-.wine-carousel{
+/* ===== WINE CAROUSEL ===== */
+.wine-carousel {
     width: min(1100px, 92%);
     margin: 0 auto clamp(2.2rem, 5vw, 3rem);
 }
 
-.wine-carousel__inner{
+.wine-carousel__inner {
     border-radius: 18px;
-    border: 1px solid rgba(191,155,48,0.45);
-
-    /* ✅ pozadí jako fotka (RedM.jpg), ne červená */
+    border: 1px solid rgba(191, 155, 48, 0.45);
     background-image: url("Images/RedM.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-
-    box-shadow: 0 18px 44px rgba(0,0,0,0.30);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.30);
     padding: clamp(0.9rem, 2.2vw, 1.25rem);
     position: relative;
     overflow: hidden;
 }
 
-.wine-carousel__inner::before{
+.wine-carousel__inner::before {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    /* ztmavení pro čitelnost */
-    background: linear-gradient(180deg, rgba(10,4,5,0.45) 0%, rgba(10,4,5,0.68) 100%);
+    background: linear-gradient(180deg, rgba(10, 4, 5, 0.45) 0%, rgba(10, 4, 5, 0.68) 100%);
 }
 
-.wine-carousel__inner > *{ position: relative; z-index: 1; }
+.wine-carousel__inner > * {
+    position: relative;
+    z-index: 1;
+}
 
-.wine-carousel__head{
+.wine-carousel__head {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -601,190 +715,186 @@ body {
     margin-bottom: 0.75rem;
 }
 
-.wine-carousel__title{
+.wine-carousel__title {
     margin: 0;
     font-family: "Faculty Glyphic", serif;
     font-weight: 600;
     letter-spacing: 0.02em;
     font-size: clamp(1.2rem, 2.1vw, 1.6rem);
-    color: rgba(255,255,255,0.92);
+    color: rgba(255, 255, 255, 0.92);
 }
 
-.wine-carousel__controls{
+.wine-carousel__controls {
     display: flex;
     gap: 0.5rem;
 }
 
-.wine-carousel__btn{
+.wine-carousel__btn {
     width: 42px;
     height: 42px;
     border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.18);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     background: rgba(20, 8, 9, 0.55);
-    color: rgba(255,255,255,0.92);
+    color: rgba(255, 255, 255, 0.92);
     cursor: pointer;
     font-size: 1.35rem;
     line-height: 1;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     transition: transform 0.15s ease, background 0.15s ease;
 }
 
-.wine-carousel__btn:hover{ transform: translateY(-1px); background: rgba(20, 8, 9, 0.72); }
-.wine-carousel__btn:active{ transform: translateY(0); }
-.wine-carousel__btn:focus-visible{ outline: 3px solid rgba(191,155,48,0.55); outline-offset: 3px; }
+.wine-carousel__btn:hover {
+    transform: translateY(-1px);
+    background: rgba(20, 8, 9, 0.72);
+}
 
-/* viewport: ruční scroll + snap do středu */
-.wine-carousel__viewport{
+.wine-carousel__btn:active {
+    transform: translateY(0);
+}
+
+.wine-carousel__btn:focus-visible {
+    outline: 3px solid rgba(191, 155, 48, 0.55);
+    outline-offset: 3px;
+}
+
+.wine-carousel__viewport {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
-
     border-radius: 16px;
-
-    /* prostor po stranách, aby šlo dosnapovat na střední */
     padding: 0.25rem 18% 0.4rem;
 }
 
-.hero-logo{
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    /* rozumný gap – uživatelsky dobře laditelný */
-    gap: clamp(3rem, 6vw, 7rem);
-    position: relative;
-}
-
-/* coverflow track */
-.wine-carousel__track{
+.wine-carousel__track {
     display: flex;
     gap: 1rem;
     align-items: flex-end;
-
-    /* dovolí, aby prvky nebyly stlačené */
     width: max-content;
 }
 
-.wine-carousel__item{
+.wine-carousel__item {
     flex: 0 0 auto;
     scroll-snap-align: center;
-
     width: clamp(190px, 22vw, 240px);
     height: 230px;
-
     display: grid;
     place-items: center;
-
     border-radius: 16px;
-    background: linear-gradient(180deg, rgba(251,250,248,0.10), rgba(251,250,248,0.04));
-    border: 1px solid rgba(255,255,255,0.14);
-
+    background: linear-gradient(180deg, rgba(251, 250, 248, 0.10), rgba(251, 250, 248, 0.04));
+    border: 1px solid rgba(255, 255, 255, 0.14);
     text-decoration: none;
-
-    /* default (krajní) stav je menší */
     transform: scale(0.88);
     opacity: 0.78;
     filter: saturate(0.95);
-
     transition: transform 180ms ease, opacity 180ms ease, filter 180ms ease;
 }
 
-/* zvýraznění při hover */
-.wine-carousel__item:hover{ opacity: 0.92; }
+.wine-carousel__item:hover {
+    opacity: 0.92;
+}
 
-.wine-carousel__item img{
+.wine-carousel__item img {
     max-height: 205px;
     width: auto;
     display: block;
-    filter: drop-shadow(0 18px 40px rgba(0,0,0,0.38));
+    filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.38));
     transform: translateY(2px);
     transition: transform 180ms ease;
 }
 
-.wine-carousel__item:hover img{ transform: translateY(0); }
+.wine-carousel__item:hover img {
+    transform: translateY(0);
+}
 
-/* "active" stav: nejblíž středu viewportu (fallback bez JS: focus/hover) */
 .wine-carousel__item:focus-visible,
 .wine-carousel__item:focus,
-.wine-carousel__item.is-active{
+.wine-carousel__item.is-active {
     transform: scale(1);
     opacity: 1;
     filter: saturate(1.05);
 }
 
-@media (max-width: 560px){
-    .wine-carousel__controls{ display:none; } /* swipe je na mobilu přirozenější */
-    .wine-carousel__viewport{ padding-left: 12%; padding-right: 12%; }
-    .wine-carousel__item{ width: 76vw; height: 215px; }
-    .wine-carousel__item img{ max-height: 190px; }
+@media (max-width: 560px) {
+    .wine-carousel__controls {
+        display: none;
+    }
+
+    .wine-carousel__viewport {
+        padding-left: 12%;
+        padding-right: 12%;
+    }
+
+    .wine-carousel__item {
+        width: 76vw;
+        height: 215px;
+    }
+
+    .wine-carousel__item img {
+        max-height: 190px;
+    }
 }
 
-/* ================== HOME TEXTS (spodní texty jako v refMain.png) ================== */
-.home-texts-endcap{
+/* ===== HOME TEXTS ENDCAP ===== */
+.home-texts-endcap {
     width: min(1200px, 92%);
     margin: clamp(2.6rem, 6vw, 3.6rem) auto 0;
-
-    /* tmavý „bordeaux“ panel */
     background:
-        radial-gradient(900px 560px at 18% 12%, rgba(191,155,48,0.12) 0%, rgba(191,155,48,0) 60%),
-        radial-gradient(900px 560px at 86% 30%, rgba(111,28,45,0.28) 0%, rgba(111,28,45,0) 62%),
-        linear-gradient(180deg, rgba(75,20,27,0.85) 0%, rgba(42,15,17,0.92) 55%, rgba(27,10,12,0.96) 100%);
-
+            radial-gradient(900px 560px at 18% 12%, rgba(191, 155, 48, 0.12) 0%, rgba(191, 155, 48, 0) 60%),
+            radial-gradient(900px 560px at 86% 30%, rgba(111, 28, 45, 0.28) 0%, rgba(111, 28, 45, 0) 62%),
+            linear-gradient(180deg, rgba(75, 20, 27, 0.85) 0%, rgba(42, 15, 17, 0.92) 55%, rgba(27, 10, 12, 0.96) 100%);
     border-radius: 22px;
-    border: 1px solid rgba(191,155,48,0.40);
-    box-shadow: 0 28px 80px rgba(0,0,0,0.35);
-
+    border: 1px solid rgba(191, 155, 48, 0.40);
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
     padding: clamp(1.2rem, 3vw, 1.6rem);
     position: relative;
     overflow: hidden;
 }
 
-/* zlatá „hairline“ linka nahoře/dole jako na referenci */
 .home-texts-endcap::before,
-.home-texts-endcap::after{
-    content:"";
-    position:absolute;
+.home-texts-endcap::after {
+    content: "";
+    position: absolute;
     left: 10%;
     right: 10%;
     height: 1px;
-    background: linear-gradient(to right, transparent, rgba(191,155,48,0.55), transparent);
+    background: linear-gradient(to right, transparent, rgba(191, 155, 48, 0.55), transparent);
     opacity: 0.9;
-    pointer-events:none;
+    pointer-events: none;
 }
 
-.home-texts-endcap::before{ top: 10px; }
-.home-texts-endcap::after{ bottom: 10px; }
+.home-texts-endcap::before {
+    top: 10px;
+}
 
-/* vnitřní „papírová“ karta přes celou šířku */
-.home-texts-endcap .info-wrapper{
+.home-texts-endcap::after {
+    bottom: 10px;
+}
+
+.home-texts-endcap .info-wrapper {
     margin: 0 auto;
-    background: linear-gradient(180deg, rgba(251,250,248,0.96), rgba(246,244,240,0.93));
+    background: linear-gradient(180deg, rgba(251, 250, 248, 0.96), rgba(246, 244, 240, 0.93));
     border-radius: 18px;
-    border: 1px solid rgba(191,155,48,0.55);
-    box-shadow: 0 22px 50px rgba(0,0,0,0.30);
-
+    border: 1px solid rgba(191, 155, 48, 0.55);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.30);
     padding: clamp(1.4rem, 3vw, 2.2rem);
 }
 
-/* sekce uvnitř wrapperu */
 .home-texts-endcap .info-section,
-.home-texts-endcap .winery-section{
+.home-texts-endcap .winery-section {
     margin: 0 0 clamp(1.6rem, 3vw, 2.4rem);
 }
 
 .home-texts-endcap .info-section:last-child,
-.home-texts-endcap .winery-section:last-child{
+.home-texts-endcap .winery-section:last-child {
     margin-bottom: 0;
 }
 
-/* layout a rozměry médií */
 .home-texts-endcap .info-inner,
-.home-texts-endcap .winery-inner{
+.home-texts-endcap .winery-inner {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: clamp(1.2rem, 3vw, 2.4rem);
@@ -792,223 +902,290 @@ body {
 }
 
 .home-texts-endcap .info-media img,
-.home-texts-endcap .winery-media img{
+.home-texts-endcap .winery-media img {
     width: 100%;
     max-width: 420px;
     border-radius: 16px;
-    box-shadow: 0 20px 55px rgba(0,0,0,0.30);
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.30);
     object-fit: cover;
 }
 
-/* typografie v těchto kartách */
 .home-texts-endcap .info-text,
-.home-texts-endcap .winery-text{
+.home-texts-endcap .winery-text {
     color: #2a1717;
 }
 
 .home-texts-endcap .info-eyebrow,
-.home-texts-endcap .winery-eyebrow{
-    color: rgba(42,23,23,0.60);
+.home-texts-endcap .winery-eyebrow {
+    color: rgba(42, 23, 23, 0.60);
     font-weight: 800;
 }
 
 .home-texts-endcap .info-title,
-.home-texts-endcap .winery-title{
+.home-texts-endcap .winery-title {
     color: #6f1c2d;
 }
 
 .home-texts-endcap .info-par,
-.home-texts-endcap .winery-par{
-    color: rgba(42,23,23,0.92);
+.home-texts-endcap .winery-par {
+    color: rgba(42, 23, 23, 0.92);
 }
 
-@media (max-width: 920px){
-    .home-texts-endcap{ padding: 1rem; }
+@media (max-width: 920px) {
+    .home-texts-endcap {
+        padding: 1rem;
+    }
+
     .home-texts-endcap .info-inner,
-    .home-texts-endcap .winery-inner{
+    .home-texts-endcap .winery-inner {
         grid-template-columns: 1fr;
     }
+
     .home-texts-endcap .info-media img,
-    .home-texts-endcap .winery-media img{
+    .home-texts-endcap .winery-media img {
         max-width: 100%;
     }
 }
 
-/* ================== HERO WINES (Top 3 showcase) ================== */
-.hero-wines{
+/* ===== HERO WINES ===== */
+.hero-wines {
     position: absolute;
     top: clamp(0.15rem, 0.7vh, 0.5rem);
-
-    /* víc doprava: lehce přes okraj hero headeru (bez extrémních hodnot) */
     right: clamp(-20.6rem, -20.2vw, -1.6rem);
-
     margin: 0;
     width: 250px;
     pointer-events: auto;
 }
 
-.hero-wines__showcase{
+.hero-wines__showcase {
     position: relative;
     height: 170px;
-
     display: grid;
     place-items: center;
-
-    /* ✅ žádná viditelná "bublina" – jen průhledná plocha pro layout */
     background: transparent;
     border: 0;
     box-shadow: none;
     backdrop-filter: none;
     border-radius: 0;
-
     overflow: visible;
 }
 
-.hero-wines__bottle{
+.hero-wines__bottle {
     position: absolute;
     display: grid;
     place-items: center;
-
     width: 92px;
     height: 140px;
-
     text-decoration: none;
     outline: none;
-
     transition: transform 260ms ease, filter 260ms ease, opacity 260ms ease;
 }
 
-/* jemná premium "hit-area" pro hover/focus, bez pozadí */
-.hero-wines__bottle::after{
-    content:"";
-    position:absolute;
+.hero-wines__bottle::after {
+    content: "";
+    position: absolute;
     inset: -10px -12px;
     border-radius: 18px;
-    border: 1px solid rgba(191,155,48,0);
-    box-shadow: 0 16px 40px rgba(0,0,0,0);
+    border: 1px solid rgba(191, 155, 48, 0);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0);
     transition: border-color 220ms ease, box-shadow 220ms ease;
-    pointer-events:none;
+    pointer-events: none;
 }
 
-.hero-wines__bottle img{
+.hero-wines__bottle img {
     width: auto;
     max-height: 140px;
     display: block;
-
-    /* čistší stín (méně "levný") */
-    filter: drop-shadow(0 16px 26px rgba(0,0,0,0.32));
+    filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.32));
 }
 
-/* levá/pravá láhev mírně natočená a menší */
-.hero-wines__bottle--left{
+.hero-wines__bottle--left {
     transform: translateX(-64px) translateY(12px) scale(0.88) rotate(-8deg);
     opacity: 0.78;
 }
 
-.hero-wines__bottle--right{
+.hero-wines__bottle--right {
     transform: translateX(64px) translateY(12px) scale(0.88) rotate(8deg);
     opacity: 0.78;
 }
 
-/* střední láhev je "hero" */
-.hero-wines__bottle--center{
+.hero-wines__bottle--center {
     transform: translateY(-2px) scale(1.02);
     opacity: 1;
     z-index: 2;
 }
 
-/* hover: decentní přiblížení bez skákání layoutu */
-.hero-wines__bottle:hover{
+.hero-wines__bottle:hover {
     opacity: 1;
     filter: saturate(1.05);
 }
 
-.hero-wines__bottle:hover::after{
-    border-color: rgba(191,155,48,0.22);
-    box-shadow: 0 18px 44px rgba(0,0,0,0.18);
+.hero-wines__bottle:hover::after {
+    border-color: rgba(191, 155, 48, 0.22);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
 }
 
-.hero-wines__bottle--center:hover{
+.hero-wines__bottle--center:hover {
     transform: translateY(-6px) scale(1.04);
 }
 
-.hero-wines__bottle--left:hover{
+.hero-wines__bottle--left:hover {
     transform: translateX(-64px) translateY(8px) scale(0.92) rotate(-8deg);
 }
 
-.hero-wines__bottle--right:hover{
+.hero-wines__bottle--right:hover {
     transform: translateX(64px) translateY(8px) scale(0.92) rotate(8deg);
 }
 
-.hero-wines__bottle:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
+.hero-wines__bottle:focus-visible {
+    outline: 3px solid rgba(191, 155, 48, 0.55);
     outline-offset: 4px;
     border-radius: 14px;
 }
 
-@media (max-width: 920px){
-    .hero-wines{
+@media (max-width: 920px) {
+    .hero-wines {
         position: static;
         width: min(320px, 100%);
         margin: 1.1rem auto 0;
     }
-    .hero-wines__showcase{ height: 160px; }
+
+    .hero-wines__showcase {
+        height: 160px;
+    }
 }
 
-/* ================== Footer / kontakt (stejné jako v aktualitách) ================== */
-.site-footer{ width: min(1120px, 92%); margin: 2.2rem auto 0; }
-.site-footer__inner{ border-top: 1px solid rgba(255,255,255,0.20); padding-top:1.25rem; color: rgba(255,255,255,0.92); }
-.site-footer__title{ font-weight:700; letter-spacing:0.12em; text-transform:uppercase; font-size:0.85rem; opacity:0.78; margin-bottom:0.85rem; }
-
-.contact-card{ display: grid; gap: 0.6rem; }
-.contact-card__cols{ display:flex; gap:1rem; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-.contact-card__col{ display:flex; flex-direction:column; gap:0.45rem; }
-.contact-card__col--right{ align-items:flex-end; }
-.contact-card__meta{ margin-top:0.6rem; font-size:0.85rem; color: rgba(255,255,255,0.75); }
-
-.contact-item{ display:flex; gap:0.6rem; align-items:center; text-decoration:none; color: rgba(255,255,255,0.92); }
-.contact-item__icon{ opacity:0.85; font-size:1.05rem; }
-.contact-item__text{ font-weight:600; }
-
-/* Instagram capsule */
-.contact-item--ig{
-    display:inline-flex; align-items:center; gap:0.6rem;
-    padding:0.45rem 0.9rem; border-radius:999px;
-    background: linear-gradient(90deg, rgba(140,130,92,0.96), rgba(170,150,110,0.96));
-    color: #fff; font-weight:700; font-size:0.95rem; text-decoration:none;
-    border:1px solid rgba(255,255,255,0.18); box-shadow:0 8px 20px rgba(0,0,0,0.12);
-    transition: transform .12s ease, box-shadow .12s ease;
+/* ===== FOOTER / KONTAKT ===== */
+.site-footer {
+    width: min(1120px, 92%);
+    margin: 2.2rem auto 0;
 }
-.contact-item--ig .contact-item__icon svg{ width:20px; height:20px; color:#fff; }
+
+.site-footer__inner {
+    border-top: 1px solid rgba(255, 255, 255, 0.20);
+    padding-top: 1.25rem;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.site-footer__title {
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    opacity: 0.78;
+    margin-bottom: 0.85rem;
+}
+
+.contact-card {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.contact-card__cols {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.contact-card__col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.contact-card__col--right {
+    align-items: flex-end;
+}
+
+.contact-card__meta {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.contact-item {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.contact-item__icon {
+    opacity: 0.85;
+    font-size: 1.05rem;
+}
+
+.contact-item__text {
+    font-weight: 600;
+}
+
+.contact-item--ig {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(140, 130, 92, 0.96), rgba(170, 150, 110, 0.96));
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.contact-item--ig .contact-item__icon svg {
+    width: 20px;
+    height: 20px;
+    color: #fff;
+}
+
 .contact-item--ig:hover,
-.contact-item--ig:focus{ transform: translateY(-2px); box-shadow:0 14px 30px rgba(0,0,0,0.18); }
-.contact-item--ig:focus{ outline: 3px solid rgba(255,255,255,0.30); outline-offset:2px; }
-
-@media (max-width: 560px){
-    .contact-card__cols{ flex-direction:column; align-items:flex-start; }
-    .contact-card__col--right{ align-items:flex-start; }
+.contact-item--ig:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
 }
 
-#partner-section{
+.contact-item--ig:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.30);
+    outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+    .contact-card__cols {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .contact-card__col--right {
+        align-items: flex-start;
+    }
+}
+
+#partner-section {
     scroll-margin-top: 18px;
 }
 
-/* ===== INTRO BLOCK (nový blok nad první bílou sekcí) ===== */
-.home-intro-block{
+/* ===== INTRO BLOCK ===== */
+.home-intro-block {
     margin: 0 0 clamp(1.6rem, 3vw, 2.4rem);
 }
 
-.home-intro-block__card{
+.home-intro-block__card {
     max-width: 980px;
     margin: 0 auto;
     padding: clamp(1.55rem, 3.2vw, 2.15rem);
     border-radius: 18px;
-    background: linear-gradient(180deg, rgba(251,250,248,0.95), rgba(246,244,240,0.9));
-    border: 1px solid rgba(191,155,48,0.46);
-    box-shadow: 0 18px 42px rgba(0,0,0,0.14);
+    background: linear-gradient(180deg, rgba(251, 250, 248, 0.95), rgba(246, 244, 240, 0.9));
+    border: 1px solid rgba(191, 155, 48, 0.46);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.14);
 }
 
-.home-intro-block__title{
+.home-intro-block__title {
     margin: 0 0 1rem;
     font-family: "Faculty Glyphic", serif;
     font-weight: 650;
@@ -1017,18 +1194,18 @@ body {
     color: #6f1c2d;
 }
 
-.home-intro-block__text{
+.home-intro-block__text {
     margin: 0 0 0.9rem;
-    color: rgba(42,23,23,0.92);
+    color: rgba(42, 23, 23, 0.92);
     font-size: 1rem;
     line-height: 1.72;
 }
 
-.home-intro-block__text:last-child{
+.home-intro-block__text:last-child {
     margin-bottom: 0;
 }
 
-.home-texts-endcap--intro{
+.home-texts-endcap--intro {
     margin-top: 0;
     margin-bottom: clamp(2rem, 4vw, 2.8rem);
     background: transparent;
@@ -1038,34 +1215,37 @@ body {
 }
 
 .home-texts-endcap--intro::before,
-.home-texts-endcap--intro::after{
+.home-texts-endcap--intro::after {
     display: none;
 }
 
-.home-texts-endcap--intro .info-wrapper{
+.home-texts-endcap--intro .info-wrapper {
     background: transparent;
     border: 0;
     box-shadow: none;
     padding: 0;
 }
+
 /* ===== HOMEPAGE PREZENTAČNÍ SLIDER POD INTRO ===== */
-.home-index-presentation{
+.home-index-presentation {
+    width: 100%;
     margin: 0 0 clamp(2rem, 4vw, 2.8rem);
 }
 
-.home-presentation-shell{
+.home-presentation-shell {
     width: min(980px, 100%);
     margin: 0 auto;
-    background: rgba(255,255,255,0.95);
-    border: 1px solid rgba(191,155,48,0.30);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(191, 155, 48, 0.30);
     border-radius: 18px;
     padding: 1rem;
     backdrop-filter: blur(10px);
-    box-shadow: 0 18px 42px rgba(0,0,0,0.14);
-    overflow: visible;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.14);
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
-.wine-presentation-slider{
+.wine-presentation-slider {
     position: relative;
     width: 100%;
     height: clamp(280px, 42vh, 560px);
@@ -1074,7 +1254,7 @@ body {
     background: transparent;
 }
 
-.presentation-slide{
+.presentation-slide {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -1084,49 +1264,57 @@ body {
     pointer-events: none;
 }
 
-.presentation-slide.is-active{
+.presentation-slide.is-active {
     transform: translateX(0);
     opacity: 1;
     pointer-events: auto;
     z-index: 2;
 }
 
-.presentation-slide.is-enter{
+.presentation-slide.is-enter {
     transform: translateX(100%);
     opacity: 0;
     z-index: 3;
 }
 
-.presentation-slide.is-exit{
+.presentation-slide.is-exit {
     transform: translateX(-100%);
     opacity: 0;
     z-index: 1;
 }
 
-.presentation-slide.is-animating{
+.presentation-slide.is-animating {
     transition:
-            transform 2000ms cubic-bezier(.22,1,.36,1),
-            opacity 2000ms cubic-bezier(.22,1,.36,1);
+            transform 2000ms cubic-bezier(.22, 1, .36, 1),
+            opacity 2000ms cubic-bezier(.22, 1, .36, 1);
 }
 
-.presentation-slide img{
+.presentation-picture {
+    display: block;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+}
+
+.presentation-image,
+.presentation-slide img {
     display: block;
+    width: 100%;
+    height: 100%;
     background: transparent;
+    object-fit: contain;
+    object-position: center;
 }
 
 /* šipky */
-.presentation-arrow{
+.presentation-arrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     z-index: 20;
-    width: auto;
-    height: auto;
+    width: 52px;
+    height: 52px;
     border: none;
-    background: transparent;
+    background: rgba(255, 255, 255, 0);
     box-shadow: none;
     border-radius: 0;
     color: #111;
@@ -1138,49 +1326,235 @@ body {
     justify-content: center;
     cursor: pointer;
     padding: 0;
-    transition: transform 180ms ease, color 180ms ease;
+    transition: transform 180ms ease, color 180ms ease, opacity 180ms ease;
 }
 
-.presentation-arrow:hover{
+.presentation-arrow:hover {
     transform: translateY(-50%) scale(1.1);
     color: #000;
 }
 
-.presentation-arrow:active{
+.presentation-arrow:active {
     transform: translateY(-50%) scale(0.95);
 }
 
-.presentation-arrow--prev{
-    left: 0;
+.presentation-arrow--prev {
+    left: 6px;
 }
 
-.presentation-arrow--next{
-    right: 0;
+.presentation-arrow--next {
+    right: 6px;
 }
 
-@media (max-width: 560px){
-    .wine-presentation-slider{
-        height: 240px;
-        border-radius: 20px;
+/* ===== TABLET ===== */
+@media (max-width: 768px) {
+    .home-presentation-shell {
+        width: min(100%, calc(100% - 2rem));
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+        border-radius: 18px;
+        overflow: hidden;
+        box-sizing: border-box;
     }
 
-    .presentation-arrow{
-        width: 40px;
-        height: 40px;
+    .wine-presentation-slider {
+        width: 100%;
+        height: auto;
+        min-height: 420px;
+        aspect-ratio: 4 / 5;
+        border-radius: 18px;
+    }
+
+    .presentation-slide {
+        height: 100%;
+    }
+
+    .presentation-image,
+    .presentation-slide img {
+        object-fit: cover;
+        object-position: center top;
+    }
+
+    .presentation-arrow {
+        display: none;
+    }
+
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 560px) {
+    .home-index-presentation {
+        width: 100%;
+    }
+
+    .home-presentation-shell {
+        width: min(100%, calc(100% - 2rem));
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(191, 155, 48, 0.30);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.14);
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .wine-presentation-slider {
+        width: 100%;
+        min-height: 460px;
+        aspect-ratio: 4 / 5;
+        border-radius: 18px;
+    }
+
+    .presentation-arrow {
+        width: 36px;
+        height: 36px;
         font-size: 28px;
+        color: rgba(17, 17, 17, 0.85);
     }
 
-    .presentation-arrow--prev{
-        left: -20px;
+    .presentation-arrow--prev {
+        left: 0;
     }
 
-    .presentation-arrow--next{
-        right: -20px;
+    .presentation-arrow--next {
+        right: 0;
     }
 }
 
-@media (prefers-reduced-motion: reduce){
-    .presentation-slide.is-animating{
+@media (prefers-reduced-motion: reduce) {
+    .presentation-slide.is-animating {
         transition: none !important;
     }
 }
+/* =========================================================
+   ROZKLIKNUTÍ OBRÁZKŮ VE SLIDERU – bez změny původního vzhledu
+   ========================================================= */
+
+.presentation-zoom{
+    appearance: none;
+    -webkit-appearance: none;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    cursor: zoom-in;
+}
+
+.presentation-zoom:focus-visible{
+    outline: 3px solid rgba(191,155,48,0.55);
+    outline-offset: 4px;
+    border-radius: 14px;
+}
+
+.presentation-picture{
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.presentation-picture img,
+.presentation-image{
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* modal */
+.presentation-modal{
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+}
+
+.presentation-modal.is-open{
+    display: block;
+}
+
+.presentation-modal__backdrop{
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(4px);
+}
+
+.presentation-modal__panel{
+    position: relative;
+    width: min(1400px, 96vw);
+    height: min(92vh, 960px);
+    margin: 4vh auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4.2rem 1.25rem 1.25rem;
+    box-sizing: border-box;
+    background: transparent;
+}
+
+.presentation-modal__close{
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.14);
+    color: #fff;
+    font-size: 1.4rem;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.presentation-modal__close:hover{
+    transform: scale(1.05);
+    background: rgba(255,255,255,0.22);
+}
+
+.presentation-modal__media{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.presentation-modal__media img{
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+}
+
+body.presentation-modal-open{
+    overflow: hidden;
+}
+
+@media (max-width: 768px){
+    .presentation-modal__panel{
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 4.3rem 0.7rem 0.7rem;
+    }
+
+    .presentation-modal__close{
+        top: 12px;
+        right: 12px;
+    }
+}
+
