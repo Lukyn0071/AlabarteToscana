@@ -48,6 +48,7 @@ unset($s);
 
     <link rel="stylesheet" href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>">
     <script src="index.js?v=<?= filemtime(__DIR__ . '/index.js') ?>" defer></script>
+    <link rel="shortcut icon" href="/Images/favicon.ico" type="image/x-icon">
 </head>
 <body>
 <section class="hero">

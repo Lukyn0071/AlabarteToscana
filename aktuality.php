@@ -33,6 +33,7 @@ $assetV = (string)max(
   <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="aktuality.css?v=<?php echo urlencode($assetV); ?>" />
   <link rel="stylesheet" href="typography.css?v=<?php echo urlencode($assetV); ?>">
+    <link rel="shortcut icon" href="/Images/favicon.ico" type="image/x-icon">
 
   <script>
     // Inline diagnostics: this MUST show up if the HTML is the one being served.

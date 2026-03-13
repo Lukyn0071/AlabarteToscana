@@ -14,6 +14,7 @@
     <!-- ✅ TYPO + CSS -->
     <link rel="stylesheet" href="typography.css">
     <link rel="stylesheet" href="vina.css">
+    <link rel="shortcut icon" href="/Images/favicon.ico" type="image/x-icon">
 
     <!-- JS -->
     <script src="index.js" defer></script>

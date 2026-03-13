@@ -47,6 +47,7 @@ $ver_vina_admin_js  = asset_ver_vina(__DIR__ . '/vina_admin.js');
     <link rel="stylesheet" href="../vina.css?v=<?php echo urlencode($ver_vina_css); ?>">
     <link rel="stylesheet" href="admin.css?v=<?php echo urlencode($ver_admin_css); ?>">
     <link rel="stylesheet" href="vina_admin.css?v=<?php echo urlencode($ver_vina_admin_css); ?>">
+    <link rel="shortcut icon" href="/Images/favicon.ico" type="image/x-icon">
 
     <script src="../index.js?v=<?php echo urlencode($ver_index_js); ?>" defer></script>
     <!-- We do NOT load vina.js here — admin JS handles everything -->

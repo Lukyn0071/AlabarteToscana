@@ -47,6 +47,7 @@ $ver_grid_js = asset_ver(__DIR__ . '/aktuality_grid.js');
   <link rel="stylesheet" href="../typography.css?v=<?php echo urlencode($ver_typography_css); ?>">
   <link rel="stylesheet" href="admin.css?v=<?php echo urlencode($ver_admin_css); ?>">
   <link rel="stylesheet" href="aktuality_grid.css?v=<?php echo urlencode($ver_grid_css); ?>">
+    <link rel="shortcut icon" href="../Images/favicon.ico" type="image/x-icon">
 
   <script src="../index.js?v=<?php echo urlencode($ver_index_js); ?>" defer></script>
   <script src="../aktuality.js?v=<?php echo urlencode($ver_aktuality_js); ?>" defer></script>
