@@ -16,11 +16,17 @@ html{
 body{
     width: 100%;
     overflow-x: hidden;
-    margin: 0;
     overflow-y: auto;
+    margin: 0;
     font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     color: #111;
     background-color: #f6f3ee;
+}
+
+body.modal-open,
+body.mobile-nav-open,
+body.presentation-modal-open{
+    overflow: hidden;
 }
 
 /* =========================================================
@@ -44,13 +50,13 @@ body{
 }
 
 .vina-top-bg::after{
-    content:"";
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:0;
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
     height: 120px;
-    pointer-events:none;
+    pointer-events: none;
     background: linear-gradient(to bottom, rgba(246,243,238,0), rgba(246,243,238,1));
 }
 
@@ -71,12 +77,12 @@ body{
 .hero-top{
     width: 100%;
     max-width: 1120px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem 1rem;
-    margin: 0 auto;
-    position: relative;
 }
 
 .lang-switcher{
@@ -105,20 +111,22 @@ body{
     color: #111;
 }
 
-/* NAV */
+/* =========================================================
+   DESKTOP NAV
+   ========================================================= */
 .hero-nav{
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+    z-index: 1000;
     display: flex;
-    gap: 2rem;
     align-items: center;
-    background: rgba(0,0,0,0.35);
+    gap: 2rem;
     padding: 0.45rem 0.9rem;
+    background: rgba(0,0,0,0.35);
     border-radius: 999px;
     backdrop-filter: blur(8px);
-    z-index: 1000;
 }
 
 .hero-nav a{
@@ -136,8 +144,118 @@ body{
 }
 
 .hero-nav.scrolled{
-    background: rgba(0, 0, 0, 0.75);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    background: rgba(0,0,0,0.75);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}
+
+/* =========================================================
+   MOBILE NAV (hamburger)
+   ========================================================= */
+.mobile-nav-toggle{
+    display: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.22);
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    cursor: pointer;
+    z-index: 1200;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-toggle:hover{
+    background: rgba(0,0,0,0.65);
+}
+
+.mobile-nav-toggle:focus-visible{
+    outline: 3px solid rgba(255,255,255,0.55);
+    outline-offset: 3px;
+}
+
+.mobile-nav-toggle__icon{
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 2px;
+    margin: 0 auto;
+    background: currentColor;
+    border-radius: 2px;
+}
+
+.mobile-nav-toggle__icon::before,
+.mobile-nav-toggle__icon::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+}
+
+.mobile-nav-toggle__icon::before{
+    top: -6px;
+}
+
+.mobile-nav-toggle__icon::after{
+    top: 6px;
+}
+
+.mobile-nav{
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 2000;
+}
+
+.mobile-nav.is-open{
+    display: block;
+}
+
+.mobile-nav__backdrop{
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(6px);
+}
+
+.mobile-nav__panel{
+    position: absolute;
+    right: 12px;
+    top: calc(12px + env(safe-area-inset-top));
+    width: min(360px, calc(100vw - 24px));
+    padding: 0.75rem;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 22px 70px rgba(0,0,0,0.35);
+}
+
+.mobile-nav .hero-nav{
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    backdrop-filter: none;
+}
+
+.mobile-nav .hero-nav a{
+    padding: 0.85rem 0.9rem;
+    border-radius: 12px;
+}
+
+.mobile-nav .hero-nav a:hover{
+    background: rgba(255,255,255,0.10);
+    opacity: 1;
 }
 
 /* =========================================================
@@ -151,15 +269,15 @@ body{
 }
 
 /* =========================================================
-   HLAVIČKA „Naše vína“
+   HLAVIČKA
    ========================================================= */
 .vina-header{
     min-height: 72vh;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* místo center */
+    justify-content: flex-start;
     align-items: center;
-    padding-top: 0rem;           /* zmenši/zvětši podle potřeby */
+    padding-top: 0;
     padding-bottom: clamp(3rem, 7vh, 5rem);
     margin-top: 0;
     text-align: center;
@@ -168,16 +286,15 @@ body{
     z-index: 1;
 }
 
-
 .vina-title{
     margin: 0;
+    padding-top: 3rem;
+    padding-bottom: 0;
     display: grid;
     gap: 0.25rem;
     justify-items: center;
     line-height: 1;
     position: relative;
-    padding-bottom: 0;
-    padding-top: 3rem;
 }
 
 .vina-title__small{
@@ -205,16 +322,17 @@ body{
 }
 
 /* =========================================================
-   LOGA POD "NAŠE VÍNA"
+   LOGA POD NADPISEM
    ========================================================= */
 .vina-brands{
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: clamp(4rem, 7vw, 8rem);
-    margin-top: 1.5rem;          /* případně dej 0 */
-    margin-bottom: 1.6rem;
     flex-wrap: nowrap;
+    margin-top: 1.5rem;
+    margin-bottom: 1.6rem;
 }
 
 .vina-brands::after{
@@ -232,6 +350,8 @@ body{
 }
 
 .vina-brand{
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -241,13 +361,12 @@ body{
     width: auto;
     display: block;
     object-fit: contain;
-
+    transition: transform 0.18s ease, opacity 0.18s ease;
     filter:
             brightness(0) invert(1)
             drop-shadow(0 14px 28px rgba(0,0,0,0.28));
 }
 
-/* stejné velikosti jako index hero */
 .vina-brand--left img{
     height: 240px;
 }
@@ -259,40 +378,42 @@ body{
 .vina-brands img:hover{
     transform: scale(1.03);
     opacity: 1;
-    filter: drop-shadow(0 16px 34px rgba(0,0,0,0.34));
-}
-
-.wine-shop-btn{
-    display:inline-block;
-    margin-top:1.2rem;
-    padding:0.65rem 1.4rem;
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-    font-size:0.85rem;
-    letter-spacing:0.12em;
-    text-transform:uppercase;
-    background:#7a0f1d;
-    color:#fff;
-    text-decoration:none;
-    border-radius:999px;
-    transition:transform .15s ease, background .15s ease;
-}
-
-.wine-shop-btn:hover{
-    transform:translateY(-1px);
-    background:#8f1323;
 }
 
 /* =========================================================
-   PREZENTAČNÍ SLIDER – stabilní
+   ESHOP BUTTON
+   ========================================================= */
+.wine-shop-btn{
+    display: inline-block;
+    margin-top: 1.2rem;
+    padding: 0.65rem 1.4rem;
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    background: #7a0f1d;
+    color: #fff;
+    border-radius: 999px;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.wine-shop-btn:hover{
+    transform: translateY(-1px);
+    background: #8f1323;
+}
+
+/* =========================================================
+   PREZENTAČNÍ SLIDER
    ========================================================= */
 .presentation-shell{
     position: relative;
     width: min(1200px, 92%);
     margin: 0 auto 1.25rem;
+    padding: 1rem;
     background: rgba(255,255,255,0.70);
     border: 1px solid rgba(17,17,17,0.08);
     border-radius: 18px;
-    padding: 1rem;
     backdrop-filter: blur(10px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.10);
     overflow: visible;
@@ -342,12 +463,20 @@ body{
             opacity 2000ms cubic-bezier(.22,1,.36,1);
 }
 
-.presentation-slide img{
+.presentation-picture{
+    display: block;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+}
+
+.presentation-image,
+.presentation-slide img{
     display: block;
+    width: 100%;
+    height: 100%;
     background: transparent;
+    object-fit: contain;
+    object-position: center;
 }
 
 /* Šipky */
@@ -391,27 +520,6 @@ body{
     right: 0;
 }
 
-@media (max-width: 560px){
-    .wine-presentation-slider{
-        height: 240px;
-        border-radius: 20px;
-    }
-
-    .presentation-arrow{
-        width: 40px;
-        height: 40px;
-        font-size: 28px;
-    }
-
-    .presentation-arrow--prev{
-        left: -20px;
-    }
-
-    .presentation-arrow--next{
-        right: -20px;
-    }
-}
-
 @media (prefers-reduced-motion: reduce){
     .presentation-slide.is-animating{
         transition: none !important;
@@ -419,7 +527,102 @@ body{
 }
 
 /* =========================================================
-   VYHLEDÁVÁNÍ – TOGGLE
+   ROZKLIKNUTÍ OBRÁZKŮ VE SLIDERU
+   ========================================================= */
+.presentation-zoom{
+    appearance: none;
+    -webkit-appearance: none;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    cursor: zoom-in;
+}
+
+.presentation-zoom:focus-visible{
+    outline: 3px solid rgba(191,155,48,0.55);
+    outline-offset: 4px;
+    border-radius: 14px;
+}
+
+.presentation-modal{
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+}
+
+.presentation-modal.is-open{
+    display: block;
+}
+
+.presentation-modal__backdrop{
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.78);
+    backdrop-filter: blur(4px);
+}
+
+.presentation-modal__panel{
+    position: relative;
+    width: min(1400px, 96vw);
+    height: min(92vh, 960px);
+    margin: 4vh auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4.2rem 1.25rem 1.25rem;
+    box-sizing: border-box;
+    background: transparent;
+}
+
+.presentation-modal__close{
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 46px;
+    height: 46px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.14);
+    color: #fff;
+    font-size: 1.4rem;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.presentation-modal__close:hover{
+    transform: scale(1.05);
+    background: rgba(255,255,255,0.22);
+}
+
+.presentation-modal__media{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.presentation-modal__media img{
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+}
+
+/* =========================================================
+   VYHLEDÁVÁNÍ
    ========================================================= */
 .wine-search-wrap{
     width: min(1200px, 92%);
@@ -448,7 +651,7 @@ body{
     width: 18px;
     height: 18px;
     display: block;
-    transform: translate(0px, 0px);
+    transform: translate(0, 0);
 }
 
 .wine-search-toggle--icon:hover{
@@ -473,8 +676,8 @@ body{
     margin: 0;
     display: grid;
     gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.40);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255,255,255,0.40);
+    border: 1px solid rgba(255,255,255,0.35);
     border-radius: 16px;
     padding: 0.9rem 1rem;
     backdrop-filter: blur(10px);
@@ -499,30 +702,30 @@ body{
 }
 
 .wine-search__input{
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     width: 100%;
     padding: 0.7rem 0.9rem;
     border-radius: 12px;
-    border: 1px solid rgba(17, 17, 17, 0.15);
-    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(17,17,17,0.15);
+    background: rgba(255,255,255,0.7);
     outline: none;
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     font-size: 1rem;
     box-shadow: none;
 }
 
 .wine-search__input:focus{
-    border-color: rgba(17, 17, 17, 0.35);
+    border-color: rgba(17,17,17,0.35);
     box-shadow: 0 0 0 3px rgba(255,255,255,0.55);
 }
 
 .wine-search__clear{
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     padding: 0.7rem 0.9rem;
     border-radius: 12px;
     border: none;
-    background: rgba(17, 17, 17, 0.85);
+    background: rgba(17,17,17,0.85);
     color: #fff;
     cursor: pointer;
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     font-weight: 600;
 }
 
@@ -536,6 +739,10 @@ body{
     opacity: 0.8;
 }
 
+#wineSearchPanel[hidden]{
+    display: none !important;
+}
+
 /* =========================================================
    FILTRY / KATEGORIE
    ========================================================= */
@@ -546,8 +753,8 @@ body{
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    background: rgba(255, 255, 255, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.30);
+    background: rgba(255,255,255,0.35);
+    border: 1px solid rgba(255,255,255,0.30);
     border-radius: 16px;
     padding: 0.75rem 1rem;
     backdrop-filter: blur(10px);
@@ -568,8 +775,8 @@ body{
 
 .wine-filter-btn{
     font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-    border: 1px solid rgba(17, 17, 17, 0.18);
-    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(17,17,17,0.18);
+    background: rgba(255,255,255,0.65);
     color: #111;
     padding: 0.45rem 0.75rem;
     border-radius: 999px;
@@ -579,13 +786,13 @@ body{
 }
 
 .wine-filter-btn:hover{
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255,255,255,0.85);
 }
 
 .wine-filter-btn.is-active{
-    background: rgba(17, 17, 17, 0.85);
+    background: rgba(17,17,17,0.85);
     color: #fff;
-    border-color: rgba(17, 17, 17, 0.85);
+    border-color: rgba(17,17,17,0.85);
 }
 
 .wine-filter-btn:focus{
@@ -594,6 +801,131 @@ body{
 
 .wine-filter-btn:focus-visible{
     box-shadow: 0 0 0 3px rgba(255,255,255,0.55);
+}
+
+.wine-filter-groups{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.wine-filter-group{
+    display: grid;
+    gap: 0.55rem;
+}
+
+.wine-checkbox-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.55rem 0.75rem;
+}
+
+.wine-checkbox{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #2a211d;
+}
+
+.wine-checkbox input{
+    accent-color: #7a0f1d;
+}
+
+.wine-price-filter{
+    display: grid;
+    gap: 0.7rem;
+    margin-top: 1rem;
+}
+
+.wine-price-filter__inputs{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.wine-price-filter__field{
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    color: #2a211d;
+}
+
+.wine-price-filter__field input[type="range"]{
+    width: 100%;
+    accent-color: #7a0f1d;
+}
+
+.wine-range{
+    position: relative;
+    height: 2.4rem;
+    display: flex;
+    align-items: center;
+}
+
+.wine-range__track,
+.wine-range__fill{
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 6px;
+    border-radius: 999px;
+    pointer-events: none;
+}
+
+.wine-range__track{
+    background: rgba(17,17,17,0.12);
+}
+
+.wine-range__fill{
+    background: #7a0f1d;
+}
+
+.wine-range__input{
+    position: absolute;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    background: transparent;
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.wine-range__input::-webkit-slider-runnable-track{
+    height: 6px;
+    background: transparent;
+}
+
+.wine-range__input::-moz-range-track{
+    height: 6px;
+    background: transparent;
+}
+
+.wine-range__input::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    margin-top: -6px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #7a0f1d;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.wine-range__input::-moz-range-thumb{
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #7a0f1d;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 /* =========================================================
@@ -613,15 +945,15 @@ body{
 }
 
 .wine-card--catalog{
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
     backdrop-filter: none !important;
     box-shadow: none !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    text-align: center !important;
     transition: transform 0.28s ease;
 }
 
@@ -700,8 +1032,8 @@ body{
     width: min(1200px, 92%);
     margin: -2rem auto 2.5rem;
     text-align: center;
-    background: rgba(255, 255, 255, 0.78);
-    border: 1px solid rgba(17, 17, 17, 0.08);
+    background: rgba(255,255,255,0.78);
+    border: 1px solid rgba(17,17,17,0.08);
     border-radius: 16px;
     padding: 1rem;
     backdrop-filter: blur(6px);
@@ -741,6 +1073,10 @@ body{
     position: relative;
     width: min(980px, 92%);
     margin: 5vh auto;
+    max-height: calc(100vh - 10vh);
+    overflow: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     border-radius: 18px;
     background: rgba(255,255,255,0.78);
     border: 1px solid rgba(255,255,255,0.45);
@@ -749,27 +1085,23 @@ body{
     transform: translateY(12px);
     opacity: 0;
     animation: modalIn 0.25s ease forwards;
-    max-height: calc(100vh - 10vh);
-    overflow: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
 }
 
 .modal__close{
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     position: absolute;
     top: 14px;
     right: 14px;
-    border: 0;
-    background: rgba(17,17,17,0.08);
-    color: #111;
+    z-index: 30;
     width: 38px;
     height: 38px;
+    border: 0;
     border-radius: 10px;
+    background: rgba(17,17,17,0.08);
+    color: #111;
     cursor: pointer;
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     font-size: 18px;
     line-height: 38px;
-    z-index: 30;
 }
 
 .modal__close:hover{
@@ -780,26 +1112,26 @@ body{
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 10;
     width: 48px;
     height: 64px;
     border: 0;
-    cursor: pointer;
     background: transparent;
-    color: rgba(17, 17, 17, 0.55);
+    color: rgba(17,17,17,0.55);
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 42px;
     font-weight: 300;
     line-height: 1;
-    transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
-    z-index: 10;
     opacity: 0;
     pointer-events: none;
+    transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
 }
 
 .modal__nav:hover{
-    color: rgba(17, 17, 17, 0.92);
+    color: rgba(17,17,17,0.92);
     opacity: 1;
     transform: translateY(-50%) scale(1.06);
 }
@@ -869,8 +1201,8 @@ body{
 
 .modal__title{
     margin: 0;
-    max-width: 100%;
     width: 100%;
+    max-width: 100%;
     padding-right: 48px;
     text-align: left;
     white-space: normal;
@@ -898,231 +1230,13 @@ body{
 }
 
 .modal__specs{
-    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     margin: 0;
     padding-left: 1.1rem;
     display: grid;
     gap: 0.35rem;
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     font-size: 0.95rem;
     line-height: 1.6;
-}
-
-body.modal-open{
-    overflow: hidden;
-}
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-@media (max-width: 1100px){
-    .wines{
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 2.5rem;
-    }
-}
-
-@media (max-width: 768px){
-    .hero-top{
-        /* na telefonu držíme topbar v jednom řádku: lang vlevo, hamburger vpravo */
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        padding: 0.5rem 1.25rem;
-        flex-wrap: nowrap;
-    }
-
-    /* desktop nav se na mobilu schová (potvrzeno i níže v 760px) */
-    .hero-top > .hero-nav{
-        display: none;
-    }
-
-    /* (mobilní panel nav zůstane) */
-
-    .hero-nav{
-        position: static;
-        transform: none;
-        margin-top: 0.5rem;
-        gap: 1.5rem;
-        padding: 0.5rem 1rem;
-    }
-
-    .lang-btn{
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
-    }
-
-    .vina-header{
-        min-height: 62vh;
-        padding-top: 5rem;
-        padding-bottom: 3rem;
-    }
-
-    .vina-title__small{
-        font-size: 0.82rem;
-        letter-spacing: 0.3em;
-    }
-
-    .vina-title::after{
-        width: 120px;
-    }
-
-    .vina-brands{
-        gap: 2.25rem;
-        margin-bottom: 1.8rem;
-    }
-
-    .vina-brand--left img{
-        height: 84px;
-    }
-
-    .vina-brand--right img{
-        height: 84px;
-    }
-    .vina-title__small{
-        font-size: 0.82rem;
-        letter-spacing: 0.3em;
-    }
-}
-
-/* =========================================================
-   MOBILE NAV (hamburger)
-   ========================================================= */
-.mobile-nav-toggle{
-    display: none;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.22);
-    background: rgba(0,0,0,0.55);
-    color: #fff;
-    cursor: pointer;
-    z-index: 1200;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.mobile-nav-toggle:hover{ background: rgba(0,0,0,0.65); }
-
-.mobile-nav-toggle:focus-visible{
-    outline: 3px solid rgba(255,255,255,0.55);
-    outline-offset: 3px;
-}
-
-.mobile-nav-toggle__icon{
-    position: relative;
-    display: block;
-    width: 18px;
-    height: 2px;
-    margin: 0 auto;
-    background: currentColor;
-    border-radius: 2px;
-}
-
-.mobile-nav-toggle__icon::before,
-.mobile-nav-toggle__icon::after{
-    content: "";
-    position: absolute;
-    left: 0;
-    width: 18px;
-    height: 2px;
-    background: currentColor;
-    border-radius: 2px;
-}
-
-.mobile-nav-toggle__icon::before{ top: -6px; }
-.mobile-nav-toggle__icon::after{ top: 6px; }
-
-.mobile-nav{
-    position: fixed;
-    inset: 0;
-    display: none;
-    z-index: 2000;
-}
-
-.mobile-nav.is-open{ display: block; }
-
-.mobile-nav__backdrop{
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.45);
-    backdrop-filter: blur(6px);
-}
-
-.mobile-nav__panel{
-    position: absolute;
-    right: 12px;
-    top: calc(12px + env(safe-area-inset-top));
-    width: min(360px, calc(100vw - 24px));
-    border-radius: 16px;
-    background: rgba(0,0,0,0.85);
-    border: 1px solid rgba(255,255,255,0.14);
-    box-shadow: 0 22px 70px rgba(0,0,0,0.35);
-    padding: 0.75rem;
-}
-
-.mobile-nav .hero-nav{
-    position: static;
-    left: auto;
-    top: auto;
-    transform: none;
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.35rem;
-    background: transparent;
-    padding: 0;
-    border-radius: 0;
-    backdrop-filter: none;
-}
-
-.mobile-nav .hero-nav a{
-    padding: 0.85rem 0.9rem;
-    border-radius: 12px;
-}
-
-.mobile-nav .hero-nav a:hover{ background: rgba(255,255,255,0.10); opacity: 1; }
-
-body.mobile-nav-open{ overflow: hidden; }
-
-@media (max-width: 640px){
-    .wine-search__controls{
-        grid-template-columns: 1fr;
-    }
-
-    .modal__nav{
-        display: none;
-    }
-
-    .modal__grid{
-        grid-template-columns: 1fr;
-    }
-
-    .modal__media img{
-        max-width: 220px;
-    }
-}
-
-@media (max-width: 600px){
-    .wines{
-        grid-template-columns: 1fr;
-    }
-
-    .wine-card--catalog .wine-media img{
-        height: 260px;
-    }
-    .vina-brands{
-        flex-direction: row;
-        gap: 1.5rem;
-    }
-
-    .vina-brand--left img{
-        height: 64px;
-    }
-
-    .vina-brand--right img{
-        height: 64px;
-    }
 }
 
 /* =========================================================
@@ -1148,7 +1262,9 @@ body.mobile-nav-open{ overflow: hidden; }
     }
 }
 
-/* util */
+/* =========================================================
+   UTIL
+   ========================================================= */
 .sr-only{
     position: absolute !important;
     width: 1px !important;
@@ -1161,171 +1277,68 @@ body.mobile-nav-open{ overflow: hidden; }
     border: 0 !important;
 }
 
-#wineSearchPanel[hidden]{
-    display: none !important;
-}
-
-.wine-filter-groups {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.wine-filter-group {
-    display: grid;
-    gap: 0.55rem;
-}
-
-.wine-checkbox-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 0.55rem 0.75rem;
-}
-
-.wine-checkbox {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: #2a211d;
-}
-
-.wine-checkbox input {
-    accent-color: #7a0f1d;
-}
-
-.wine-price-filter {
-    display: grid;
-    gap: 0.7rem;
-    margin-top: 1rem;
-}
-
-.wine-price-filter__inputs {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-}
-
-.wine-price-filter__field {
-    display: grid;
-    gap: 0.35rem;
-    font-size: 0.88rem;
-    color: #2a211d;
-}
-
-.wine-price-filter__field input[type="range"] {
-    width: 100%;
-    accent-color: #7a0f1d;
-}
-
-.wine-range {
-    position: relative;
-    height: 2.4rem;
-    display: flex;
-    align-items: center;
-}
-
-.wine-range__track,
-.wine-range__fill {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 6px;
-    border-radius: 999px;
-    pointer-events: none;
-}
-
-.wine-range__track {
-    background: rgba(17, 17, 17, 0.12);
-}
-
-.wine-range__fill {
-    background: #7a0f1d;
-}
-
-.wine-range__input {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    margin: 0;
-    background: transparent;
-    pointer-events: none;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.wine-range__input::-webkit-slider-runnable-track {
-    height: 6px;
-    background: transparent;
-}
-
-.wine-range__input::-moz-range-track {
-    height: 6px;
-    background: transparent;
-}
-
-.wine-range__input::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #fff;
-    border: 2px solid #7a0f1d;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
-    pointer-events: auto;
-    cursor: pointer;
-    margin-top: -6px;
-}
-
-.wine-range__input::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #fff;
-    border: 2px solid #7a0f1d;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.18);
-    pointer-events: auto;
-    cursor: pointer;
-}
-
-@media (max-width: 720px) {
-    .wine-filter-groups,
-    .wine-price-filter__inputs {
-        grid-template-columns: 1fr;
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1100px){
+    .wines{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2.5rem;
     }
 }
 
-@media (min-width: 761px){
-    .mobile-nav-toggle{ display: none !important; }
-    .mobile-nav{ display: none !important; }
-    .hero-top > .hero-nav{ display: flex !important; }
-}
-
-@media (max-width: 760px){
-    /* hamburger musí být vidět a vpravo */
-    .mobile-nav-toggle{ display: inline-grid; place-items: center; }
-    .hero-top > .hero-nav{ display: none; }
-}
-.presentation-picture{
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-.presentation-image,
-.presentation-slide img{
-    display: block;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    object-fit: contain;
-    object-position: center;
-}
-
-/* ===== TABLET ===== */
 @media (max-width: 768px){
+    .hero-top{
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.5rem 1.25rem;
+        flex-wrap: nowrap;
+    }
+
+    .hero-top > .hero-nav{
+        display: none;
+    }
+
+    .hero-nav{
+        position: static;
+        transform: none;
+        margin-top: 0.5rem;
+        gap: 1.5rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .lang-btn{
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .vina-header{
+        min-height: 62vh;
+        padding-top: 5rem;
+        padding-bottom: 3rem;
+    }
+
+    .vina-title__small{
+        font-size: 0.82rem;
+        letter-spacing: 0.3em;
+    }
+
+    .vina-brands{
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        align-items: center;
+    }
+
+    .vina-brand--left img{
+        height: 205px;
+    }
+
+    .vina-brand--right img{
+        height: 110px;
+    }
+
     .presentation-shell{
         width: min(100%, calc(100% - 2rem));
         max-width: 100%;
@@ -1357,9 +1370,96 @@ body.mobile-nav-open{ overflow: hidden; }
     .presentation-arrow{
         display: none;
     }
+
+    .presentation-modal__panel{
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 4.3rem 0.7rem 0.7rem;
+    }
+
+    .presentation-modal__close{
+        top: 12px;
+        right: 12px;
+    }
 }
 
-/* ===== MOBILE ===== */
+@media (max-width: 760px){
+    .mobile-nav-toggle{
+        display: inline-grid;
+        place-items: center;
+    }
+
+    .hero-top > .hero-nav{
+        display: none;
+    }
+}
+
+@media (min-width: 761px){
+    .mobile-nav-toggle{
+        display: none !important;
+    }
+
+    .mobile-nav{
+        display: none !important;
+    }
+
+    .hero-top > .hero-nav{
+        display: flex !important;
+    }
+}
+
+@media (max-width: 720px){
+    .wine-filter-groups,
+    .wine-price-filter__inputs{
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px){
+    .wine-search__controls{
+        grid-template-columns: 1fr;
+    }
+
+    .modal__nav{
+        display: none;
+    }
+
+    .modal__grid{
+        grid-template-columns: 1fr;
+    }
+
+    .modal__media img{
+        max-width: 220px;
+    }
+}
+
+@media (max-width: 600px){
+    .wines{
+        grid-template-columns: 1fr;
+    }
+
+    .wine-card--catalog .wine-media img{
+        height: 260px;
+    }
+
+    .vina-brands{
+        flex-direction: row;
+        gap: 1rem;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .vina-brand--left img{
+        height: 178px;
+    }
+
+    .vina-brand--right img{
+        height: 92px;
+    }
+}
+
+
 @media (max-width: 560px){
     .presentation-shell{
         width: min(100%, calc(100% - 2rem));
@@ -1367,9 +1467,9 @@ body.mobile-nav-open{ overflow: hidden; }
         margin: 0 auto;
         padding: 0;
         border-radius: 18px;
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(191, 155, 48, 0.30);
-        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.14);
+        background: rgba(255,255,255,0.95);
+        border: 1px solid rgba(191,155,48,0.30);
+        box-shadow: 0 18px 42px rgba(0,0,0,0.14);
         overflow: hidden;
         box-sizing: border-box;
     }
@@ -1385,7 +1485,7 @@ body.mobile-nav-open{ overflow: hidden; }
         width: 36px;
         height: 36px;
         font-size: 28px;
-        color: rgba(17, 17, 17, 0.85);
+        color: rgba(17,17,17,0.85);
     }
 
     .presentation-arrow--prev{
@@ -1394,118 +1494,5 @@ body.mobile-nav-open{ overflow: hidden; }
 
     .presentation-arrow--next{
         right: 0;
-    }
-}
-
-/* =========================================================
-   ROZKLIKNUTÍ OBRÁZKŮ VE SLIDERU – bez změny původního vzhledu
-   ========================================================= */
-.presentation-zoom{
-    appearance: none;
-    -webkit-appearance: none;
-    display: block;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    border: 0;
-    background: transparent;
-    cursor: zoom-in;
-}
-
-.presentation-zoom:focus-visible{
-    outline: 3px solid rgba(191,155,48,0.55);
-    outline-offset: 4px;
-    border-radius: 14px;
-}
-
-.presentation-modal{
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: none;
-}
-
-.presentation-modal.is-open{
-    display: block;
-}
-
-.presentation-modal__backdrop{
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.78);
-    backdrop-filter: blur(4px);
-}
-
-.presentation-modal__panel{
-    position: relative;
-    width: min(1400px, 96vw);
-    height: min(92vh, 960px);
-    margin: 4vh auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4.2rem 1.25rem 1.25rem;
-    box-sizing: border-box;
-    background: transparent;
-}
-
-.presentation-modal__close{
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 46px;
-    height: 46px;
-    border: none;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.14);
-    color: #fff;
-    font-size: 1.4rem;
-    line-height: 1;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    transition: transform 0.18s ease, background 0.18s ease;
-}
-
-.presentation-modal__close:hover{
-    transform: scale(1.05);
-    background: rgba(255,255,255,0.22);
-}
-
-.presentation-modal__media{
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.presentation-modal__media img{
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 10px;
-    box-shadow: 0 24px 70px rgba(0,0,0,0.42);
-}
-
-body.presentation-modal-open{
-    overflow: hidden;
-}
-
-@media (max-width: 768px){
-    .presentation-modal__panel{
-        width: 100vw;
-        height: 100vh;
-        margin: 0;
-        padding: 4.3rem 0.7rem 0.7rem;
-    }
-
-    .presentation-modal__close{
-        top: 12px;
-        right: 12px;
     }
 }
