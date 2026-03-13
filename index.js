@@ -97,7 +97,40 @@ document.addEventListener("DOMContentLoaded", () => {
                 isAnimating = false;
             }, DURATION);
         };
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
 
+        const SWIPE_THRESHOLD = 50;
+        const SWIPE_RESTRAINT_Y = 80;
+
+        slider.addEventListener("touchstart", (e) => {
+            const touch = e.changedTouches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchEndX = touch.clientX;
+            touchEndY = touch.clientY;
+        }, { passive: true });
+
+        slider.addEventListener("touchmove", (e) => {
+            const touch = e.changedTouches[0];
+            touchEndX = touch.clientX;
+            touchEndY = touch.clientY;
+        }, { passive: true });
+
+        slider.addEventListener("touchend", () => {
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+
+            if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(diffY) < SWIPE_RESTRAINT_Y) {
+                if (diffX < 0) {
+                    goNext(false);
+                } else {
+                    goPrev();
+                }
+            }
+        }, { passive: true });
         const goNext = (fromAuto = false) => {
             goTo((current + 1) % slides.length);
             if (!fromAuto) startAuto();
@@ -126,6 +159,63 @@ document.addEventListener("DOMContentLoaded", () => {
 
         startAuto();
     }
+    /* ================= PREZENTAČNÍ MODAL ================= */
+    const presentationModal = document.getElementById("presentationModal");
+    const presentationModalImage = document.getElementById("presentationModalImage");
+    const presentationZoomButtons = document.querySelectorAll(".presentation-zoom");
+
+    let lastPresentationTrigger = null;
+
+    const openPresentationModal = (imgEl, triggerEl = null) => {
+        if (!presentationModal || !presentationModalImage || !imgEl) return;
+
+        const source = imgEl.currentSrc || imgEl.src;
+        const alt = imgEl.getAttribute("alt") || "";
+
+        presentationModalImage.src = source;
+        presentationModalImage.alt = alt;
+
+        presentationModal.classList.add("is-open");
+        presentationModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("presentation-modal-open");
+
+        lastPresentationTrigger = triggerEl;
+    };
+
+    const closePresentationModal = () => {
+        if (!presentationModal || !presentationModalImage) return;
+
+        presentationModal.classList.remove("is-open");
+        presentationModal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("presentation-modal-open");
+
+        presentationModalImage.src = "";
+        presentationModalImage.alt = "";
+
+        if (lastPresentationTrigger) {
+            lastPresentationTrigger.focus();
+        }
+    };
+
+    presentationZoomButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const img = btn.querySelector("img");
+            openPresentationModal(img, btn);
+        });
+    });
+
+    presentationModal?.addEventListener("click", (e) => {
+        const closeTarget = e.target.closest("[data-close-presentation='true']");
+        if (closeTarget) {
+            closePresentationModal();
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && presentationModal?.classList.contains("is-open")) {
+            closePresentationModal();
+        }
+    });
     /* ================= SCROLL TO PARTNER (hero La Torre logo) ================= */
     const partnerLink = document.querySelector('.js-scroll-to-partner');
     const partnerSection = document.querySelector('#partner-section');
