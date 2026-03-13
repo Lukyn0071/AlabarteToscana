@@ -634,6 +634,8 @@ body.presentation-modal-open{
 }
 
 .wine-search-toggle--icon{
+    order: 2;
+    flex: 0 0 auto;
     width: 44px;
     height: 44px;
     padding: 0;
@@ -685,7 +687,9 @@ body.presentation-modal-open{
 }
 
 .wine-search--panel{
-    width: min(920px, 100%);
+    order: 1;
+    flex: 1 1 auto;
+    width: min(920px, calc(100% - 44px - 0.75rem));
 }
 
 .wine-search__label{
