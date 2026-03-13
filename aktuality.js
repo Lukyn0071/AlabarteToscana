@@ -677,6 +677,18 @@
         modalMeta.textContent = item && item.date ? String(item.date) : "";
         modalPerex.textContent = localizedField(item, 'perex') || "";
         modalBody.innerHTML = localizedField(item, 'bodyHtml') || localizedField(item, 'bodyHtml_en') || "";
+        if (modalLink) {
+            const linkUrl = String((item && item.link_url) || '').trim();
+            const hasLink = !!(item && item.has_link && linkUrl);
+            const label = String(localizedField(item, 'link_label') || '').trim();
+            modalLink.textContent = label || ((getLang() === 'en') ? 'Open link' : 'Otevřít odkaz');
+            modalLink.hidden = !hasLink;
+            if (hasLink) {
+                modalLink.href = linkUrl;
+            } else {
+                modalLink.removeAttribute('href');
+            }
+        }
         bindZoomHandler();
 
         // Otevření modalu

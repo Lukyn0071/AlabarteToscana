@@ -30,8 +30,8 @@
             <!-- ===== TOP BAR ===== -->
             <div class="hero-top">
                 <div class="lang-switcher" aria-label="Přepínač jazyka">
-                    <a class="lang-btn" href="?lang=cs">CS</a>
-                    <a class="lang-btn" href="?lang=en">EN</a>
+                    <a class="lang-btn" href="?lang=cs" data-lang="cs">CS</a>
+                    <a class="lang-btn" href="?lang=en" data-lang="en">EN</a>
                 </div>
 
                 <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
@@ -55,8 +55,8 @@
                 </div>
 
                 <h1 class="vina-title typo-h1" data-key="vina_title">
-                    <span class="vina-title__small">Naše</span>
-                    <span class="vina-title__big">vína</span>
+                    <span class="vina-title__small" data-vina-title-small>Naše</span>
+                    <span class="vina-title__big" data-vina-title-big>vína</span>
                 </h1>
             </header>
 
@@ -127,30 +127,43 @@
             </button>
 
             <section class="wine-search wine-search--panel" id="wineSearchPanel" hidden>
-                <div class="wine-search__label typo-eyebrow">Vyhledat víno</div>
+                <div class="wine-search__label typo-eyebrow" data-wine-search-label>Vyhledat víno</div>
 
                 <div class="wine-search__controls">
                     <input
                             id="wineSearch"
                             class="wine-search__input"
                             type="search"
-                            placeholder="Název, profil, párování..."
+                            placeholder="Název vína..."
                             autocomplete="off"
                     >
-                    <button id="wineSearchClear" class="wine-search__clear" type="button">Vymazat</button>
+                    <button id="wineSearchClear" class="wine-search__clear" type="button" data-wine-clear>Vymazat</button>
+                </div>
+
+                <div class="wine-filter-groups">
+                    <div class="wine-filter-group" aria-label="Filtr certifikace">
+                        <div class="wine-filters__label typo-meta" data-wine-certification-label>Certifikace:</div>
+                        <div class="wine-checkbox-grid" id="wineCertificationFilters"></div>
+                    </div>
+
+                    <div class="wine-filter-group" aria-label="Filtr stylu">
+                        <div class="wine-filters__label typo-meta" data-wine-style-label>Styl:</div>
+                        <div class="wine-checkbox-grid" id="wineStyleFilters"></div>
+                    </div>
+                </div>
+
+                <div class="wine-price-filter" aria-label="Cenové rozmezí">
+                    <div class="wine-filters__label typo-meta" data-wine-price-label>Cena:</div>
+                    <div class="wine-range" id="winePriceRange">
+                        <div class="wine-range__track"></div>
+                        <div class="wine-range__fill" id="winePriceRangeFill"></div>
+                        <input id="winePriceMin" class="wine-range__input wine-range__input--min" type="range" min="0" max="0" step="1" value="0" aria-label="Minimální cena">
+                        <input id="winePriceMax" class="wine-range__input wine-range__input--max" type="range" min="0" max="0" step="1" value="0" aria-label="Maximální cena">
+                    </div>
+                    <p id="winePriceStatus" class="wine-search__status"></p>
                 </div>
 
                 <p id="wineSearchStatus" class="wine-search__status"></p>
-
-                <div class="wine-filters" aria-label="Kategorie vín">
-                    <div class="wine-filters__label typo-meta">Kategorie:</div>
-                    <div class="wine-filters__buttons" role="group" aria-label="Filtr kategorií">
-                        <button type="button" class="wine-filter-btn is-active" data-filter="all">Všechna</button>
-                        <button type="button" class="wine-filter-btn" data-filter="white">Bílá</button>
-                        <button type="button" class="wine-filter-btn" data-filter="rose">Růžová</button>
-                        <button type="button" class="wine-filter-btn" data-filter="red">Červená</button>
-                    </div>
-                </div>
             </section>
         </div>
 
@@ -158,170 +171,10 @@
 
     <!-- ===== VÍNA (katalog) ===== -->
     <section class="wines" id="vina-katalog" aria-label="Katalog vín">
-
-        <!-- 1) Vermentino -->
-        <article class="wine-card wine-card--catalog"
-                 data-wine="vermentino"
-                 data-shop="https://www.alabarte.cz/vermentino-bagiogie/"
-                 tabindex="0"
-                 role="button"
-                 aria-label="Detail vína Vermentino IGT Toscana 2023 BAGIOGIE">
-            <div class="wine-media">
-                <img src="Images/Vína/vermetinoigt23.png" alt="Vermentino IGT Toscana 2023 BAGIOGIE">
-            </div>
-
-            <div class="wine-info">
-                <h3 class="wine-name typo-h3">VERMENTINO 2023</h3>
-                <div class="wine-divider" aria-hidden="true"></div>
-
-                <p class="wine-appellation typo-meta">IGT TOSCANA</p>
-                <p class="wine-price"></p>
-
-                <span class="wine-meta sr-only">2023 • suché bílé • Itálie</span>
-                <span class="wine-story sr-only">citrusy, bylinky, mineralita</span>
-                <ul class="wine-notes sr-only">
-                    <li>Profil: citrusy, bylinky, mineralita</li>
-                    <li>Párování: ryby, mořské plody</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- 2) Chianti -->
-        <article class="wine-card wine-card--catalog"
-                 data-wine="chianti"
-                 data-shop="https://www.alabarte.cz/chianti-la-villa/"
-                 tabindex="0"
-                 role="button"
-                 aria-label="Detail vína Chianti Colli Senesi DOCG 2023 La Villa">
-            <div class="wine-media">
-                <img src="Images/Vína/chiantisenesi23.png" alt="Chianti Colli Senesi DOCG 2023 La Villa">
-            </div>
-
-            <div class="wine-info">
-                <h3 class="wine-name typo-h3">CHIANTI 2023</h3>
-                <div class="wine-divider" aria-hidden="true"></div>
-
-                <p class="wine-appellation typo-meta">CHIANTI COLLI SENESI DOCG</p>
-                <p class="wine-price"></p>
-
-                <span class="wine-meta sr-only">2023 • suché červené • Itálie</span>
-                <span class="wine-story sr-only">červené ovoce, koření, jemné třísloviny</span>
-                <ul class="wine-notes sr-only">
-                    <li>Profil: červené ovoce, koření</li>
-                    <li>Párování: těstoviny, uzeniny, sýry</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- 3) Rosato -->
-        <article class="wine-card wine-card--catalog"
-                 data-wine="rosato"
-                 data-shop="https://www.alabarte.cz/badalui-rosato/"
-                 tabindex="0"
-                 role="button"
-                 aria-label="Detail vína Rosato IGT Toscana 2023 Badalui">
-            <div class="wine-media">
-                <img src="Images/Vína/rosatoigt23.png" alt="Rosato IGT Toscana 2023 Badalui">
-            </div>
-
-            <div class="wine-info">
-                <h3 class="wine-name typo-h3">ROSATO 2023</h3>
-                <div class="wine-divider" aria-hidden="true"></div>
-
-                <p class="wine-appellation typo-meta">IGT TOSCANA</p>
-                <p class="wine-price"></p>
-
-                <span class="wine-meta sr-only">2023 • růžové • Itálie</span>
-                <span class="wine-story sr-only">červené ovoce, svěžest, lehkost</span>
-                <ul class="wine-notes sr-only">
-                    <li>Profil: červené ovoce, svěžest</li>
-                    <li>Párování: pizza, těstoviny</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- 4) Vernaccia -->
-        <article class="wine-card wine-card--catalog"
-                 data-wine="vernaccia"
-                 data-shop="https://www.alabarte.cz/vernaccia-di-san-gimignano-docg/"
-                 tabindex="0"
-                 role="button"
-                 aria-label="Detail vína Vernaccia di San Gimignano DOCG 2024">
-            <div class="wine-media">
-                <img src="Images/Vína/vernaccia24.png" alt="Vernaccia di San Gimignano DOCG 2024">
-            </div>
-
-            <div class="wine-info">
-                <h3 class="wine-name typo-h3">VERNACCIA 2024</h3>
-                <div class="wine-divider" aria-hidden="true"></div>
-
-                <p class="wine-appellation typo-meta">VERNACCIA DI SAN GIMIGNANO DOCG</p>
-                <p class="wine-price"></p>
-
-                <span class="wine-meta sr-only">2024 • suché bílé • Itálie</span>
-                <span class="wine-story sr-only">citrusy, zelené jablko, mineralita</span>
-                <ul class="wine-notes sr-only">
-                    <li>Profil: citrusy, mineralita</li>
-                    <li>Párování: ryby, mořské plody</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- 5) Rosso (Guinzano) -->
-        <article class="wine-card wine-card--catalog"
-                 data-wine="guinzano"
-                 data-shop="https://www.alabarte.cz/san-gimignano-rosso-doc-2022/"
-                 tabindex="0"
-                 role="button"
-                 aria-label="Detail vína San Gimignano Rosso DOC 2022 Guinzano">
-            <div class="wine-media">
-                <img src="Images/Vína/rossodoc22.png" alt="San Gimignano Rosso DOC 2022 Guinzano">
-            </div>
-
-            <div class="wine-info">
-                <h3 class="wine-name typo-h3">ROSSO 2022</h3>
-                <div class="wine-divider" aria-hidden="true"></div>
-
-                <p class="wine-appellation typo-meta">SAN GIMIGNANO ROSSO DOC</p>
-                <p class="wine-price"></p>
-
-                <span class="wine-meta sr-only">2022 • suché červené • Itálie</span>
-                <span class="wine-story sr-only">zralé červené ovoce, jemné dřevo</span>
-                <ul class="wine-notes sr-only">
-                    <li>Profil: zralé ovoce, dřevo</li>
-                    <li>Párování: maso, těstoviny</li>
-                </ul>
-            </div>
-        </article>
-
-        <!-- 6) Sciallebiancho Riserva -->
-        <article class="wine-card wine-card--catalog"
-                 data-wine="sciallebiancho"
-                 data-shop="https://www.alabarte.cz/vernaccia-sciallebianco/"
-                 tabindex="0"
-                 role="button"
-                 aria-label="Detail vína Vernaccia di San Gimignano Riserva DOCG 2022 Sciallebiancho">
-            <div class="wine-media">
-                <img src="Images/Vína/vernacciadocg22.png" alt="Vernaccia di San Gimignano Riserva DOCG 2022 Sciallebiancho">
-            </div>
-
-            <div class="wine-info">
-                <h3 class="wine-name typo-h3">RISERVA 2022</h3>
-                <div class="wine-divider" aria-hidden="true"></div>
-
-                <p class="wine-appellation typo-meta">VERNACCIA DI SAN GIMIGNANO RISERVA DOCG</p>
-                <p class="wine-price"></p>
-
-                <span class="wine-meta sr-only">2022 • suché bílé • Itálie</span>
-                <span class="wine-story sr-only">mineralita, citrusová kůra, jemná krémovost</span>
-                <ul class="wine-notes sr-only">
-                    <li>Profil: mineralita, krémovost</li>
-                    <li>Párování: ryby, bílé maso</li>
-                </ul>
-            </div>
-        </article>
-
+        <!-- JS fills this from api/wines.php -->
     </section>
+
+    <p id="wineCatalogStatus" class="wine-no-results typo-meta" hidden></p>
 
     <p id="wineNoResults" class="wine-no-results typo-meta" hidden>
         Žádná vína neodpovídají zadanému hledání.
@@ -353,7 +206,7 @@
                 <p class="modal__story typo-body" id="modalStory"></p>
 
                 <div class="modal__section">
-                    <h3 class="modal__h3 typo-h3">Specifikace</h3>
+                    <h3 class="modal__h3 typo-h3" data-modal-specs-title>Specifikace</h3>
                     <ul class="modal__specs" id="modalSpecs"></ul>
                 </div>
 
@@ -379,3 +232,6 @@
 
 </body>
 </html>
+
+
+

@@ -2,11 +2,138 @@
 (() => {
     "use strict";
 
-    document.addEventListener("DOMContentLoaded", () => {
+    const UI_TEXT = {
+        cs: {
+            titleSmall: "Naše",
+            titleBig: "vína",
+            searchLabel: "Vyhledat víno",
+            searchPlaceholder: "Název vína...",
+            clear: "Vymazat",
+            certification: "Certifikace:",
+            styleLabel: "Styl:",
+            price: "Cena:",
+            priceFrom: "Od",
+            priceTo: "Do",
+            loading: "Načítám vína…",
+            empty: "Žádná vína zatím nejsou k dispozici.",
+            loadError: "Nepodařilo se načíst vína.",
+            noResults: "Žádná vína neodpovídají zadanému hledání.",
+            shown: (shown, total) => `Zobrazeno ${shown} z ${total} vín.`,
+            shownQuery: (shown, total, q) => `Zobrazeno ${shown} z ${total} vín pro „${q}“.`,
+            priceRange: (min, max) => `Cenové rozmezí: ${min} Kč – ${max} Kč`,
+            noCertification: "Bez certifikace",
+            wineFallback: "Víno",
+            wineType: "víno",
+            specs: "Specifikace",
+            shop: "Koupit v e-shopu",
+            style: "Styl",
+            grape: "Odrůda",
+            vintage: "Ročník",
+            classification: "Klasifikace",
+            country: "Země původu",
+            region: "Region",
+            volume: "Objem",
+            alcohol: "Alkohol",
+        },
+        en: {
+            titleSmall: "Our",
+            titleBig: "wines",
+            searchLabel: "Search wines",
+            searchPlaceholder: "Wine name...",
+            clear: "Clear",
+            certification: "Certification:",
+            styleLabel: "Style:",
+            price: "Price:",
+            priceFrom: "From",
+            priceTo: "To",
+            loading: "Loading wines…",
+            empty: "No wines are available yet.",
+            loadError: "Failed to load wines.",
+            noResults: "No wines match your search.",
+            shown: (shown, total) => `Showing ${shown} of ${total} wines.`,
+            shownQuery: (shown, total, q) => `Showing ${shown} of ${total} wines for “${q}”.`,
+            priceRange: (min, max) => `Price range: ${min} CZK – ${max} CZK`,
+            noCertification: "No certification",
+            wineFallback: "Wine",
+            wineType: "wine",
+            specs: "Specifications",
+            shop: "Buy in e-shop",
+            style: "Style",
+            grape: "Grape",
+            vintage: "Vintage",
+            classification: "Classification",
+            country: "Country of origin",
+            region: "Region",
+            volume: "Volume",
+            alcohol: "Alcohol",
+        }
+    };
 
-        /* =========================================================
-           1) PREZENTAČNÍ SLIDER – čisté třídy, bez inline stylů
-           ========================================================= */
+    const getCurrentLang = () => {
+        const params = new URLSearchParams(window.location.search);
+        const lang = params.get("lang") || localStorage.getItem("lang") || document.documentElement.lang || "cs";
+        return lang === "en" ? "en" : "cs";
+    };
+
+    let currentLang = getCurrentLang();
+
+    const formatPrice = (value) => {
+        const n = Number(value);
+        if (!Number.isFinite(n) || n <= 0) return "";
+        return currentLang === "en" ? `${Math.round(n)} CZK` : `${Math.round(n)} Kč`;
+    };
+
+    const escapeHtml = (value) => {
+        const div = document.createElement("div");
+        div.textContent = String(value ?? "");
+        return div.innerHTML;
+    };
+
+    const normalizeText = (value) => String(value ?? "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+    const getUi = () => UI_TEXT[currentLang] || UI_TEXT.cs;
+
+    const getWineTitle = (wine) => {
+        if (wine.name) return wine.name;
+        const year = wine.rocnik ? ` ${wine.rocnik}` : "";
+        return `${getUi().wineFallback}${year}`;
+    };
+
+    const getCertificationValue = (wine) => String(wine.certifikace || "none");
+    const getStyleValue = (wine) => String(wine.styl || "");
+
+    const getCertificationLabel = (value) => {
+        if (!value || value === "none") return getUi().noCertification;
+        return value;
+    };
+
+    const buildMeta = (wine) => {
+        const parts = [];
+        if (wine.styl) parts.push(`${wine.styl} ${getUi().wineType}`);
+        if (wine.zeme) parts.push(wine.zeme);
+        if (wine.region) parts.push(wine.region);
+        return parts.join(" • ");
+    };
+
+    const buildSpecs = (wine) => {
+        const ui = getUi();
+        const rows = [];
+        if (wine.odruda) rows.push(`${ui.grape}: ${wine.odruda}`);
+        if (wine.rocnik) rows.push(`${ui.vintage}: ${wine.rocnik}`);
+        if (wine.certifikace && wine.certifikace !== "none") rows.push(`${ui.classification}: ${wine.certifikace}`);
+        if (wine.styl) rows.push(`${ui.style}: ${wine.styl} ${ui.wineType}`);
+        if (wine.zeme) rows.push(`${ui.country}: ${wine.zeme}`);
+        if (wine.region) rows.push(`${ui.region}: ${wine.region}`);
+        if (wine.objem) rows.push(`${ui.volume}: ${wine.objem}`);
+        if (wine.alkohol) rows.push(`${ui.alcohol}: ${wine.alkohol}`);
+        return rows;
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
         const slider = document.querySelector(".wine-presentation-slider[data-slider='presentation']");
         const slides = slider ? Array.from(slider.querySelectorAll(".presentation-slide")) : [];
 
@@ -14,81 +141,74 @@
             const shell = slider.closest(".presentation-shell");
             const prevBtn = shell?.querySelector(".presentation-arrow--prev");
             const nextBtn = shell?.querySelector(".presentation-arrow--next");
-
             const DURATION = 2000;
             const INTERVAL = 7000;
-
             let current = slides.findIndex((s) => s.classList.contains("is-active"));
             if (current < 0) current = 0;
-
             let isAnimating = false;
             let timer = null;
 
-            const resetClasses = (el) => {
-                el.classList.remove("is-enter", "is-exit", "is-animating", "is-active");
-            };
-
+            const resetClasses = (el) => el.classList.remove("is-enter", "is-exit", "is-animating", "is-active");
             const goTo = (nextIndex) => {
                 if (isAnimating || nextIndex === current) return;
-
                 isAnimating = true;
-
                 const currentEl = slides[current];
                 const nextEl = slides[nextIndex];
-
                 resetClasses(nextEl);
                 nextEl.classList.add("is-enter");
-
                 requestAnimationFrame(() => {
                     currentEl.classList.add("is-exit", "is-animating");
                     nextEl.classList.add("is-animating");
-
                     nextEl.classList.remove("is-enter");
                     nextEl.classList.add("is-active");
                 });
-
                 window.setTimeout(() => {
                     resetClasses(currentEl);
                     current = nextIndex;
                     isAnimating = false;
                 }, DURATION);
             };
-
-            const goNext = (fromAuto = false) => {
-                goTo((current + 1) % slides.length);
-                if (!fromAuto) startAuto();
-            };
-
-            const goPrev = () => {
-                goTo((current - 1 + slides.length) % slides.length);
-                startAuto();
-            };
-
             const stopAuto = () => {
                 if (timer) clearInterval(timer);
                 timer = null;
             };
-
             const startAuto = () => {
                 stopAuto();
-                timer = setInterval(() => goNext(true), INTERVAL);
+                timer = setInterval(() => goTo((current + 1) % slides.length), INTERVAL);
             };
-
-            nextBtn?.addEventListener("click", () => goNext(false));
-            prevBtn?.addEventListener("click", goPrev);
-
+            nextBtn?.addEventListener("click", () => {
+                goTo((current + 1) % slides.length);
+                startAuto();
+            });
+            prevBtn?.addEventListener("click", () => {
+                goTo((current - 1 + slides.length) % slides.length);
+                startAuto();
+            });
             slider.addEventListener("mouseenter", stopAuto);
             slider.addEventListener("mouseleave", startAuto);
-
             startAuto();
         }
 
-        /* =========================================================
-           2) MODAL – detail vína + šipky v modalu + e-shop tlačítko
-           ========================================================= */
+        const titleSmallEl = document.querySelector("[data-vina-title-small]");
+        const titleBigEl = document.querySelector("[data-vina-title-big]");
+        const searchLabelEl = document.querySelector("[data-wine-search-label]");
+        const searchInput = document.getElementById("wineSearch");
+        const clearBtn = document.getElementById("wineSearchClear");
+        const certificationLabelEl = document.querySelector("[data-wine-certification-label]");
+        const styleLabelEl = document.querySelector("[data-wine-style-label]");
+        const priceLabelEl = document.querySelector("[data-wine-price-label]");
+        const priceMinLabelEl = document.querySelector("[data-wine-price-min-label]");
+        const priceMaxLabelEl = document.querySelector("[data-wine-price-max-label]");
+        const certificationFiltersEl = document.getElementById("wineCertificationFilters");
+        const styleFiltersEl = document.getElementById("wineStyleFilters");
+        const priceMinInput = document.getElementById("winePriceMin");
+        const priceMaxInput = document.getElementById("winePriceMax");
+        const priceStatusEl = document.getElementById("winePriceStatus");
+        const catalogEl = document.getElementById("vina-katalog");
+        const catalogStatusEl = document.getElementById("wineCatalogStatus");
+        const noResultsEl = document.getElementById("wineNoResults");
         const modal = document.getElementById("wineModal");
         const panel = modal ? modal.querySelector(".modal__panel") : null;
-
         const modalImage = document.getElementById("modalImage");
         const modalTitle = document.getElementById("modalTitle");
         const modalMeta = document.getElementById("modalMeta");
@@ -96,183 +216,164 @@
         const modalSpecs = document.getElementById("modalSpecs");
         const modalPairing = document.getElementById("modalPairing");
         const modalShopBtn = document.getElementById("wineShopBtn");
+        const modalSpecsTitle = document.querySelector("[data-modal-specs-title]");
+        const statusEl = document.getElementById("wineSearchStatus");
+        const searchWrap = document.getElementById("wineSearchWrap");
+        const searchToggle = document.getElementById("wineSearchToggle");
+        const searchPanel = document.getElementById("wineSearchPanel");
+        const priceRangeFillEl = document.getElementById("winePriceRangeFill");
 
-        const modalReady = !!(
-            modal &&
-            panel &&
-            modalImage &&
-            modalTitle &&
-            modalMeta &&
-            modalStory &&
-            modalSpecs &&
-            modalPairing
-        );
+        const modalReady = !!(modal && panel && modalImage && modalTitle && modalMeta && modalStory && modalSpecs && modalPairing);
 
-        /* =========================================================
-           DATA – WINES
-           ========================================================= */
-        const WINES = {
-            vermentino: {
-                title: "Vermentino IGT Toscana 2023 BAGIOGIE",
-                meta: "Suché bílé víno • Itálie • Toskánsko",
-                price: 350,
-                image: "Images/Vína/vermetinoigt23.png",
-                story:
-                    "Svěží, minerální a chuťově výrazné bílé víno z Toskánska vyrobené z odrůdy Vermentino. " +
-                    "Ve vůni i chuti dominují tóny citrusových plodů, především citronu a limetky, " +
-                    "doplněné o jemné bylinné nuance a typickou středomořskou mineralitu. " +
-                    "Víno působí lehce, elegantně a má suchý, osvěžující závěr.",
-                specs: [
-                    "Odrůda: Vermentino",
-                    "Ročník: 2023",
-                    "Klasifikace: IGT Toscana",
-                    "Styl: suché bílé víno",
-                    "Země původu: Itálie",
-                    "Region: Toskánsko",
-                    "Objem: 0,75 l",
-                    "Alkohol: 13 %"
-                ]
-            },
-            chianti: {
-                title: "Chianti Colli Senesi DOCG 2023 La Villa",
-                meta: "Suché červené víno • Itálie • Toskánsko",
-                price: 375,
-                image: "Images/Vína/chiantisenesi23.png",
-                story:
-                    "Klasické červené víno Chianti z oblasti Colli Senesi pocházející z vinařství Fattoria La Torre. " +
-                    "Vyrobené převážně z odrůdy Sangiovese z mladších vinic přibližně 15 let starých. " +
-                    "V chuti je víno harmonické, s tóny červeného ovoce, jemným kořenitým nádechem " +
-                    "a vyváženými tříslovinami.",
-                specs: [
-                    "Odrůda: Sangiovese",
-                    "Ročník: 2023",
-                    "Klasifikace: DOCG Chianti Colli Senesi",
-                    "Styl: suché červené víno",
-                    "Země původu: Itálie",
-                    "Region: Toskánsko",
-                    "Objem: 0,75 l",
-                    "Alkohol: 13,5 %"
-                ]
-            },
-            rosato: {
-                title: "Rosato IGT Toscana 2023 Badalui",
-                meta: "Růžové víno • Itálie • Toskánsko",
-                price: 350,
-                image: "Images/Vína/rosatoigt23.png",
-                story:
-                    "Svěží růžové víno z oblasti Toskánska vyrobené z odrůdy Sangiovese z mladých vinic. " +
-                    "V chuti dominují tóny červeného ovoce, lehká kyselina a suchý, čistý závěr. " +
-                    "Víno je velmi dobře pitelné a ideální pro letní gastronomii.",
-                specs: [
-                    "Odrůda: Sangiovese",
-                    "Ročník: 2023",
-                    "Klasifikace: IGT Toscana",
-                    "Styl: suché růžové víno",
-                    "Země původu: Itálie",
-                    "Region: Toskánsko",
-                    "Objem: 0,75 l",
-                    "Alkohol: 13 %"
-                ]
-            },
-            vernaccia: {
-                title: "Vernaccia di San Gimignano DOCG 2024",
-                meta: "Suché bílé víno • Itálie • Toskánsko",
-                price: 375,
-                image: "Images/Vína/vernaccia24.png",
-                story:
-                    "Klasické bílé víno z oblasti San Gimignano vyráběné z odrůdy Vernaccia. " +
-                    "Hrozny jsou jemně lisovány a víno zraje na jemných kalech, což mu dodává čistotu, " +
-                    "svěžest a jemnou strukturu. Ve vůni i chuti dominují citrusové tóny, zelené jablko " +
-                    "a typická minerální stopa.",
-                specs: [
-                    "Odrůda: Vernaccia",
-                    "Ročník: 2024",
-                    "Klasifikace: DOCG Vernaccia di San Gimignano",
-                    "Styl: suché bílé víno",
-                    "Země původu: Itálie",
-                    "Region: Toskánsko",
-                    "Objem: 0,75 l",
-                    "Alkohol: 12,5 %"
-                ]
-            },
-            guinzano: {
-                title: "San Gimignano Rosso DOC 2022 GUINZANO",
-                meta: "Suché červené víno • Itálie • Toskánsko",
-                price: 700,
-                image: "Images/Vína/rossodoc22.png",
-                story:
-                    "Víno vzniká z odrůd Sangiovese, Merlot a Cabernet Sauvignon, které se vinifikují samostatně " +
-                    "a poté se scelí do výsledného cuvée. Následuje zrání v dubových sudech a další ležení v lahvi, " +
-                    "díky čemuž je projev harmonický, elegantní a uhlazený. Ve vůni i chuti najdeš zralé červené ovoce, " +
-                    "jemné tóny dřeva a vyváženou strukturu s jemnými tříslovinami a dlouhým závěrem.",
-                specs: [
-                    "Odrůdy: Sangiovese, Merlot, Cabernet Sauvignon",
-                    "Ročník: 2022",
-                    "Klasifikace: San Gimignano Rosso DOC",
-                    "Styl: suché červené víno",
-                    "Země původu: Itálie",
-                    "Region: Toskánsko",
-                    "Objem: 0,75 l",
-                    "Alkohol: 14 %"
-                ]
-            },
-            sciallebiancho: {
-                title: "Vernaccia di San Gimignano Riserva DOCG 2022 Sciallebiancho",
-                meta: "Suché bílé víno • Itálie • Toskánsko",
-                price: 700,
-                image: "Images/Vína/vernacciadocg22.png",
-                story:
-                    "Prémiová Vernaccia di San Gimignano Riserva z vinařství Fattoria La Torre. " +
-                    "Hrozny pocházejí ze starých vinic přibližně 30 letých. Víno zraje na jemných kalech, " +
-                    "což mu dodává hloubku, noblesu a jemnou krémovou strukturu. " +
-                    "Ve vůni i chuti se objevují tóny citrusové kůry, minerality, lískových oříšků a jemné vanilky.",
-                specs: [
-                    "Odrůda: Vernaccia",
-                    "Ročník: 2022",
-                    "Klasifikace: DOCG Vernaccia di San Gimignano Riserva",
-                    "Styl: suché bílé víno",
-                    "Země původu: Itálie",
-                    "Region: Toskánsko",
-                    "Objem: 0,75 l",
-                    "Alkohol: 13,5 %"
-                ]
-            }
-        };
-
-        /* =========================================================
-           CENY – doplnění do karet z const WINES
-           ========================================================= */
-        const formatPrice = (value) => {
-            const n = Number(value);
-            if (!Number.isFinite(n)) return "";
-            return `${Math.round(n)} Kč`;
-        };
-
-        document.querySelectorAll(".wine-card[data-wine]").forEach((card) => {
-            const key = card.dataset.wine;
-            const data = key ? WINES[key] : null;
-            if (!data) return;
-
-            const priceEl = card.querySelector(".wine-price");
-            if (priceEl) {
-                priceEl.textContent = formatPrice(data.price);
-            }
-        });
-
-        const cards = Array.from(document.querySelectorAll(".wine-card[data-wine]"));
-        const cardByWineKey = new Map(
-            cards.map((card) => [card.dataset.wine, card])
-        );
-
-        const wineKeys = Object.keys(WINES);
+        let wines = [];
+        let cardIndex = [];
         let currentIndex = 0;
+        let selectedCertifications = new Set();
+        let selectedStyles = new Set();
+        let priceBounds = { min: 0, max: 0, selectedMin: 0, selectedMax: 0 };
 
-        const updateShopButton = (wineKey) => {
+        const applyStaticTranslations = () => {
+            const ui = getUi();
+            document.documentElement.lang = currentLang;
+            if (titleSmallEl) titleSmallEl.textContent = ui.titleSmall;
+            if (titleBigEl) titleBigEl.textContent = ui.titleBig;
+            if (searchLabelEl) searchLabelEl.textContent = ui.searchLabel;
+            if (searchInput) searchInput.placeholder = ui.searchPlaceholder;
+            if (clearBtn) clearBtn.textContent = ui.clear;
+            if (certificationLabelEl) certificationLabelEl.textContent = ui.certification;
+            if (styleLabelEl) styleLabelEl.textContent = ui.styleLabel;
+            if (priceLabelEl) priceLabelEl.textContent = ui.price;
+            if (priceMinLabelEl) priceMinLabelEl.textContent = ui.priceFrom;
+            if (priceMaxLabelEl) priceMaxLabelEl.textContent = ui.priceTo;
+            if (noResultsEl) noResultsEl.textContent = ui.noResults;
+            if (modalSpecsTitle) modalSpecsTitle.textContent = ui.specs;
+            if (modalShopBtn) modalShopBtn.textContent = ui.shop;
+            renderCheckboxFilters();
+            updatePriceStatus();
+        };
+
+        const setCatalogStatus = (message = "", isVisible = false) => {
+            if (!catalogStatusEl) return;
+            catalogStatusEl.textContent = message;
+            catalogStatusEl.hidden = !isVisible;
+        };
+
+        const renderCheckboxGroup = (mountEl, values, selectedSet, groupName, labelResolver) => {
+            if (!mountEl) return;
+            mountEl.innerHTML = "";
+            values.forEach((value) => {
+                const label = document.createElement("label");
+                label.className = "wine-checkbox";
+                const input = document.createElement("input");
+                input.type = "checkbox";
+                input.name = groupName;
+                input.value = value;
+                input.checked = selectedSet.has(value);
+                input.addEventListener("change", () => {
+                    if (input.checked) selectedSet.add(value);
+                    else selectedSet.delete(value);
+                    applyFilter();
+                });
+                const text = document.createElement("span");
+                text.textContent = labelResolver(value);
+                label.appendChild(input);
+                label.appendChild(text);
+                mountEl.appendChild(label);
+            });
+        };
+
+        const renderCheckboxFilters = () => {
+            const certificationValues = [...new Set(wines.map(getCertificationValue))].sort();
+            const styleValues = [...new Set(wines.map(getStyleValue).filter(Boolean))].sort((a, b) => a.localeCompare(b, currentLang));
+            renderCheckboxGroup(certificationFiltersEl, certificationValues, selectedCertifications, "wineCertification", getCertificationLabel);
+            renderCheckboxGroup(styleFiltersEl, styleValues, selectedStyles, "wineStyle", (value) => value);
+        };
+
+        const syncPriceInputs = () => {
+            if (!priceMinInput || !priceMaxInput) return;
+            priceMinInput.min = String(priceBounds.min);
+            priceMinInput.max = String(priceBounds.max);
+            priceMaxInput.min = String(priceBounds.min);
+            priceMaxInput.max = String(priceBounds.max);
+            priceMinInput.value = String(priceBounds.selectedMin);
+            priceMaxInput.value = String(priceBounds.selectedMax);
+
+            const span = Math.max(1, priceBounds.max - priceBounds.min);
+            const startPct = ((priceBounds.selectedMin - priceBounds.min) / span) * 100;
+            const endPct = ((priceBounds.selectedMax - priceBounds.min) / span) * 100;
+            if (priceRangeFillEl) {
+                priceRangeFillEl.style.left = `${startPct}%`;
+                priceRangeFillEl.style.right = `${100 - endPct}%`;
+            }
+        };
+
+        const updatePriceStatus = () => {
+            if (!priceStatusEl) return;
+            priceStatusEl.textContent = getUi().priceRange(priceBounds.selectedMin, priceBounds.selectedMax);
+        };
+
+        const initPriceBounds = () => {
+            const prices = wines.map((wine) => Number(wine.cena)).filter((price) => Number.isFinite(price));
+            const min = prices.length ? Math.min(...prices) : 0;
+            const max = prices.length ? Math.max(...prices) : 0;
+            priceBounds = { min, max, selectedMin: min, selectedMax: max };
+            syncPriceInputs();
+            updatePriceStatus();
+        };
+
+        const renderCards = () => {
+            if (!catalogEl) return;
+            catalogEl.innerHTML = "";
+
+            wines.forEach((wine, index) => {
+                const card = document.createElement("article");
+                const title = getWineTitle(wine);
+                const cert = wine.certifikace && wine.certifikace !== "none" ? wine.certifikace : getCertificationLabel("none");
+                const price = formatPrice(wine.cena);
+                const meta = [wine.rocnik, wine.styl, wine.zeme].filter(Boolean).join(" • ");
+
+                card.className = "wine-card wine-card--catalog";
+                card.dataset.wineId = String(wine.id);
+                card.setAttribute("tabindex", "0");
+                card.setAttribute("role", "button");
+                card.setAttribute("aria-label", title);
+
+                card.innerHTML = `
+                    <div class="wine-media">
+                        <img src="${escapeHtml(wine.image || "")}" alt="${escapeHtml(title)}">
+                    </div>
+                    <div class="wine-info">
+                        <h3 class="wine-name typo-h3">${escapeHtml(title)}</h3>
+                        <div class="wine-divider" aria-hidden="true"></div>
+                        <p class="wine-appellation typo-meta">${escapeHtml(cert)}</p>
+                        <p class="wine-price">${escapeHtml(price)}</p>
+                        <span class="wine-meta sr-only">${escapeHtml(meta)}</span>
+                    </div>
+                `;
+
+                card.addEventListener("click", () => openModalByIndex(index));
+                card.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openModalByIndex(index);
+                    }
+                });
+
+                catalogEl.appendChild(card);
+            });
+
+            cardIndex = Array.from(catalogEl.querySelectorAll(".wine-card[data-wine-id]"))
+                .map((card, index) => ({
+                    el: card,
+                    wine: wines[index],
+                    name: normalizeText(getWineTitle(wines[index]))
+                }));
+        };
+
+        const updateShopButton = (wine) => {
             if (!modalShopBtn) return;
-
-            const card = cardByWineKey.get(wineKey);
-            const shopUrl = card?.dataset.shop?.trim() || "";
-
+            const shopUrl = String(wine?.odkaz ?? "").trim();
+            modalShopBtn.textContent = getUi().shop;
             if (shopUrl) {
                 modalShopBtn.href = shopUrl;
                 modalShopBtn.hidden = false;
@@ -284,207 +385,57 @@
             }
         };
 
-        const openModal = (wineKey) => {
-            if (!modalReady) return;
-
-            currentIndex = wineKeys.indexOf(wineKey);
-            if (currentIndex < 0) return;
-
-            const data = WINES[wineKey];
-            if (!data) return;
-
+        const openModalByIndex = (index) => {
+            if (!modalReady || index < 0 || index >= wines.length) return;
+            const wine = wines[index];
+            currentIndex = index;
             modal.classList.remove("is-closing");
-
-            modalTitle.textContent = data.title;
-
-            const priceText = formatPrice(data.price);
-            modalMeta.textContent = priceText ? `${data.meta} • ${priceText}` : data.meta;
-
-            modalImage.src = data.image;
-            modalImage.alt = data.title;
-
-            modalStory.textContent = data.story;
-            modalSpecs.innerHTML = (data.specs ?? []).map((item) => `<li>${item}</li>`).join("");
-            modalPairing.innerHTML = (data.pairing ?? []).map((item) => `<li>${item}</li>`).join("");
-
-            updateShopButton(wineKey);
-
+            modalTitle.textContent = getWineTitle(wine);
+            const priceText = formatPrice(wine.cena);
+            const metaText = buildMeta(wine);
+            modalMeta.textContent = priceText ? [metaText, priceText].filter(Boolean).join(" • ") : metaText;
+            modalImage.src = wine.image || "";
+            modalImage.alt = getWineTitle(wine);
+            modalStory.textContent = wine.text || "";
+            modalSpecs.innerHTML = buildSpecs(wine).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+            modalPairing.innerHTML = "";
+            updateShopButton(wine);
             modal.classList.add("is-open");
             modal.setAttribute("aria-hidden", "false");
             document.body.classList.add("modal-open");
         };
 
         const closeModal = () => {
-            if (!modalReady) return;
-            if (modal.classList.contains("is-closing")) return;
-
+            if (!modalReady || modal.classList.contains("is-closing")) return;
             modal.classList.add("is-closing");
-
             window.setTimeout(() => {
                 modal.classList.remove("is-open", "is-closing");
                 modal.setAttribute("aria-hidden", "true");
                 document.body.classList.remove("modal-open");
                 modalImage.src = "";
-
-                if (modalShopBtn) {
-                    modalShopBtn.href = "#";
-                }
+                if (modalShopBtn) modalShopBtn.href = "#";
             }, 250);
         };
 
-        const switchToWine = (nextKey, direction = "right") => {
-            if (!modalReady) return;
-
+        const switchToWine = (nextIndex, direction = "right") => {
+            if (!modalReady || wines.length === 0) return;
             const cls = direction === "left" ? "is-switching-left" : "is-switching-right";
-
             panel.classList.remove("is-switching-left", "is-switching-right");
             panel.classList.add(cls);
-
             window.setTimeout(() => {
-                openModal(nextKey);
+                openModalByIndex(nextIndex);
                 panel.scrollTop = 0;
-
-                requestAnimationFrame(() => {
-                    panel.classList.remove(cls);
-                });
+                requestAnimationFrame(() => panel.classList.remove(cls));
             }, 140);
         };
 
-        const showNextWine = () => {
-            currentIndex = (currentIndex + 1) % wineKeys.length;
-            switchToWine(wineKeys[currentIndex], "right");
-        };
-
-        const showPrevWine = () => {
-            currentIndex = (currentIndex - 1 + wineKeys.length) % wineKeys.length;
-            switchToWine(wineKeys[currentIndex], "left");
-        };
-
-        // Klik/Enter/Space na kartu
-        cards.forEach((card) => {
-            card.addEventListener("click", () => openModal(card.dataset.wine));
-
-            card.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    openModal(card.dataset.wine);
-                }
-            });
-        });
-
-        // Zavírání (křížek + backdrop)
-        if (modalReady) {
-            modal.querySelectorAll("[data-close='true']").forEach((btn) => {
-                btn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    closeModal();
-                });
-            });
-
-            modal.addEventListener("click", (e) => {
-                if (!(e.target instanceof Element)) return;
-                if (e.target.closest("[data-close='true']")) closeModal();
-            });
-
-            window.addEventListener("keydown", (e) => {
-                if (e.key === "Escape" && modal.classList.contains("is-open")) {
-                    closeModal();
-                }
-            });
-
-            modal.querySelector(".modal__nav--next")?.addEventListener("click", showNextWine);
-            modal.querySelector(".modal__nav--prev")?.addEventListener("click", showPrevWine);
-        }
-
-        /* =========================================================
-           3) VYHLEDÁVÁNÍ + FILTRY (karty)
-           ========================================================= */
-        const searchInput = document.getElementById("wineSearch");
-        const clearBtn = document.getElementById("wineSearchClear");
-        const statusEl = document.getElementById("wineSearchStatus");
-        const noResultsEl = document.getElementById("wineNoResults");
-
-        const searchWrap = document.getElementById("wineSearchWrap");
-        const searchToggle = document.getElementById("wineSearchToggle");
-        const searchPanel = document.getElementById("wineSearchPanel");
-
-        if (searchToggle && searchPanel) {
-            const openSearch = () => {
-                searchPanel.hidden = false;
-                searchToggle.setAttribute("aria-expanded", "true");
-                searchWrap?.classList.add("is-open");
-                window.setTimeout(() => searchInput?.focus(), 0);
-            };
-
-            const closeSearch = () => {
-                searchPanel.hidden = true;
-                searchToggle.setAttribute("aria-expanded", "false");
-                searchWrap?.classList.remove("is-open");
-            };
-
-            searchToggle.addEventListener("click", () => {
-                const isOpen = searchToggle.getAttribute("aria-expanded") === "true";
-                if (isOpen) closeSearch();
-                else openSearch();
-            });
-
-            document.addEventListener("click", (e) => {
-                if (!searchWrap) return;
-                if (searchPanel.hidden) return;
-                if (e.target instanceof Element && !searchWrap.contains(e.target)) {
-                    closeSearch();
-                }
-            });
-
-            window.addEventListener("keydown", (e) => {
-                if (e.key === "Escape" && !searchPanel.hidden) {
-                    closeSearch();
-                    searchToggle.focus();
-                }
-            });
-        }
-
-        const filterButtons = Array.from(document.querySelectorAll(".wine-filter-btn[data-filter]"));
-        let activeCategoryFilter = "all";
-
-        const normalizeText = (value) => {
-            return String(value ?? "")
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .trim();
-        };
-
-        const detectCategoryFromMeta = (metaText) => {
-            const m = normalizeText(metaText);
-            if (m.includes("bile")) return "white";
-            if (m.includes("ruzove") || m.includes("rose")) return "rose";
-            if (m.includes("cervene")) return "red";
-            return "other";
-        };
-
-        const cardIndex = cards.map((card) => {
-            const name = card.querySelector(".wine-name")?.textContent ?? "";
-            const story = card.querySelector(".wine-story")?.textContent ?? "";
-            const notes = card.querySelector(".wine-notes")?.textContent ?? "";
-            const meta = card.querySelector(".wine-meta")?.textContent ?? "";
-
-            if (!card.hasAttribute("data-orig-tabindex")) {
-                card.setAttribute("data-orig-tabindex", card.getAttribute("tabindex") ?? "");
-            }
-
-            return {
-                el: card,
-                haystack: normalizeText(`${name} ${story} ${notes} ${meta}`),
-                category: detectCategoryFromMeta(meta)
-            };
-        });
+        const showNextWine = () => switchToWine((currentIndex + 1) % wines.length, "right");
+        const showPrevWine = () => switchToWine((currentIndex - 1 + wines.length) % wines.length, "left");
 
         const setCardVisible = (cardEl, visible) => {
             if (visible) {
                 cardEl.classList.remove("is-filtered-out");
                 cardEl.setAttribute("aria-hidden", "false");
-
                 const orig = cardEl.getAttribute("data-orig-tabindex");
                 if (orig === "") cardEl.removeAttribute("tabindex");
                 else cardEl.setAttribute("tabindex", orig);
@@ -496,67 +447,164 @@
         };
 
         const updateUi = (shownCount, totalCount, queryRaw) => {
+            const ui = getUi();
             if (statusEl) {
                 const q = String(queryRaw ?? "").trim();
-                statusEl.textContent = q
-                    ? `Zobrazeno ${shownCount} z ${totalCount} vín pro „${q}“.`
-                    : `Zobrazeno ${shownCount} z ${totalCount} vín.`;
+                statusEl.textContent = q ? ui.shownQuery(shownCount, totalCount, q) : ui.shown(shownCount, totalCount);
             }
-
-            if (noResultsEl) noResultsEl.hidden = shownCount !== 0;
-            if (clearBtn) clearBtn.disabled = !String(queryRaw ?? "").trim();
+            if (noResultsEl) noResultsEl.hidden = shownCount !== 0 || totalCount === 0;
+            if (clearBtn) clearBtn.disabled = !String(queryRaw ?? "").trim() && selectedCertifications.size === 0 && selectedStyles.size === 0 && priceBounds.selectedMin === priceBounds.min && priceBounds.selectedMax === priceBounds.max;
         };
 
         const applyFilter = () => {
             const total = cardIndex.length;
             const queryRaw = searchInput?.value ?? "";
             const query = normalizeText(queryRaw);
-
             let shownCount = 0;
 
             for (const item of cardIndex) {
-                const matchText = !query || item.haystack.includes(query);
-                const matchCat = activeCategoryFilter === "all" || item.category === activeCategoryFilter;
-                const match = matchText && matchCat;
-
+                const wine = item.wine;
+                const cert = getCertificationValue(wine);
+                const style = getStyleValue(wine);
+                const price = Number(wine.cena) || 0;
+                const matchText = !query || item.name.includes(query);
+                const matchCertification = selectedCertifications.size === 0 || selectedCertifications.has(cert);
+                const matchStyle = selectedStyles.size === 0 || selectedStyles.has(style);
+                const matchPrice = price >= priceBounds.selectedMin && price <= priceBounds.selectedMax;
+                const match = matchText && matchCertification && matchStyle && matchPrice;
                 setCardVisible(item.el, match);
                 if (match) shownCount++;
             }
 
             updateUi(shownCount, total, queryRaw);
+            updatePriceStatus();
         };
 
-        if (filterButtons.length) {
-            filterButtons.forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    activeCategoryFilter = btn.dataset.filter || "all";
-                    filterButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
-                    applyFilter();
+        const loadWines = async () => {
+            if (!catalogEl) return;
+            applyStaticTranslations();
+            setCatalogStatus(getUi().loading, true);
+            try {
+                const res = await fetch(`api/wines.php?lang=${encodeURIComponent(currentLang)}`, {
+                    headers: { "Accept": "application/json" }
+                });
+                const raw = await res.text();
+                let json;
+                try {
+                    json = JSON.parse(raw);
+                } catch (parseError) {
+                    console.error("Failed to parse wines JSON", { status: res.status, body: raw });
+                    throw parseError;
+                }
+                if (!res.ok || !json?.ok || !Array.isArray(json.items)) {
+                    console.error("Wine API returned error", { status: res.status, json });
+                    throw new Error("Wine API error");
+                }
+                wines = json.items;
+                selectedCertifications = new Set();
+                selectedStyles = new Set();
+                renderCards();
+                renderCheckboxFilters();
+                initPriceBounds();
+                applyFilter();
+                setCatalogStatus(wines.length ? "" : getUi().empty, !wines.length);
+            } catch (error) {
+                console.error("Failed to load wines", error);
+                wines = [];
+                cardIndex = [];
+                if (catalogEl) catalogEl.innerHTML = "";
+                updateUi(0, 0, searchInput?.value ?? "");
+                setCatalogStatus(getUi().loadError, true);
+            }
+        };
+
+        if (searchToggle && searchPanel) {
+            const openSearch = () => {
+                searchPanel.hidden = false;
+                searchToggle.setAttribute("aria-expanded", "true");
+                searchWrap?.classList.add("is-open");
+                window.setTimeout(() => searchInput?.focus(), 0);
+            };
+            const closeSearch = () => {
+                searchPanel.hidden = true;
+                searchToggle.setAttribute("aria-expanded", "false");
+                searchWrap?.classList.remove("is-open");
+            };
+            searchToggle.addEventListener("click", () => {
+                const isOpen = searchToggle.getAttribute("aria-expanded") === "true";
+                if (isOpen) closeSearch(); else openSearch();
+            });
+            document.addEventListener("click", (e) => {
+                if (!searchWrap || searchPanel.hidden) return;
+                if (e.target instanceof Element && !searchWrap.contains(e.target)) closeSearch();
+            });
+            window.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && !searchPanel.hidden) {
+                    closeSearch();
+                    searchToggle.focus();
+                }
+            });
+        }
+
+        searchInput?.addEventListener("input", applyFilter);
+        clearBtn?.addEventListener("click", () => {
+            if (searchInput) searchInput.value = "";
+            selectedCertifications = new Set();
+            selectedStyles = new Set();
+            renderCheckboxFilters();
+            priceBounds.selectedMin = priceBounds.min;
+            priceBounds.selectedMax = priceBounds.max;
+            syncPriceInputs();
+            applyFilter();
+            searchInput?.focus();
+        });
+
+        priceMinInput?.addEventListener("input", () => {
+            const nextValue = Number(priceMinInput.value);
+            priceBounds.selectedMin = Math.min(nextValue, priceBounds.selectedMax);
+            syncPriceInputs();
+            applyFilter();
+        });
+        priceMaxInput?.addEventListener("input", () => {
+            const nextValue = Number(priceMaxInput.value);
+            priceBounds.selectedMax = Math.max(nextValue, priceBounds.selectedMin);
+            syncPriceInputs();
+            applyFilter();
+        });
+
+        document.addEventListener("langchange", (event) => {
+            const nextLang = event.detail?.lang === "en" ? "en" : "cs";
+            if (nextLang === currentLang) return;
+            currentLang = nextLang;
+            loadWines();
+        });
+
+        if (modalReady) {
+            modal.querySelectorAll("[data-close='true']").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    closeModal();
                 });
             });
-        }
-
-        if (searchInput) {
-            searchInput.addEventListener("input", applyFilter);
-        }
-
-        if (clearBtn && searchInput) {
-            clearBtn.addEventListener("click", () => {
-                searchInput.value = "";
-                applyFilter();
-                searchInput.focus();
+            modal.addEventListener("click", (e) => {
+                if (!(e.target instanceof Element)) return;
+                if (e.target.closest("[data-close='true']")) closeModal();
             });
+            window.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+            });
+            modal.querySelector(".modal__nav--next")?.addEventListener("click", showNextWine);
+            modal.querySelector(".modal__nav--prev")?.addEventListener("click", showPrevWine);
         }
 
-        applyFilter();
+        applyStaticTranslations();
+        loadWines();
     });
 
-    /* =========================================================
-       4) JEMNÝ NÁJEZD OBSAHU (po načtení všeho, včetně obrázků)
-       ========================================================= */
     window.addEventListener("load", () => {
         document.querySelector(".vina-header")?.classList.add("is-visible");
         document.querySelector(".vina-content")?.classList.add("is-visible");
         document.querySelector(".wines")?.classList.add("is-visible");
     });
 })();
+
