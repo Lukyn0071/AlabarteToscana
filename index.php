@@ -10,6 +10,30 @@ require_once __DIR__ . '/admin/content/ui_texts.php';
 $lang = get_lang();
 $ui = load_ui_texts($pdo, $lang);
 $sections = load_page_sections($pdo, $lang);
+
+// Override pro dvě konkrétní spodní sekce (DB-driven)
+// "Alabarte – Toskánsko v každé lahvi" => nový obsah (Firemní klienti)
+// "Fattoria La Torre" => skryjeme celou sekci (odstraní i druhý obrázek)
+$corporateTitle = 'Firemní klienti';
+$corporateBody = "ALABARTE nabízí unikátní toskánská vína Fattoria La Torre také pro firmy, hotely, restaurace a další profesionální partnery. Díky přímému dovozu a exkluzivnímu zastoupení pro Českou republiku dodáváme partnerům vína s jasným původem, silným příběhem a vysokou přidanou hodnotou.\n\nNaše vína jsou vhodná pro:\nreprezentativní dárky pro klienty a obchodní partnery\nfiremní setkání, eventy a společenské příležitosti\nvinné nabídky restaurací a hotelů\ndlouhodobou spolupráci v segmentu HORECA\n\nPřipravujeme individuální nabídky podle objemu i charakteru spolupráce. Součástí může být také podpora při prezentaci vín, doporučení pro vinný lístek nebo řízené degustace.";
+
+foreach ($sections as &$s) {
+    $t = (string)($s['title'] ?? '');
+
+    if ($t === 'Alabarte – Toskánsko v každé lahvi') {
+        $s['eyebrow'] = '';
+        $s['title'] = $corporateTitle;
+        $s['body1'] = $corporateBody;
+        $s['body2'] = '';
+        continue;
+    }
+
+    if ($t === 'Fattoria La Torre') {
+        $s['_hidden'] = true;
+        continue;
+    }
+}
+unset($s);
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars($lang, ENT_QUOTES, 'UTF-8'); ?>">
@@ -189,7 +213,7 @@ $sections = load_page_sections($pdo, $lang);
             </div>
         </div>
     </div>
-    </section>
+
     <section class="home-partner" id="partner-section">
         <h2 class="home-partner__title">Fattoria La Torre, San Gimignano – domov našich vín</h2>
 
@@ -217,6 +241,7 @@ $sections = load_page_sections($pdo, $lang);
     <section class="home-texts-endcap">
         <div class="info-wrapper">
             <?php foreach ($sections as $i => $s): ?>
+                <?php if (!empty($s['_hidden'])) { continue; } ?>
                 <?php
                     $sectionClass = section_style_class((int)$i);
                     $innerClass = section_inner_class((int)$i);
