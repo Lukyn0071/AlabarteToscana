@@ -65,7 +65,6 @@ $ver_vina_admin_js  = asset_ver_vina(__DIR__ . '/vina_admin.js');
 <div class="admin-panel">
     Přihlášen jako <strong><?php echo htmlspecialchars((string)$username, ENT_QUOTES, 'UTF-8'); ?></strong>
     | <a href="index.php">Administrace</a>
-    | <a href="aktuality.php">Aktuality</a>
     | <a href="logout.php">Odhlásit</a>
     <div class="toast" id="toastOk" style="display:none;"></div>
 </div>
@@ -76,21 +75,10 @@ $ver_vina_admin_js  = asset_ver_vina(__DIR__ . '/vina_admin.js');
     <div class="vina-top-bg">
         <div class="hero-overlay">
 
-            <!-- TOP BAR -->
-            <div class="hero-top">
-                <div class="lang-switcher" aria-label="Přepínač jazyka">
-                    <a class="lang-btn" href="?lang=cs">CS</a>
-                    <a class="lang-btn" href="?lang=en">EN</a>
-                </div>
-
-                <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
-                    <a href="../index.php" data-key="home">Domů</a>
-                    <a href="vina.php" data-key="vina" aria-current="page">Vína</a>
-                    <a href="../index.php#partner-section" data-key="partner">Fattoria La Torre</a>
-                    <a href="aktuality.php" data-key="aktuality">Novinky</a>
-                    <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-Shop</a>
-                </nav>
-            </div>
+            <?php
+              $active = 'vina';
+              require __DIR__ . '/../partials/admin_top.php';
+            ?>
 
             <!-- TITLE + LOGA -->
             <header class="vina-header" aria-label="Nadpis sekce Vína">

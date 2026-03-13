@@ -98,7 +98,6 @@ $ver_grid_js = asset_ver(__DIR__ . '/aktuality_grid.js');
 <body>
   <div class="admin-panel">
     Přihlášen jako <strong><?php echo htmlspecialchars((string)current_admin_username(), ENT_QUOTES, 'UTF-8'); ?></strong>
-    | <a href="index.php">Administrace</a>
     | <a href="logout.php">Odhlásit</a>
 
     <div class="toast" id="toastOk" style="display:none;"></div>
@@ -107,20 +106,10 @@ $ver_grid_js = asset_ver(__DIR__ . '/aktuality_grid.js');
   <section class="hero" aria-label="Aktuality">
     <div class="hero-overlay">
 
-      <div class="hero-top">
-        <div class="lang-switcher" aria-label="Přepínač jazyka">
-          <a class="lang-btn" href="?lang=cs" data-lang="cs">CS</a>
-          <a class="lang-btn" href="?lang=en" data-lang="en">EN</a>
-        </div>
-
-        <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
-          <a href="../index.php" data-key="home"><?php echo htmlspecialchars((string)($ui['nav_home'] ?? 'Domů'), ENT_QUOTES, 'UTF-8'); ?></a>
-          <a href="../vina.php" data-key="vina"><?php echo htmlspecialchars((string)($ui['nav_vina'] ?? 'Vína'), ENT_QUOTES, 'UTF-8'); ?></a>
-          <a href="aktuality.php" data-key="aktuality"><?php echo htmlspecialchars((string)($ui['nav_galerie'] ?? 'Novinky'), ENT_QUOTES, 'UTF-8'); ?></a>
-          <a href="../index.php#partner-section" data-key="partner"><?php echo htmlspecialchars((string)($ui['nav_partner'] ?? 'Fattoria La Torre'), ENT_QUOTES, 'UTF-8'); ?></a>
-          <a href="https://www.alabarte.cz/vino/" data-key="eshop"><?php echo htmlspecialchars((string)($ui['nav_eshop'] ?? 'E-shop'), ENT_QUOTES, 'UTF-8'); ?></a>
-        </nav>
-      </div>
+      <?php
+        $active = 'aktuality';
+        require __DIR__ . '/../partials/admin_top.php';
+      ?>
 
       <header class="page-head">
         <h1 class="page-title" data-key="aktuality_title"><?php echo htmlspecialchars((string)($ui['aktuality_title'] ?? 'Toskánský deník'), ENT_QUOTES, 'UTF-8'); ?></h1>
