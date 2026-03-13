@@ -10,6 +10,32 @@ require_once __DIR__ . '/admin/content/ui_texts.php';
 $lang = get_lang();
 $ui = load_ui_texts($pdo, $lang);
 $sections = load_page_sections($pdo, $lang);
+
+// Override pro dvě konkrétní spodní sekce (DB-driven) – požadavek: změnit texty
+// "Alabarte – Toskánsko v každé lahvi" a "Fattoria La Torre" na nový obsah.
+$corporateTitle = 'Firemní klienti';
+
+$corporateBodyLeft = "ALABARTE nabízí unikátní toskánská vína Fattoria La Torre také pro firmy, hotely, restaurace a další profesionální partnery. Díky přímému dovozu a exkluzivnímu zastoupení pro Českou republiku dodáváme partnerům vína s jasným původem, silným příběhem a vysokou přidanou hodnotou.\n\nNaše vína jsou vhodná pro:\nreprezentativní dárky pro klienty a obchodní partnery\nfiremní setkání, eventy a společenské příležitosti\nvinné nabídky restaurací a hotelů\ndlouhodobou spolupráci v segmentu HORECA\n\nPřipravujeme individuální nabídky podle objemu i charakteru spolupráce. Součástí může být také podpora při prezentaci vín, doporučení pro vinný lístek nebo řízené degustace.";
+
+foreach ($sections as &$s) {
+    $t = (string)($s['title'] ?? '');
+
+    // 1) původní: Alabarte – Toskánsko v každé lahvi (ponecháme jako jedinou sekci)
+    if ($t === 'Alabarte – Toskánsko v každé lahvi') {
+        $s['eyebrow'] = '';
+        $s['title'] = $corporateTitle;
+        $s['body1'] = $corporateBodyLeft;
+        $s['body2'] = '';
+        continue;
+    }
+
+    // 2) původní: Fattoria La Torre (druhá sekce) – schováme ji celou, aby zmizel i obrázek
+    if ($t === 'Fattoria La Torre') {
+        $s['_hidden'] = true;
+        continue;
+    }
+}
+unset($s);
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars($lang, ENT_QUOTES, 'UTF-8'); ?>">
@@ -150,6 +176,7 @@ $sections = load_page_sections($pdo, $lang);
     <section class="home-texts-endcap">
         <div class="info-wrapper">
             <?php foreach ($sections as $i => $s): ?>
+                <?php if (!empty($s['_hidden'])) { continue; } ?>
                 <?php
                     $sectionClass = section_style_class((int)$i);
                     $innerClass = section_inner_class((int)$i);
