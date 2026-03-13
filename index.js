@@ -1,5 +1,103 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    /* ================= MOBILE NAV (hamburger) ================= */
+    const navToggle = document.querySelector('[data-nav-toggle]');
+    const mobileNav = document.querySelector('[data-mobile-nav]');
+
+    if (navToggle && mobileNav) {
+        const closeTargets = mobileNav.querySelectorAll('[data-nav-close]');
+        const panel = mobileNav.querySelector('.mobile-nav__panel');
+
+        let lastFocus = null;
+
+        const getFocusable = () => {
+            const root = panel || mobileNav;
+            if (!root) return [];
+            return Array.from(root.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )).filter((el) => {
+                const style = window.getComputedStyle(el);
+                return style.display !== 'none' && style.visibility !== 'hidden';
+            });
+        };
+
+        const openNav = () => {
+            if (mobileNav.classList.contains('is-open')) return;
+            lastFocus = document.activeElement;
+            mobileNav.classList.add('is-open');
+            document.body.classList.add('mobile-nav-open');
+            navToggle.setAttribute('aria-expanded', 'true');
+
+            // fokus na první odkaz v menu
+            const focusables = getFocusable();
+            (focusables[0] || panel || mobileNav).focus?.();
+        };
+
+        const closeNav = () => {
+            if (!mobileNav.classList.contains('is-open')) return;
+            mobileNav.classList.remove('is-open');
+            document.body.classList.remove('mobile-nav-open');
+            navToggle.setAttribute('aria-expanded', 'false');
+
+            if (lastFocus && typeof lastFocus.focus === 'function') {
+                lastFocus.focus();
+            } else {
+                navToggle.focus();
+            }
+            lastFocus = null;
+        };
+
+        const toggleNav = () => {
+            if (mobileNav.classList.contains('is-open')) closeNav();
+            else openNav();
+        };
+
+        navToggle.addEventListener('click', toggleNav);
+
+        closeTargets.forEach((el) => el.addEventListener('click', closeNav));
+
+        // klik na odkaz -> zavřít
+        mobileNav.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link) closeNav();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!mobileNav.classList.contains('is-open')) return;
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeNav();
+                return;
+            }
+
+            // jednoduchý focus trap
+            if (e.key === 'Tab') {
+                const focusables = getFocusable();
+                if (focusables.length === 0) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                const active = document.activeElement;
+
+                if (e.shiftKey && active === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && active === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        });
+
+        // když se přepne desktop<->mobile (rotační), radši zavřít
+        const mq = window.matchMedia('(max-width: 760px)');
+        const handleMq = (ev) => {
+            if (!ev.matches) closeNav();
+        };
+        if (mq && typeof mq.addEventListener === 'function') mq.addEventListener('change', handleMq);
+        else if (mq && typeof mq.addListener === 'function') mq.addListener(handleMq);
+    }
+
     /* ================= HERO BACKGROUND ROTATOR (diskphoto) ================= */
     const heroBg = document.querySelector(".hero-bg");
 

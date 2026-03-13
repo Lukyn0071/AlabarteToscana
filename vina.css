@@ -919,11 +919,21 @@ body.modal-open{
 
 @media (max-width: 768px){
     .hero-top{
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+        /* na telefonu držíme topbar v jednom řádku: lang vlevo, hamburger vpravo */
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
         padding: 0.5rem 1.25rem;
+        flex-wrap: nowrap;
     }
+
+    /* desktop nav se na mobilu schová (potvrzeno i níže v 760px) */
+    .hero-top > .hero-nav{
+        display: none;
+    }
+
+    /* (mobilní panel nav zůstane) */
 
     .hero-nav{
         position: static;
@@ -970,6 +980,106 @@ body.modal-open{
         letter-spacing: 0.3em;
     }
 }
+
+/* =========================================================
+   MOBILE NAV (hamburger)
+   ========================================================= */
+.mobile-nav-toggle{
+    display: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.22);
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    cursor: pointer;
+    z-index: 1200;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-toggle:hover{ background: rgba(0,0,0,0.65); }
+
+.mobile-nav-toggle:focus-visible{
+    outline: 3px solid rgba(255,255,255,0.55);
+    outline-offset: 3px;
+}
+
+.mobile-nav-toggle__icon{
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 2px;
+    margin: 0 auto;
+    background: currentColor;
+    border-radius: 2px;
+}
+
+.mobile-nav-toggle__icon::before,
+.mobile-nav-toggle__icon::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+}
+
+.mobile-nav-toggle__icon::before{ top: -6px; }
+.mobile-nav-toggle__icon::after{ top: 6px; }
+
+.mobile-nav{
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 2000;
+}
+
+.mobile-nav.is-open{ display: block; }
+
+.mobile-nav__backdrop{
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(6px);
+}
+
+.mobile-nav__panel{
+    position: absolute;
+    right: 12px;
+    top: calc(12px + env(safe-area-inset-top));
+    width: min(360px, calc(100vw - 24px));
+    border-radius: 16px;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 22px 70px rgba(0,0,0,0.35);
+    padding: 0.75rem;
+}
+
+.mobile-nav .hero-nav{
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    backdrop-filter: none;
+}
+
+.mobile-nav .hero-nav a{
+    padding: 0.85rem 0.9rem;
+    border-radius: 12px;
+}
+
+.mobile-nav .hero-nav a:hover{ background: rgba(255,255,255,0.10); opacity: 1; }
+
+body.mobile-nav-open{ overflow: hidden; }
 
 @media (max-width: 640px){
     .wine-search__controls{
@@ -1181,4 +1291,16 @@ body.modal-open{
     .wine-price-filter__inputs {
         grid-template-columns: 1fr;
     }
+}
+
+@media (min-width: 761px){
+    .mobile-nav-toggle{ display: none !important; }
+    .mobile-nav{ display: none !important; }
+    .hero-top > .hero-nav{ display: flex !important; }
+}
+
+@media (max-width: 760px){
+    /* hamburger musí být vidět a vpravo */
+    .mobile-nav-toggle{ display: inline-grid; place-items: center; }
+    .hero-top > .hero-nav{ display: none; }
 }

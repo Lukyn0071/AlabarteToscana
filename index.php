@@ -36,13 +36,37 @@ $sections = load_page_sections($pdo, $lang);
                     <a class="lang-btn" href="?lang=en" data-lang="en">EN</a>
                 </div>
 
-                <nav class="hero-nav" id="heroNav">
+                <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
                     <a href="index.php">Domů</a>
                     <a href="vina.php">Vína</a>
                     <a href="#partner-section">Fattoria La Torre</a>
                     <a href="aktuality.php">Novinky</a>
                     <a href="https://www.alabarte.cz/vino/">E-Shop</a>
                 </nav>
+
+                <button
+                    class="mobile-nav-toggle"
+                    type="button"
+                    aria-label="Otevřít navigaci"
+                    aria-expanded="false"
+                    aria-controls="mobileNavPanel"
+                    data-nav-toggle
+                >
+                    <span class="mobile-nav-toggle__icon" aria-hidden="true"></span>
+                </button>
+
+                <div class="mobile-nav" data-mobile-nav>
+                    <div class="mobile-nav__backdrop" data-nav-close tabindex="-1"></div>
+                    <div class="mobile-nav__panel" id="mobileNavPanel" role="dialog" aria-modal="true" aria-label="Menu">
+                        <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
+                            <a href="index.php">Domů</a>
+                            <a href="vina.php">Vína</a>
+                            <a href="#partner-section">Fattoria La Torre</a>
+                            <a href="aktuality.php">Novinky</a>
+                            <a href="https://www.alabarte.cz/vino/">E-Shop</a>
+                        </nav>
+                    </div>
+                </div>
             </div>
 
             <div class="hero-content hero-content--reference">

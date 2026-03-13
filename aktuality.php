@@ -66,6 +66,30 @@ $assetV = (string)max(
           <a href="aktuality.php" data-key="aktuality" aria-current="page">Novinky</a>
           <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-Shop</a>
         </nav>
+
+        <button
+          class="mobile-nav-toggle"
+          type="button"
+          aria-label="Otevřít navigaci"
+          aria-expanded="false"
+          aria-controls="mobileNavPanel"
+          data-nav-toggle
+        >
+          <span class="mobile-nav-toggle__icon" aria-hidden="true"></span>
+        </button>
+
+        <div class="mobile-nav" data-mobile-nav>
+          <div class="mobile-nav__backdrop" data-nav-close tabindex="-1"></div>
+          <div class="mobile-nav__panel" id="mobileNavPanel" role="dialog" aria-modal="true" aria-label="Menu">
+            <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
+              <a href="index.php" data-key="home">Domů</a>
+              <a href="vina.php" data-key="vina">Vína</a>
+              <a href="index.php#partner-section" data-key="partner">Fattoria La Torre</a>
+              <a href="aktuality.php" data-key="aktuality" aria-current="page">Novinky</a>
+              <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-Shop</a>
+            </nav>
+          </div>
+        </div>
       </div>
 
         <main class="wrap" aria-label="Obsah aktualit">
