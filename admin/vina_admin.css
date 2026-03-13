@@ -317,6 +317,85 @@
 }
 
 /* =========================================================
+   DRAG & DROP ORDERING
+   ========================================================= */
+.wine-card.wine-card--catalog {
+    position: relative;
+    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+/* little affordance */
+.wine-card.wine-card--catalog:hover {
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.10);
+    transform: translateY(-1px);
+}
+
+/* prevent ugly text selection while dragging */
+.wine-card.wine-card--catalog.is-dragging,
+.wine-card.wine-card--catalog.is-dragging * {
+    user-select: none;
+}
+
+.wine-drag-handle {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid rgba(17, 17, 17, 0.14);
+    background: rgba(255, 255, 255, 0.92);
+    color: rgba(17, 17, 17, 0.72);
+    cursor: grab;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    line-height: 1;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.10);
+    transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, color 120ms ease;
+}
+
+.wine-drag-handle:hover {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 14px 32px rgba(0,0,0,0.14);
+    transform: translateY(-1px);
+    color: rgba(122, 15, 29, 0.95);
+}
+
+.wine-drag-handle:focus-visible {
+    outline: 3px solid rgba(122, 15, 29, 0.25);
+    outline-offset: 2px;
+}
+
+.wine-card.is-dragging .wine-drag-handle {
+    cursor: grabbing;
+    transform: scale(0.98);
+}
+
+.wine-card.is-dragging {
+    opacity: 0.78;
+    transform: scale(0.995);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.18);
+}
+
+.wine-card.is-drag-over {
+    outline: 2px dashed rgba(122, 15, 29, 0.55);
+    outline-offset: 8px;
+    box-shadow: 0 22px 50px rgba(122, 15, 29, 0.10);
+}
+
+/* subtle hint that the handle is for sorting */
+.wine-card.wine-card--catalog:hover .wine-drag-handle {
+    animation: dragNudge 220ms ease;
+}
+
+@keyframes dragNudge {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-1px); }
+    100% { transform: translateY(0); }
+}
+
+/* =========================================================
    RESPONSIVE
    ========================================================= */
 @media (max-width: 640px) {

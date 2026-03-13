@@ -66,6 +66,30 @@ $assetV = (string)max(
           <a href="aktuality.php" data-key="aktuality" aria-current="page">Novinky</a>
           <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-Shop</a>
         </nav>
+
+        <button
+          class="mobile-nav-toggle"
+          type="button"
+          aria-label="Otevřít navigaci"
+          aria-expanded="false"
+          aria-controls="mobileNavPanel"
+          data-nav-toggle
+        >
+          <span class="mobile-nav-toggle__icon" aria-hidden="true"></span>
+        </button>
+
+        <div class="mobile-nav" data-mobile-nav>
+          <div class="mobile-nav__backdrop" data-nav-close tabindex="-1"></div>
+          <div class="mobile-nav__panel" id="mobileNavPanel" role="dialog" aria-modal="true" aria-label="Menu">
+            <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
+              <a href="index.php" data-key="home">Domů</a>
+              <a href="vina.php" data-key="vina">Vína</a>
+              <a href="index.php#partner-section" data-key="partner">Fattoria La Torre</a>
+              <a href="aktuality.php" data-key="aktuality" aria-current="page">Novinky</a>
+              <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-Shop</a>
+            </nav>
+          </div>
+        </div>
       </div>
 
         <main class="wrap" aria-label="Obsah aktualit">
@@ -76,8 +100,8 @@ $assetV = (string)max(
                 <section class="quote" aria-label="Citát">
                     <div class="quote-inner">
                         <div class="quote-leaf" aria-hidden="true"></div>
-                        <p class="quote-text"><?php echo htmlspecialchars((string)($ui['quote_text'] ?? 'Víno je poezie uzavřená v lahvi.'), ENT_QUOTES, 'UTF-8'); ?></p>
-                        <div class="quote-author"><?php echo htmlspecialchars((string)($ui['quote_author'] ?? '— Robert Louis Stevenson'), ENT_QUOTES, 'UTF-8'); ?></div>
+                        <p class="quote-text"><?php echo htmlspecialchars((string)($ui['quote_text'] ?? 'Víno je ta nejcivilizovanější věc na světě.'), ENT_QUOTES, 'UTF-8'); ?></p>
+                        <div class="quote-author"><?php echo htmlspecialchars((string)($ui['quote_author'] ?? '— E. Hemingway'), ENT_QUOTES, 'UTF-8'); ?></div>
                     </div>
                 </section>
             </section>

@@ -218,7 +218,11 @@
             card.className = "wine-card wine-card--catalog";
             card.setAttribute("data-wine-id", w.id);
 
+            // DnD is enabled only via handle in initDragAndDrop()
+            card.setAttribute("aria-grabbed", "false");
+
             card.innerHTML = `
+                <button type="button" class="wine-drag-handle" aria-label="Přesunout víno" title="Přesunout">⋮⋮</button>
                 <div class="wine-media">
                     <img src="../${esc(w.image || "")}" alt="${esc(shortName)}">
                 </div>
@@ -236,6 +240,204 @@
 
             catalogEl.appendChild(card);
         });
+
+        initDragAndDrop();
+    };
+
+    /* =========================================================
+       DRAG & DROP ORDERING
+       ========================================================= */
+    let draggingEl = null;
+    let dragOverEl = null;
+    let isPersistingOrder = false;
+
+    const getVisibleCards = () => Array.from(catalogEl?.querySelectorAll(".wine-card[data-wine-id]:not(.is-filtered-out)") ?? []);
+
+    const persistOrderFromDom = async () => {
+        if (!catalogEl || isPersistingOrder) return;
+
+        const visibleCards = getVisibleCards();
+        if (visibleCards.length <= 1) return;
+
+        const visibleIds = visibleCards.map((el) => Number(el.dataset.wineId)).filter((n) => Number.isFinite(n) && n > 0);
+
+        // Merge: new visible order first, then rest in their current order.
+        const visibleSet = new Set(visibleIds.map(String));
+        const restIds = wines
+            .map((w) => String(w.id))
+            .filter((id) => !visibleSet.has(id))
+            .map((id) => Number(id));
+
+        const order = [...visibleIds, ...restIds].filter((id) => Number.isFinite(id) && id > 0);
+
+        // Update local array immediately so filtering keeps stable order.
+        const indexById = new Map(wines.map((w, i) => [String(w.id), i]));
+        const next = [];
+        order.forEach((id) => {
+            const idx = indexById.get(String(id));
+            if (idx != null) next.push(wines[idx]);
+        });
+        if (next.length === wines.length) {
+            wines = next;
+        }
+
+        isPersistingOrder = true;
+        try {
+            const res = await fetch("api/wines_reorder.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({ order }),
+            });
+
+            const raw = await res.text();
+            let json = null;
+            try {
+                json = JSON.parse(raw);
+            } catch {
+                json = null;
+            }
+
+            if (!res.ok || !json?.ok) {
+                console.error("Failed to persist wines order", { status: res.status, raw, json });
+                showStatus("Nepodařilo se uložit pořadí", true);
+                // Reload from server to return to canonical order.
+                await loadWines();
+                applyFilter();
+                return;
+            }
+
+            showStatus("Pořadí uloženo ✓");
+        } catch (e) {
+            console.error(e);
+            showStatus("Nepodařilo se uložit pořadí", true);
+            await loadWines();
+            applyFilter();
+        } finally {
+            isPersistingOrder = false;
+        }
+    };
+
+    const initDragAndDrop = () => {
+        if (!catalogEl) return;
+
+        const cards = Array.from(catalogEl.querySelectorAll(".wine-card[data-wine-id]"));
+        cards.forEach((card) => {
+            card.removeEventListener("dragstart", onDragStart);
+            card.removeEventListener("dragend", onDragEnd);
+            card.removeEventListener("dragover", onDragOver);
+            card.removeEventListener("dragleave", onDragLeave);
+            card.removeEventListener("drop", onDragDrop);
+
+            card.addEventListener("dragstart", onDragStart);
+            card.addEventListener("dragend", onDragEnd);
+            card.addEventListener("dragover", onDragOver);
+            card.addEventListener("dragleave", onDragLeave);
+            card.addEventListener("drop", onDragDrop);
+
+            // Default: block dragging unless explicitly started from handle.
+            card.draggable = false;
+            card.dataset.dragEnabled = "0";
+
+            const handle = card.querySelector('.wine-drag-handle');
+            if (handle) {
+                // Enable dragging only when user starts interaction on the handle.
+                const enable = () => {
+                    card.dataset.dragEnabled = "1";
+                    card.draggable = true;
+                };
+                const disable = () => {
+                    card.dataset.dragEnabled = "0";
+                    card.draggable = false;
+                };
+
+                handle.addEventListener("pointerdown", enable);
+                // If the user clicks but doesn't drag, disable again.
+                handle.addEventListener("pointerup", disable);
+                handle.addEventListener("pointercancel", disable);
+                handle.addEventListener("lostpointercapture", disable);
+
+                // Safety: also disable when leaving card.
+                card.addEventListener("pointerup", disable);
+                card.addEventListener("pointercancel", disable);
+            }
+        });
+    };
+
+    const onDragStart = (e) => {
+        const card = e.currentTarget;
+        if (!(card instanceof HTMLElement)) return;
+
+        if (card.dataset.dragEnabled !== "1") {
+            e.preventDefault();
+            return;
+        }
+
+        draggingEl = card;
+        card.classList.add("is-dragging");
+        card.setAttribute("aria-grabbed", "true");
+
+        if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", card.dataset.wineId || "");
+
+            // Make drag image small-ish (some browsers otherwise drag the whole card).
+            const handle = card.querySelector('.wine-drag-handle');
+            if (handle instanceof HTMLElement && e.dataTransfer.setDragImage) {
+                e.dataTransfer.setDragImage(handle, 18, 18);
+            }
+        }
+    };
+
+    const onDragEnd = async () => {
+        if (draggingEl) {
+            draggingEl.classList.remove("is-dragging");
+            draggingEl.setAttribute("aria-grabbed", "false");
+            // Disable dragging again after drag finishes.
+            draggingEl.dataset.dragEnabled = "0";
+            draggingEl.draggable = false;
+        }
+        if (dragOverEl) dragOverEl.classList.remove("is-drag-over");
+
+        draggingEl = null;
+        dragOverEl = null;
+
+        await persistOrderFromDom();
+    };
+
+    const onDragOver = (e) => {
+        e.preventDefault();
+        const target = e.currentTarget;
+        if (!draggingEl || target === draggingEl) return;
+        if (target.classList.contains("is-filtered-out") || draggingEl.classList.contains("is-filtered-out")) return;
+
+        if (dragOverEl && dragOverEl !== target) dragOverEl.classList.remove("is-drag-over");
+        dragOverEl = target;
+        target.classList.add("is-drag-over");
+
+        const rect = target.getBoundingClientRect();
+        const before = (e.clientY - rect.top) < rect.height / 2;
+        const parent = target.parentNode;
+        if (!parent) return;
+
+        if (before) {
+            parent.insertBefore(draggingEl, target);
+        } else {
+            parent.insertBefore(draggingEl, target.nextSibling);
+        }
+    };
+
+    const onDragLeave = (e) => {
+        const target = e.currentTarget;
+        target.classList.remove("is-drag-over");
+    };
+
+    const onDragDrop = (e) => {
+        e.preventDefault();
+        const target = e.currentTarget;
+        target.classList.remove("is-drag-over");
     };
 
     /* =========================================================
@@ -614,7 +816,6 @@
             applyFilter();
             searchInput?.focus();
         });
-
         priceMinInput?.addEventListener("input", () => {
             const nextValue = Number(priceMinInput.value);
             priceBounds.selectedMin = Math.min(nextValue, priceBounds.selectedMax);

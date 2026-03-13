@@ -41,6 +41,30 @@
                     <a href="aktuality.php" data-key="aktuality">Novinky</a>
                     <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-Shop</a>
                 </nav>
+
+                <button
+                    class="mobile-nav-toggle"
+                    type="button"
+                    aria-label="Otevřít navigaci"
+                    aria-expanded="false"
+                    aria-controls="mobileNavPanel"
+                    data-nav-toggle
+                >
+                    <span class="mobile-nav-toggle__icon" aria-hidden="true"></span>
+                </button>
+
+                <div class="mobile-nav" data-mobile-nav>
+                    <div class="mobile-nav__backdrop" data-nav-close tabindex="-1"></div>
+                    <div class="mobile-nav__panel" id="mobileNavPanel" role="dialog" aria-modal="true" aria-label="Menu">
+                        <nav class="hero-nav" id="heroNav" aria-label="Hlavní navigace">
+                            <a href="index.php" data-key="home">Domů</a>
+                            <a href="vina.php" data-key="vina" aria-current="page">Vína</a>
+                            <a href="index.php#partner-section" data-key="partner">Fattoria La Torre</a>
+                            <a href="aktuality.php" data-key="aktuality">Novinky</a>
+                            <a href="https://www.alabarte.cz/vino/" data-key="eshop">E-Shop</a>
+                        </nav>
+                    </div>
+                </div>
             </div>
             <!-- ===== TITLE + LOGA ===== -->
             <header class="vina-header" aria-label="Nadpis sekce Vína">
@@ -73,32 +97,74 @@
             <section class="wine-presentation-slider" data-slider="presentation" aria-label="Prezentace vín">
 
                 <div class="presentation-slide is-active">
-                    <img src="Images/prezentace/acquaiole-pret.png" alt="">
+                    <button class="presentation-zoom" type="button" aria-label="Otevřít obrázek vína Acquaiole ve větším zobrazení">
+                        <picture class="presentation-picture">
+                            <source media="(max-width: 768px)" srcset="Images/prezentace/acquaiole_m-pret.png">
+                            <img src="Images/prezentace/acquaiole-pret.png" alt="Prezentace vína Acquaiole" class="presentation-image">
+                        </picture>
+                    </button>
                 </div>
 
                 <div class="presentation-slide">
-                    <img src="Images/prezentace/Caroobacoo-pret.png" alt="">
+                    <button class="presentation-zoom" type="button" aria-label="Otevřít obrázek vína Caroobacoo ve větším zobrazení">
+                        <picture class="presentation-picture">
+                            <source media="(max-width: 768px)" srcset="Images/prezentace/caroobacoo_m-pret.png">
+                            <img src="Images/prezentace/Caroobacoo-pret.png" alt="Prezentace vína Caroobacoo" class="presentation-image">
+                        </picture>
+                    </button>
                 </div>
 
                 <div class="presentation-slide">
-                    <img src="Images/prezentace/sciallebianco-pret.png" alt="">
+                    <button class="presentation-zoom" type="button" aria-label="Otevřít obrázek vína Sciallebianco ve větším zobrazení">
+                        <picture class="presentation-picture">
+                            <source media="(max-width: 768px)" srcset="Images/prezentace/sciallebiancom-pret.png">
+                            <img src="Images/prezentace/sciallebianco-pret.png" alt="Prezentace vína Sciallebianco" class="presentation-image">
+                        </picture>
+                    </button>
                 </div>
 
                 <div class="presentation-slide">
-                    <img src="Images/prezentace/chiacchere-pret.png" alt="">
+                    <button class="presentation-zoom" type="button" aria-label="Otevřít obrázek vína Chiacchere ve větším zobrazení">
+                        <picture class="presentation-picture">
+                            <source media="(max-width: 768px)" srcset="Images/prezentace/chiacchere_m-pret.png">
+                            <img src="Images/prezentace/chiacchere-pret.png" alt="Prezentace vína Chiacchere" class="presentation-image">
+                        </picture>
+                    </button>
                 </div>
 
                 <div class="presentation-slide">
-                    <img src="Images/prezentace/guinzano-pret.png" alt="">
+                    <button class="presentation-zoom" type="button" aria-label="Otevřít obrázek vína Guinzano ve větším zobrazení">
+                        <picture class="presentation-picture">
+                            <source media="(max-width: 768px)" srcset="Images/prezentace/guinzano_m-pret.png">
+                            <img src="Images/prezentace/guinzano-pret.png" alt="Prezentace vína Guinzano" class="presentation-image">
+                        </picture>
+                    </button>
                 </div>
 
                 <div class="presentation-slide">
-                    <img src="Images/prezentace/stradina-pret.png" alt="">
+                    <button class="presentation-zoom" type="button" aria-label="Otevřít obrázek vína Stradina ve větším zobrazení">
+                        <picture class="presentation-picture">
+                            <source media="(max-width: 768px)" srcset="Images/prezentace/stradina_m-pret.png">
+                            <img src="Images/prezentace/stradina-pret.png" alt="Prezentace vína Stradina" class="presentation-image">
+                        </picture>
+                    </button>
                 </div>
 
             </section>
 
             <button class="presentation-arrow presentation-arrow--next" type="button" aria-label="Další obrázek">›</button>
+        </div>
+
+        <div class="presentation-modal" id="presentationModal" aria-hidden="true">
+            <div class="presentation-modal__backdrop" data-close-presentation="true"></div>
+
+            <div class="presentation-modal__panel" role="dialog" aria-modal="true" aria-label="Zvětšený náhled prezentace vína">
+                <button class="presentation-modal__close" type="button" aria-label="Zavřít zvětšený obrázek" data-close-presentation="true">✕</button>
+
+                <div class="presentation-modal__media">
+                    <img id="presentationModalImage" src="" alt="">
+                </div>
+            </div>
         </div>
 
         <!-- ===== VYHLEDÁVÁNÍ (toggle) + FILTRY (schované v panelu) ===== -->

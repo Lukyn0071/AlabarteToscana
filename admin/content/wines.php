@@ -376,3 +376,70 @@ function delete_wine(PDO $pdo, int $id): bool
     return $stmt->execute(['id' => $id]);
 }
 
+/**
+ * Persist order of wines by IDs.
+ *
+ * - Only IDs that exist in DB are used.
+ * - Any wines missing from $orderedIds are appended after, keeping their current order.
+ * - Final sort_order is normalized to 1..N.
+ *
+ * @param array<int, int> $orderedIds
+ * @return int updated rows count
+ */
+function reorder_wines_by_ids(PDO $pdo, array $orderedIds): int
+{
+    ensure_wines_table($pdo);
+
+    // Deduplicate + keep numeric ids > 0
+    $seen = [];
+    $clean = [];
+    foreach ($orderedIds as $id) {
+        $id = (int)$id;
+        if ($id <= 0) continue;
+        if (isset($seen[$id])) continue;
+        $seen[$id] = true;
+        $clean[] = $id;
+    }
+
+    $pdo->beginTransaction();
+    try {
+        // Lock all wines so concurrent reorder doesn't interleave.
+        $rows = $pdo->query("SELECT `id`, `sort_order` FROM `wines` ORDER BY `sort_order` ASC, `id` ASC FOR UPDATE")->fetchAll(PDO::FETCH_ASSOC);
+        $existingIds = array_map(static fn($r) => (int)$r['id'], $rows);
+        $existingSet = array_fill_keys($existingIds, true);
+
+        // Keep only ids that exist.
+        $ordered = [];
+        foreach ($clean as $id) {
+            if (isset($existingSet[$id])) {
+                $ordered[] = $id;
+                unset($existingSet[$id]);
+            }
+        }
+
+        // Append remaining wines (not included in payload) in their current order.
+        foreach ($rows as $r) {
+            $id = (int)$r['id'];
+            if (isset($existingSet[$id])) {
+                $ordered[] = $id;
+            }
+        }
+
+        $stmt = $pdo->prepare("UPDATE `wines` SET `sort_order` = :sort_order WHERE `id` = :id");
+        $pos = 1;
+        $updated = 0;
+        foreach ($ordered as $id) {
+            $stmt->execute(['sort_order' => $pos, 'id' => $id]);
+            $updated += $stmt->rowCount();
+            $pos++;
+        }
+
+        $pdo->commit();
+        return $updated;
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
+    }
+}
