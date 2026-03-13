@@ -241,6 +241,10 @@ body{
     width: auto;
     display: block;
     object-fit: contain;
+
+    filter:
+            brightness(0) invert(1)
+            drop-shadow(0 14px 28px rgba(0,0,0,0.28));
 }
 
 /* stejné velikosti jako index hero */
