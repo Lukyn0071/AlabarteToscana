@@ -85,9 +85,14 @@ body.presentation-modal-open{
     justify-content: space-between;
 }
 
+/* === Lang switcher: top-left corner like index.php === */
+.hero-overlay{ position: relative; }
+.hero-top{ max-width: none; margin: 0; }
 .lang-switcher{
-    display: flex;
-    gap: 0.5rem;
+    position: absolute;
+    left: calc(0.75rem + env(safe-area-inset-left));
+    top: calc(0.75rem + env(safe-area-inset-top));
+    z-index: 1200;
 }
 
 .lang-btn{

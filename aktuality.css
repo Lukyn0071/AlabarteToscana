@@ -31,7 +31,7 @@ a { color: inherit; }
 /* HERO */
 .hero {
   min-height: 100vh;
-  background-image: url("Images/Obrázek1.png");
+  background-image: url("Images/diskphoto/DJI_20250325184707_0425_D.jpg");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -60,7 +60,16 @@ a { color: inherit; }
   position: relative; /* allow absolute centering of .hero-nav */
 }
 
-.lang-switcher { display:flex; gap:0.5rem; }
+/* === Lang switcher: top-left corner like index.php === */
+.hero-overlay{ position: relative; }
+.hero-top{ max-width: none; margin: 0; }
+.lang-switcher{
+  position: absolute;
+  left: calc(0.75rem + env(safe-area-inset-left));
+  top: calc(0.75rem + env(safe-area-inset-top));
+  z-index: 1200;
+}
+
 .lang-btn {
   border: none;
   background: rgba(0,0,0,0.6);
