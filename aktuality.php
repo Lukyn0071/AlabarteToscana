@@ -76,8 +76,8 @@ $assetV = (string)max(
                 <section class="quote" aria-label="Citát">
                     <div class="quote-inner">
                         <div class="quote-leaf" aria-hidden="true"></div>
-                        <p class="quote-text"><?php echo htmlspecialchars((string)($ui['quote_text'] ?? 'Víno je poezie uzavřená v lahvi.'), ENT_QUOTES, 'UTF-8'); ?></p>
-                        <div class="quote-author"><?php echo htmlspecialchars((string)($ui['quote_author'] ?? '— Robert Louis Stevenson'), ENT_QUOTES, 'UTF-8'); ?></div>
+                        <p class="quote-text"><?php echo htmlspecialchars((string)($ui['quote_text'] ?? 'Víno je ta nejcivilizovanější věc na světě.'), ENT_QUOTES, 'UTF-8'); ?></p>
+                        <div class="quote-author"><?php echo htmlspecialchars((string)($ui['quote_author'] ?? '— E. Hemingway'), ENT_QUOTES, 'UTF-8'); ?></div>
                     </div>
                 </section>
             </section>
