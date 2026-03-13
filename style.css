@@ -571,7 +571,7 @@ body.mobile-nav-open{
     background-color: #120608;
     background-image:
             linear-gradient(180deg, rgba(10, 4, 5, 0.55) 0%, rgba(10, 4, 5, 0.72) 100%),
-            url("Images/RedM.jpg");
+            url("Images/RedM.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -689,7 +689,7 @@ body.mobile-nav-open{
 .wine-carousel__inner {
     border-radius: 18px;
     border: 1px solid rgba(191, 155, 48, 0.45);
-    background-image: url("Images/RedM.jpg");
+    background-image: url("Images/RedM.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
