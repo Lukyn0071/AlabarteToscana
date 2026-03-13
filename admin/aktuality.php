@@ -55,7 +55,7 @@ $ver_grid_js = asset_ver(__DIR__ . '/aktuality_grid.js');
 
   <!-- Fix background image path for admin context (aktuality.css uses relative Images/...) -->
   <style>
-    .hero{ background-image: url("../Images/Obrázek1.png"); }
+    .hero{ background-image: url("../Images/diskphoto/DJI_20250325184707_0425_D.jpg"); }
   </style>
 
   <!-- Ensure the public news modal (used on the public page) is hidden in admin unless opened. -->
@@ -110,11 +110,6 @@ $ver_grid_js = asset_ver(__DIR__ . '/aktuality_grid.js');
         $active = 'aktuality';
         require __DIR__ . '/../partials/admin_top.php';
       ?>
-
-      <header class="page-head">
-        <h1 class="page-title" data-key="aktuality_title"><?php echo htmlspecialchars((string)($ui['aktuality_title'] ?? 'Toskánský deník'), ENT_QUOTES, 'UTF-8'); ?></h1>
-        <p class="page-lead" data-key="aktuality_lead"><?php echo htmlspecialchars((string)($ui['aktuality_lead'] ?? 'Novinky z našeho vinařství a život z Toskánska'), ENT_QUOTES, 'UTF-8'); ?></p>
-      </header>
 
       <!-- Interactive admin grid editor (requested to be on this page) -->
       <section id="aktualityAdminGrid" data-grid-cols="2" data-grid-rows="8" aria-label="Editor mřížky aktualit">
